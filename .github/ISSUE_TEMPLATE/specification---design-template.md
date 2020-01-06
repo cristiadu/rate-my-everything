@@ -8,9 +8,9 @@ assignees: cristiadu
 ---
 
 **Motivation**
-As a <TypeOfUser>, I want to <beAbleToSomething>, so that I <interactInSomeWay>
+As a _TypeOfUser_, I want to _beAbleToSomething_, so that I _getSomethingFromTheSystem_.
 
 **Acceptance Criteria**
-- [ ] <featureName> specification defined on a Wiki page within the project.
+- [ ] _featureName_ specification defined on a Wiki page within the project.
 - [ ] Design prototype implemented for the given product specifications.
 - [ ] After design is good, create Tech Design for the feature, adding new issues for each separate technical task associating each issue with this one.
