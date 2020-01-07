@@ -1,2 +1,2 @@
-# rate-my-everything
-Web-based application focused on rating multiple different objects/interests based of multiple reviews of multiple users.
+# Rate My Everything
+Web-based application focused on rating different objects/interests based of multiple reviews from each user, focused more into individual rating rather than a collective one.
