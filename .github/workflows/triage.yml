@@ -11,5 +11,5 @@ jobs:
       - uses: alex-page/github-project-automation-plus@v0.1.0
         with:
           project: Rate My Everything
-          column: Triage
+          column: To Be Defined
           repo-token: ${{ secrets.MY_SECRET_GH }}
