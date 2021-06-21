@@ -12,4 +12,4 @@ jobs:
         with:
           project: Rate My Everything
           column: In Development
-          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          repo-token: ${{ secrets.MY_SECRET_GH }}
