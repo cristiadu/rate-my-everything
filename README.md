@@ -5,7 +5,7 @@ Web-based application focused on rating different objects/interests based of mul
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Development Progress
-See [Issues](./issues) for a more detailed list of tasks.
+See [Issues](https://github.com/cristiadu/rate-my-everything/issues) for a more detailed list of tasks.
 
 ## Available Scripts
 
