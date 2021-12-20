@@ -12,7 +12,7 @@ See [Issues](https://github.com/cristiadu/rate-my-everything/issues) for a more 
 In the project directory, you can run:
 
 ### `npm install`
-Will install all needed dependencies. on `node_modules`
+Will install all needed dependencies on `node_modules`.
 
 ### `npm start`
 
