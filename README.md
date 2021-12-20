@@ -33,3 +33,12 @@ The build is minified and the filenames include the hashes.\
 Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+
+### `npm run build-storybook`
+
+Builds the storybook with the catalog of React Components used by the application.
+
+### `npm run start-storybook`
+
+Serve the storybook component catalog.
+Open [http://localhost:6006](http://localhost:6006) to view it in the browser.
