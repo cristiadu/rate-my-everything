@@ -11,6 +11,9 @@ See [Issues](https://github.com/cristiadu/rate-my-everything/issues) for a more 
 
 In the project directory, you can run:
 
+### `npm install`
+Will install all needed dependencies. on `node_modules`
+
 ### `npm start`
 
 Runs the app in the development mode.\
@@ -38,7 +41,7 @@ See the section about [deployment](https://facebook.github.io/create-react-app/d
 
 Builds the storybook with the catalog of React Components used by the application.
 
-### `npm run start-storybook`
+### `npm run storybook`
 
 Serve the storybook component catalog.
 Open [http://localhost:6006](http://localhost:6006) to view it in the browser.
