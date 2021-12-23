@@ -45,3 +45,9 @@ Builds the storybook with the catalog of React Components used by the applicatio
 
 Serve the storybook component catalog.
 Open [http://localhost:6006](http://localhost:6006) to view it in the browser.
+
+### `npm run format-code` and `npm run check-code`
+
+Applies ESLint on code in `src` folder.
+
+The difference is that `format-code` will reformat the code automatically based on the linter rules, while `check-code` will just report the problems.

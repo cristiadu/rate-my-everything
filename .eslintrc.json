@@ -21,7 +21,6 @@
             }
         },
         {
-            // or whatever matches stories specified in .storybook/main.js
             "files": [
                 "**/*.stories.@(js|jsx|ts|tsx)"
             ],
