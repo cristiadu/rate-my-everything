@@ -1,38 +1,49 @@
 import React from 'react'
-// also exported from '@storybook/react' if you can deal with breaking changes in 6.1
 import { Story, Meta } from '@storybook/react'
-
-import { Button, ButtonProps } from './Button'
+import { Button } from 'react-bulma-components'
 
 export default {
-  title: 'Example/Button',
+  title: 'Bulma/Button',
   component: Button,
-  argTypes: {
-    backgroundColor: { control: 'color' },
-  },
 } as Meta
 
-const Template: Story<ButtonProps> = (args) => <Button {...args} />
+export type ButtonStoryOptions = {
+  props?: object
+  text: string
+}
+
+const Template: Story<any> = ({ props, text }: ButtonStoryOptions) => <Button {...props}>{ text }</Button>
 
 export const Primary = Template.bind({})
 Primary.args = {
-  primary: true,
-  label: 'Button',
+  props: {
+    color: 'primary',
+  },
+  text: 'My Button',
 }
 
 export const Secondary = Template.bind({})
 Secondary.args = {
-  label: 'Button',
+  props: {
+    color: 'dark',
+  },
+  text: 'My Secondary Button',
 }
 
 export const Large = Template.bind({})
 Large.args = {
-  size: 'large',
-  label: 'Button',
+  props: {
+    color: 'primary',
+    size: 'large',
+  },
+  text: 'My Large Button',
 }
 
 export const Small = Template.bind({})
 Small.args = {
-  size: 'small',
-  label: 'Button',
+  props: {
+    color: 'primary',
+    size: 'small',
+  },
+  text: 'My Small Button',
 }
