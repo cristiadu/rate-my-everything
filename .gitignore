@@ -26,3 +26,6 @@ hs_err_pid*
 node_modules/
 build/
 storybook-static/
+
+#MacOS files
+.DS_Store
