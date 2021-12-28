@@ -3,7 +3,7 @@ import {
   Container, Heading, Hero,
 } from 'react-bulma-components'
 import HeaderMenu from './HeaderMenu'
-import UserHeaderMenu from './UserHeaderMenu'
+import UserHeaderMenu from '../users/UserHeaderMenu'
 
 export default () => (
   <Hero color="danger">
@@ -16,8 +16,9 @@ export default () => (
           Rate My Everything
         </Heading>
         <Heading
-          size={4}
+          size={5}
           subtitle
+          textColor="dark"
         >
           When you change your mind a lot and need to keep track of it.
         </Heading>

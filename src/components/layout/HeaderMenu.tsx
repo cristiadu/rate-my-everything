@@ -5,7 +5,7 @@ const HeaderMenu = () => {
   const [isActive, setActive] = useState(false)
 
   return (
-    <Navbar active={isActive}>
+    <Navbar active={isActive} color="danger">
       <Navbar.Brand>
         <Navbar.Item href="#">
           <img
