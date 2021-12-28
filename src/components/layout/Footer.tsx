@@ -3,7 +3,7 @@ import { Container, Footer } from 'react-bulma-components'
 
 export default () => (
   <Footer>
-    <Container backgroundColor="warning">
+    <Container>
       My app Footer
 
     </Container>

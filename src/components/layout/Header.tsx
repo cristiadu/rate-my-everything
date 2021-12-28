@@ -6,7 +6,7 @@ import HeaderMenu from './HeaderMenu'
 import UserHeaderMenu from '../users/UserHeaderMenu'
 
 export default () => (
-  <Hero color="danger">
+  <Hero color="danger" size="small">
     <Hero.Header>
       <UserHeaderMenu />
     </Hero.Header>

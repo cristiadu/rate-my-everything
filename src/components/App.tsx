@@ -11,10 +11,10 @@ export default () => (
       <Header />
     </Hero.Header>
     <Hero.Body alignItems="flex-start" className="is-relative" paddingless>
-      <Columns.Column backgroundColor="info" size={1} paddingless overlay>
+      <Columns.Column size={1} paddingless overlay>
         <FilterMenu />
       </Columns.Column>
-      <Columns.Column backgroundColor="dark" size={11} offset={1}>
+      <Columns.Column size={11} offset={1}>
         <MainContent />
       </Columns.Column>
     </Hero.Body>
