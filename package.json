@@ -58,7 +58,7 @@
     "@storybook/manager-webpack5": "^6.5.0-alpha.11",
     "@storybook/node-logger": "^6.5.0-alpha.9",
     "@storybook/preset-create-react-app": "^4.0.0",
-    "@storybook/react": "^6.5.0-alpha.9",
+    "@storybook/react": "^6.5.0-alpha.11",
     "@typescript-eslint/eslint-plugin": "^5.9.0",
     "@typescript-eslint/parser": "^5.9.0",
     "eslint": "^8.6.0",
