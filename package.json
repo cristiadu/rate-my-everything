@@ -56,7 +56,7 @@
     "@storybook/addon-links": "^6.5.0-alpha.14",
     "@storybook/builder-webpack5": "^6.5.0-alpha.14",
     "@storybook/manager-webpack5": "^6.5.0-alpha.14",
-    "@storybook/node-logger": "^6.5.0-alpha.14",
+    "@storybook/node-logger": "^6.5.0-alpha.15",
     "@storybook/preset-create-react-app": "^4.0.0",
     "@storybook/react": "^6.5.0-alpha.14",
     "@typescript-eslint/eslint-plugin": "^5.9.1",
@@ -69,6 +69,6 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-storybook": "^0.5.5",
     "react-is": "^17.0.2",
-    "webpack": "^5.65.0"
+    "webpack": "^5.66.0"
   }
 }
