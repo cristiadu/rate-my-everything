@@ -52,7 +52,7 @@
     "@babel/core": "^7.16.7",
     "@storybook/addon-actions": "^6.5.0-alpha.14",
     "@storybook/addon-docs": "^6.5.0-alpha.14",
-    "@storybook/addon-essentials": "^6.5.0-alpha.14",
+    "@storybook/addon-essentials": "^6.5.0-alpha.15",
     "@storybook/addon-links": "^6.5.0-alpha.14",
     "@storybook/builder-webpack5": "^6.5.0-alpha.14",
     "@storybook/manager-webpack5": "^6.5.0-alpha.14",
@@ -69,6 +69,6 @@
     "eslint-plugin-react-hooks": "^4.3.0",
     "eslint-plugin-storybook": "^0.5.5",
     "react-is": "^17.0.2",
-    "webpack": "^5.65.0"
+    "webpack": "^5.66.0"
   }
 }
