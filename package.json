@@ -59,7 +59,7 @@
     "@storybook/node-logger": "^6.5.0-alpha.14",
     "@storybook/preset-create-react-app": "^4.0.0",
     "@storybook/react": "^6.5.0-alpha.14",
-    "@typescript-eslint/eslint-plugin": "^5.10.1",
+    "@typescript-eslint/eslint-plugin": "^5.10.2",
     "@typescript-eslint/parser": "^5.10.1",
     "eslint": "^8.8.0",
     "eslint-config-airbnb": "^19.0.4",
