@@ -57,7 +57,7 @@
     "@storybook/builder-webpack5": "^6.5.0-alpha.14",
     "@storybook/manager-webpack5": "^6.5.0-alpha.14",
     "@storybook/node-logger": "^6.5.0-alpha.14",
-    "@storybook/preset-create-react-app": "^4.0.0",
+    "@storybook/preset-create-react-app": "^4.0.1",
     "@storybook/react": "^6.5.0-alpha.14",
     "@typescript-eslint/eslint-plugin": "^5.11.0",
     "@typescript-eslint/parser": "^5.11.0",
