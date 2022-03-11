@@ -49,7 +49,7 @@
     ]
   },
   "devDependencies": {
-    "@babel/core": "^7.17.2",
+    "@babel/core": "^7.17.5",
     "@storybook/addon-actions": "^6.5.0-alpha.14",
     "@storybook/addon-docs": "^6.5.0-alpha.14",
     "@storybook/addon-essentials": "^6.5.0-alpha.14",
