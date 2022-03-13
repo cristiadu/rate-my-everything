@@ -8,7 +8,7 @@ export default {
 } as Meta
 
 export type ButtonStoryOptions = {
-  props?: object
+  props: object
   text: string
 }
 
