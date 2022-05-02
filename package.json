@@ -11,7 +11,7 @@
     "@types/react": "^18.0.8",
     "@types/react-dom": "^18.0.3",
     "bulma": "^0.9.3",
-    "postcss": "^8.4.12",
+    "postcss": "^8.4.13",
     "postcss-loader": "^6.2.1",
     "react": "^18.1.0",
     "react-bulma-components": "^4.1.0",
