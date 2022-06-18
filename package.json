@@ -69,6 +69,6 @@
     "eslint-plugin-react-hooks": "^4.5.0",
     "eslint-plugin-storybook": "^0.5.12",
     "react-is": "^18.2.0",
-    "webpack": "^5.72.0"
+    "webpack": "^5.73.0"
   }
 }
