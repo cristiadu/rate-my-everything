@@ -29,3 +29,8 @@ storybook-static/
 
 #MacOS files
 .DS_Store
+
+# Dist folder
+dist/
+
+*storybook.log
