@@ -5,7 +5,6 @@
   "dependencies": {
     "@testing-library/jest-dom": "^6.4.2",
     "@testing-library/react": "^14.2.2",
-    "@types/jest": "^29.5.12",
     "@types/node": "^20.11.30",
     "@types/react": "^18.2.67",
     "@types/react-burger-menu": "^2.8.7",
@@ -31,6 +30,7 @@
     "build-storybook": "storybook build"
   },
   "devDependencies": {
+    "@types/jest": "^29.5.12",
     "@babel/core": "^7.24.3",
     "@babel/preset-env": "^7.24.3",
     "@babel/preset-react": "^7.24.1",
