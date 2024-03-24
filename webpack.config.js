@@ -1,6 +1,6 @@
-const path = require("path");
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const CopyWebpackPlugin = require('copy-webpack-plugin');
+const path = require("path")
+const HtmlWebpackPlugin = require('html-webpack-plugin')
+const CopyWebpackPlugin = require('copy-webpack-plugin')
 
 module.exports = {
   entry: "./src/index.tsx", // Entry point of your application
@@ -49,4 +49,4 @@ module.exports = {
     open: true, // Open the default web browser when the server starts
     hot: true
   },
-};
+}
