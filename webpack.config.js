@@ -1,10 +1,13 @@
 const path = require("path")
 const HtmlWebpackPlugin = require('html-webpack-plugin')
 const CopyWebpackPlugin = require('copy-webpack-plugin')
+const BundleAnalyzerPlugin = require('webpack-bundle-analyzer').BundleAnalyzerPlugin;
+
 
 module.exports = {
   entry: "./src/index.tsx", // Entry point of your application
   plugins: [
+    new BundleAnalyzerPlugin(),
     new HtmlWebpackPlugin({
 
       template: 'public/index.html'
@@ -26,7 +29,7 @@ module.exports = {
     rules: [
       {
         test: /\.(js|jsx|ts|tsx)$/,
-        exclude: [/node_modules/, /src\/test\//],
+        exclude: [/node_modules/, /src\/test\//, /src\/stories\//, /src\/setupTests.ts/],
         use: {
           loader: "babel-loader",
           options: {
