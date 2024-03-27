@@ -32,13 +32,9 @@ module.exports = {
         use: {
           loader: "babel-loader",
           options: {
-            presets: ["@babel/preset-env", "@babel/preset-react", "@babel/preset-typescript"], // Add this line
+            presets: [["@babel/preset-env", { modules: false }], "@babel/preset-react", "@babel/preset-typescript"],
           },
         },
-      },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
       },
     ],
   },
