@@ -1,8 +1,10 @@
 import React from 'react'
 import { Container } from 'react-bulma-components'
 
-export default () => (
+const MainContent = () => (
   <Container>
     App Content Here
   </Container>
 )
+
+export default MainContent

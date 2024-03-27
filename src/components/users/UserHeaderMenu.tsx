@@ -3,7 +3,7 @@ import {
   Heading, Level, Form, Button,
 } from 'react-bulma-components'
 
-export default () => (
+const UserHeaderMenu = () => (
   <Level p={2} backgroundColor="dark" textColor="primary">
     <Level.Side pr={2} align="left">
       <Level.Item>
@@ -55,3 +55,5 @@ export default () => (
     </Level.Side>
   </Level>
 )
+
+export default UserHeaderMenu

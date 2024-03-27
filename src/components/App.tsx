@@ -5,7 +5,7 @@ import Footer from './layout/Footer'
 import MainContent from './layout/MainContent'
 import FilterMenu from './filters/FilterMenu'
 
-export default () => (
+const App = () => (
   <Hero size="fullheight">
     <Hero.Header renderAs="header">
       <Header />
@@ -23,3 +23,5 @@ export default () => (
     </Hero.Footer>
   </Hero>
 )
+
+export default App
