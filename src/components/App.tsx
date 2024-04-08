@@ -11,10 +11,10 @@ const App = () => (
       <Header />
     </Hero.Header>
     <Hero.Body alignItems="flex-start" className="is-relative" paddingless>
-      <Columns.Column size={1} paddingless overlay>
+      <Columns.Column size={2} paddingless overlay>
         <FilterMenu />
       </Columns.Column>
-      <Columns.Column size={11} offset={1}>
+      <Columns.Column size={10} offset={1}>
         <MainContent />
       </Columns.Column>
     </Hero.Body>
