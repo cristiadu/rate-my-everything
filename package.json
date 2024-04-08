@@ -22,7 +22,7 @@
   "scripts": {
     "start": "webpack-dev-server --mode development --open",
     "build": "webpack --mode production",
-    "deploy": "npm run build && git add dist && git commit -m 'Deploy to live' && git push origin `git subtree split --prefix dist main`:live --force",
+    "deploy": "npm run build && git add -f dist && git commit -m 'Deploy to live' && git push origin `git subtree split --prefix dist main`:live --force",
     "release": "npm version patch && npm run build && npm run deploy",
     "test": "jest",
     "format-code": "./node_modules/.bin/eslint \"./src/**\" --fix --ignore-path ./.eslintignore",
