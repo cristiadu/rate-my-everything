@@ -6,7 +6,7 @@ import HeaderMenu from './HeaderMenu'
 import UserHeaderMenu from '../users/UserHeaderMenu'
 
 const Header = () => (
-  <Hero color="danger" size="small">
+  <Hero color="danger" size="small" style={{ width: '100%' }}>
     <Hero.Header>
       <UserHeaderMenu />
     </Hero.Header>
