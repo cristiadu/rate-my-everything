@@ -33,29 +33,31 @@ const FilterMenu = () => {
       <Block>
         <Arrow />
         <Tag color="danger" size="large">FILTERS</Tag>
-        <Form.Field style={{ marginTop: '20px' }}>
-          <Form.Label color='dark' size="medium">Title</Form.Label>
+        <Form.Field color='dark' style={{ marginTop: '20px' }}>
+          <Form.Label size="medium">Title</Form.Label>
           <Form.Control>
             <Form.Input placeholder="Search by title" />
           </Form.Control>
         </Form.Field>
-        <Form.Field>
-          <Form.Label color='dark' size="medium">Genre</Form.Label>
-          <Dropdown>
-            <Dropdown.Item value="Action">Action</Dropdown.Item>
-            <Dropdown.Item value="Comedy">Comedy</Dropdown.Item>
-            <Dropdown.Item value="Drama">Drama</Dropdown.Item>
-            <Dropdown.Item value="Horror">Horror</Dropdown.Item>
-          </Dropdown>
+        <Form.Field color='dark'>
+          <Form.Label size="medium">Genre</Form.Label>
+          <Form.Control>
+            <Form.Select>
+              <option value="Action">Action</option>
+              <option value="Comedy">Comedy</option>
+              <option value="Drama">Drama</option>
+              <option value="Horror">Horror</option>
+            </Form.Select>
+          </Form.Control>
         </Form.Field>
-        <Form.Field>
-          <Form.Label color='dark' size="medium">Year</Form.Label>
+        <Form.Field color='dark'>
+          <Form.Label size="medium">Year</Form.Label>
           <Form.Control>
             <Form.Input type="number" placeholder="Search by year" />
           </Form.Control>
         </Form.Field>
-        <Form.Field>
-          <Form.Label color='dark' size="medium">Rating</Form.Label>
+        <Form.Field color='dark'>
+          <Form.Label size="medium">Rating</Form.Label>
           <Form.Control>
             <Form.Input type="number" min="0" max="10" placeholder="Search by rating" />
           </Form.Control>
