@@ -22,8 +22,8 @@
   "scripts": {
     "start": "webpack-dev-server --mode development --open",
     "build": "webpack --mode production",
-    "deploy": "npm run build && git add -f dist && git fetch origin main && COMMIT_HASH=$(git rev-parse origin/main) && REMOTE_URL=$(git config --get remote.origin.url) && COMMIT_LINK=\"$REMOTE_URL/commit/$COMMIT_HASH\" && git commit -m \"Publish $COMMIT_LINK to Github Pages\" && git subtree split --prefix dist main --branch temp && git fetch -f origin live:temp && git merge --allow-unrelated-histories temp && git push origin temp:live && git branch -d temp",
-    "release": "npm version patch && npm run deploy",
+    "deploy": "npm run build && git add -f dist && git fetch origin main && COMMIT_HASH=$(git rev-parse origin/main) && REMOTE_URL=$(git config --get remote.origin.url) && COMMIT_LINK=\"$REMOTE_URL/commit/$COMMIT_HASH\" && git commit -m \"Publish $COMMIT_LINK to Github Pages\" && git push origin `git subtree split --prefix dist main`:refs/heads/live --force",
+    "release": "npm version patch && npm run build && npm run deploy",
     "test": "jest",
     "format-code": "./node_modules/.bin/eslint \"./src/**\" --fix --ignore-path ./.eslintignore",
     "check-code": "./node_modules/.bin/eslint \"./src/**\" --ignore-path ./.eslintignore",
