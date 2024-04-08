@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Block } from 'react-bulma-components'
+import { Block, Form, Button, Tag, Dropdown } from 'react-bulma-components'
 import { slide as SlideMenu } from 'react-burger-menu'
 
 const FilterMenu = () => {
@@ -32,7 +32,35 @@ const FilterMenu = () => {
     <SlideMenu isOpen={isOpen} className="box has-background-danger-light" styles={styles}>
       <Block>
         <Arrow />
-        Filters
+        <Tag color="danger" size="large">FILTERS</Tag>
+        <Form.Field style={{ marginTop: '20px' }}>
+          <Form.Label color='dark' size="medium">Title</Form.Label>
+          <Form.Control>
+            <Form.Input placeholder="Search by title" />
+          </Form.Control>
+        </Form.Field>
+        <Form.Field>
+          <Form.Label color='dark' size="medium">Genre</Form.Label>
+          <Dropdown>
+            <Dropdown.Item value="Action">Action</Dropdown.Item>
+            <Dropdown.Item value="Comedy">Comedy</Dropdown.Item>
+            <Dropdown.Item value="Drama">Drama</Dropdown.Item>
+            <Dropdown.Item value="Horror">Horror</Dropdown.Item>
+          </Dropdown>
+        </Form.Field>
+        <Form.Field>
+          <Form.Label color='dark' size="medium">Year</Form.Label>
+          <Form.Control>
+            <Form.Input type="number" placeholder="Search by year" />
+          </Form.Control>
+        </Form.Field>
+        <Form.Field>
+          <Form.Label color='dark' size="medium">Rating</Form.Label>
+          <Form.Control>
+            <Form.Input type="number" min="0" max="10" placeholder="Search by rating" />
+          </Form.Control>
+        </Form.Field>
+        <Button color='dark'>Submit</Button>
       </Block>
     </SlideMenu>
   )
