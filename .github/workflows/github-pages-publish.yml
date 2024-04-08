@@ -15,8 +15,9 @@ jobs:
           node-version: '21'
       - name: Set git user
         run: |
-          git config --global user.name 'Cristiano Faustino'
-          git config --global user.email 'cristiadu@gmail.com'
+          git fetch origin main
+          git config --global user.name "$(git log -1 --pretty=format:'%an' origin/main)"
+          git config --global user.email "$(git log -1 --pretty=format:'%ae' origin/main)"
       - name: Install Dependencies
         run: npm ci
       - name: Run tests
