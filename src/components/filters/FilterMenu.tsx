@@ -6,7 +6,9 @@ const FilterMenu = () => {
   const [isOpen, setIsOpen] = useState(false)
 
   const Arrow = () => (
-    <div onClick={() => setIsOpen(!isOpen)} style={{
+    <div
+      onClick={() => setIsOpen(!isOpen)}
+      style={{
       position: 'absolute',
       top: '10px', // Adjust this value to position the arrow vertically
       right: '-20px', // Adjust this value to position the arrow horizontally
@@ -16,7 +18,8 @@ const FilterMenu = () => {
       borderBottom: '30px solid transparent',
       borderLeft: '20px solid #FF6685', // Change this color to adjust the color of the arrow
       cursor: 'pointer',
-    }} />
+    }}
+    />
   )
 
   const styles = {
@@ -33,13 +36,13 @@ const FilterMenu = () => {
       <Block>
         <Arrow />
         <Tag color="danger" size="large">FILTERS</Tag>
-        <Form.Field color='dark' style={{ marginTop: '20px' }}>
+        <Form.Field color="dark" style={{ marginTop: '20px' }}>
           <Form.Label size="medium">Title</Form.Label>
           <Form.Control>
             <Form.Input placeholder="Search by title" />
           </Form.Control>
         </Form.Field>
-        <Form.Field color='dark'>
+        <Form.Field color="dark">
           <Form.Label size="medium">Genre</Form.Label>
           <Form.Control>
             <Form.Select>
@@ -50,19 +53,19 @@ const FilterMenu = () => {
             </Form.Select>
           </Form.Control>
         </Form.Field>
-        <Form.Field color='dark'>
+        <Form.Field color="dark">
           <Form.Label size="medium">Year</Form.Label>
           <Form.Control>
             <Form.Input type="number" placeholder="Search by year" />
           </Form.Control>
         </Form.Field>
-        <Form.Field color='dark'>
+        <Form.Field color="dark">
           <Form.Label size="medium">Rating</Form.Label>
           <Form.Control>
             <Form.Input type="number" min="0" max="10" placeholder="Search by rating" />
           </Form.Control>
         </Form.Field>
-        <Button color='dark'>Submit</Button>
+        <Button color="dark">Submit</Button>
       </Block>
     </SlideMenu>
   )
