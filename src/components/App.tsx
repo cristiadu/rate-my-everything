@@ -14,7 +14,7 @@ const App = () => (
       <Columns.Column size={2} paddingless overlay>
         <FilterMenu />
       </Columns.Column>
-      <Columns.Column size={10} offset={1}>
+      <Columns.Column size={10}>
         <MainContent />
       </Columns.Column>
     </Hero.Body>
