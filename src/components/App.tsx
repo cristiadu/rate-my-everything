@@ -1,30 +1,30 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Columns, Hero, Navbar, Container } from 'react-bulma-components'
-import ResizeObserver from 'resize-observer-polyfill';
+import ResizeObserver from 'resize-observer-polyfill'
 import Header from './layout/Header'
 import Footer from './layout/Footer'
 import MainContent from './layout/MainContent'
 import FilterMenu from './filters/FilterMenu'
 
 const App = () => {
-  const navbarRef = useRef(null);
-  const [navbarHeight, setNavbarHeight] = useState(0);
+  const navbarRef = useRef(null)
+  const [navbarHeight, setNavbarHeight] = useState(0)
 
   useEffect(() => {
-    const resizeObserver = new ResizeObserver(entries => {
-      setNavbarHeight((entries[0].target as HTMLElement).offsetHeight);
-    });
+    const resizeObserver = new ResizeObserver((entries) => {
+      setNavbarHeight((entries[0].target as HTMLElement).offsetHeight)
+    })
 
     if (navbarRef.current) {
-      resizeObserver.observe(navbarRef.current);
+      resizeObserver.observe(navbarRef.current)
     }
 
     return () => {
       if (navbarRef.current) {
-        resizeObserver.unobserve(navbarRef.current);
+        resizeObserver.unobserve(navbarRef.current)
       }
-    };
-  }, []);
+    }
+  }, [])
 
   return (
     <>
