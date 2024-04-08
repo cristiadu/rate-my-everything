@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { Columns, Hero, Navbar, Container } from 'react-bulma-components'
+import { Columns, Hero, Navbar } from 'react-bulma-components'
 import ResizeObserver from 'resize-observer-polyfill';
 import Header from './layout/Header'
 import Footer from './layout/Footer'
