@@ -74,3 +74,9 @@ app.get('/api/data', async (req: Request, res: Response) => {
     res.status(500).send(error)
   }
 })
+
+const PORT = process.env.PORT || 3000
+
+app.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`)
+})
