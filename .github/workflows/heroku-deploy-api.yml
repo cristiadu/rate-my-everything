@@ -27,7 +27,6 @@ jobs:
             "start": "node index.js"
             },
             "dependencies": {
-            // Your dependencies here
             }
         }' > api/dist/package.json
 
