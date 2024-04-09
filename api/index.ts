@@ -4,7 +4,7 @@ import bodyParser from 'body-parser';
 import admin from 'firebase-admin';
 
 // Initialize Firebase
-var serviceAccount = require('./path/to/your/firebase/key.json');
+var serviceAccount = require('./temp/rate-my-everything-firebase-adminsdk-5nc7w-7e2308c0ed.json');
 
 admin.initializeApp({
   credential: admin.credential.cert(serviceAccount)
@@ -36,6 +36,6 @@ app.get('/api/data', async (req: Request, res: Response) => {
 });
 
 // Start server
-app.listen(3000, () => {
+app.listen(8000, () => {
   console.log('Server is running on port 3000');
 });

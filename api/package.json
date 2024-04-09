@@ -4,6 +4,9 @@
   "description": "Rate My Everything API",
   "main": "index.ts",
   "scripts": {
+    "start": "webpack-dev-server --mode development --open",
+    "deploy": "firebase deploy",
+    "build": "webpack --mode production",
     "test": "npm run test"
   },
   "author": "Cristiano Faustino",
@@ -18,5 +21,10 @@
     "express": "^4.19.2",
     "firebase-admin": "^12.0.0",
     "typescript": "^5.4.4"
+  },
+  "devDependencies": {
+    "webpack-bundle-analyzer": "^4.10.1",
+    "webpack-cli": "^5.1.4",
+    "webpack-dev-server": "^5.0.4"
   }
 }
