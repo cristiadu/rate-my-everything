@@ -14,7 +14,7 @@ jobs:
     - name: Install dependencies
       run: cd api && npm ci
     - name: Build
-      run: cd api && npm run release
+      run: cd api && npm run build
     - name: Deploy to Heroku
       uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
       with:
