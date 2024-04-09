@@ -29,3 +29,20 @@ jobs:
     - run: npm run build
     - run: npm run build-storybook
     - run: npm test
+  buildapi:
+    name: Node.js CI API
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x, 21.x]
+        # See supported Node.js release schedule at https://nodejs.org/en/about/releases/
+    steps:
+    - uses: actions/checkout@v4
+    - name: Use Node.js ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+    - run: cd api && npm install
+    - run: cd api && npm run build
+    - run: cd api && npm test
