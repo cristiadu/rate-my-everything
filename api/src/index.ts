@@ -12,7 +12,7 @@ app.use(cors())
 app.use(bodyParser.json())
 
 @Entity('your_table_name')
-class YourEntity {
+class MyEntity {
   @PrimaryGeneratedColumn()
     id!: number
 
@@ -33,7 +33,7 @@ async function bootstrapData() {
         name: 'default',
         type: 'postgres',
         url: process.env.DATABASE_URL,
-        entities: [YourEntity],
+        entities: [MyEntity],
         synchronize: true, // This will automatically create tables
         ssl: {
           rejectUnauthorized: false,
@@ -44,7 +44,7 @@ async function bootstrapData() {
       connection = connectionManager.get('default')
     }
 
-    const repository = connection.getRepository(YourEntity)
+    const repository = connection.getRepository(MyEntity)
 
     // Insert initial data
     await repository.save([
@@ -66,7 +66,7 @@ bootstrapData()
 // API endpoint
 app.get('/api/data', async (req: Request, res: Response) => {
   try {
-    const repository = connection.getRepository(YourEntity)
+    const repository = connection.getRepository(MyEntity)
     const data = await repository.find()
     res.status(200).send(JSON.stringify(data))
   } catch (error) {
