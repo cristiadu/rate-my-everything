@@ -22,29 +22,29 @@ class MyEntity {
     column2!: number
 }
 
-const DBConnection: DataSource = new DataSource({
-  name: 'default',
-  type: 'postgres',
-  url: process.env.DATABASE_URL,
-  entities: [MyEntity],
-  synchronize: true, // This will automatically create tables
-  ssl: {
-    rejectUnauthorized: false,
-  },
-})
-
-DBConnection.initialize()
-  .then(() => {
-    console.log('Data Source has been initialized!')
-  })
-  .catch((err) => {
-    console.error('Error during Data Source initialization', err)
-  })
-
+let DBConnection: DataSource
 const bootstrapData = async () => {
   try {
-    const repository = DBConnection.getRepository(MyEntity)
+    DBConnection = new DataSource({
+      name: 'default',
+      type: 'postgres',
+      url: process.env.DATABASE_URL,
+      entities: [MyEntity],
+      synchronize: true, // This will automatically create tables
+      ssl: {
+        rejectUnauthorized: false,
+      },
+    })
 
+    DBConnection.initialize()
+      .then(() => {
+        console.log('Data Source has been initialized!')
+      })
+      .catch((err) => {
+        console.error('Error during Data Source initialization', err)
+      })
+
+    const repository = DBConnection.getRepository(MyEntity)
     // Insert initial data
     await repository.save([
       { column1: 'value1', column2: 1 },
