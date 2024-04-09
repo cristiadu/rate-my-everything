@@ -18,6 +18,7 @@ jobs:
     - name: Deploy to Heroku
       run: |
         # Navigate to the directory to deploy
+        cp package.json api/dist/package.json
         cd api/dist
     
         # Initialize a new Git repository and add all files
