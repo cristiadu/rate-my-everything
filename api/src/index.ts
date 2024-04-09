@@ -35,7 +35,9 @@ async function bootstrapData() {
         url: process.env.DATABASE_URL,
         entities: [YourEntity],
         synchronize: true, // This will automatically create tables
-        ssl: true,
+        ssl: {
+          rejectUnauthorized: false,
+        },
       })
       await connection.initialize()
     } else {
