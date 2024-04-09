@@ -36,7 +36,7 @@ const bootstrapData = async () => {
       },
     })
 
-    DBConnection.initialize()
+    await DBConnection.initialize()
       .then(() => {
         console.log('Data Source has been initialized!')
       })
