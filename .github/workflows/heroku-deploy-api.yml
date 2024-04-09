@@ -18,7 +18,7 @@ jobs:
     - name: Deploy to Heroku
       run: |
         # Create a new package.json file with only the necessary scripts and dependencies
-        jq 'del(.scripts.build) | .scripts.start = "node index.js"' package.json > api/dist/package.json
+        jq 'del(.scripts.build) | .scripts.start = "node index.js"' api/package.json > api/dist/package.json
         cd api/dist
     
         # Initialize a new Git repository and add all files
