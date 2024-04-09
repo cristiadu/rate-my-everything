@@ -18,33 +18,7 @@ jobs:
     - name: Deploy to Heroku
       run: |
         # Create a new package.json file with only the necessary scripts and dependencies
-        echo '{
-            "name": "rate-my-everything-api",
-            "module": "commonjs",
-            "version": "1.0.0",
-            "description": "",
-            "main": "index.js",
-            "scripts": {
-            "start": "node index.js"
-            },
-            "dependencies": {
-              "@types/body-parser": "^1.19.5",
-              "@types/cors": "^2.8.17",
-              "@types/express": "^4.17.21",
-              "@types/node": "^20.12.5",
-              "@types/pg": "^8.11.5",
-              "body-parser": "^1.20.2",
-              "cors": "^2.8.5",
-              "express": "^4.19.2",
-              "reflect-metadata": "^0.2.2",
-              "request": "^2.88.2",
-              "typeorm": "^0.3.20"
-            },
-            "devDependencies": {
-              "typescript": "^5.4.4"
-            }
-        }' > api/dist/package.json
-
+        jq 'del(.scripts.build) | .scripts.start = "node index.js"' package.json > api/dist/package.json
         cd api/dist
     
         # Initialize a new Git repository and add all files

@@ -48,6 +48,7 @@ async function bootstrapData() {
       { column1: 'value1', column2: 1 },
       { column1: 'value2', column2: 2 },
       { column1: 'value3', column2: 3 },
+      { column1: 'value4', column2: 4 },
     ])
 
     console.log('Data bootstrapped successfully')
