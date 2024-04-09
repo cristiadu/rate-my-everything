@@ -1,0 +1,24 @@
+name: Deploy to Heroku
+on:
+  push:
+    branches:
+      - main
+    paths:
+    - 'api/**'
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v2
+    - name: Install dependencies
+      run: cd api && npm ci
+    - name: Build
+      run: cd api && npm run build
+    - name: Deploy to Heroku
+      uses: akhileshns/heroku-deploy@v3.12.12 # This is the action
+      with:
+        heroku_api_key: ${{secrets.HEROKU_API_KEY}}
+        heroku_app_name: "rate-my-everything" #Must be unique in Heroku
+        heroku_email: "cristiadu@gmail.com"
+        appdir: "api/dist" # The directory to deploy
