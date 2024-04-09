@@ -17,28 +17,17 @@ jobs:
       run: cd api && npm run build
     - name: Deploy to Heroku
       run: |
-        # Install Heroku CLI
-        curl https://cli-assets.heroku.com/install.sh | sh
-    
-        # Authenticate with Heroku CLI
-        heroku auth:token ${{ secrets.HEROKU_API_KEY }}
-    
         # Navigate to the directory to deploy
         cd api/dist
     
-        # Initialize a new Git repository
+        # Initialize a new Git repository and add all files
         git init
-    
-        # Add all files to the Git repository
         git add .
     
         # Commit the files
         git commit -m "Deploy"
     
-        # Add the Heroku app as a remote
-        git remote add heroku https://git.heroku.com/rate-my-everything.git
-    
-        # Push the commit to Heroku
-        git push -f heroku master
+        # Push the commit to a new branch in the same repository
+        git push "https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:api-live -f
       env:
-        HEROKU_API_KEY: ${{ secrets.HEROKU_API_KEY }}
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
