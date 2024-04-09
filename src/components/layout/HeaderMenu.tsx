@@ -9,10 +9,10 @@ const HeaderMenu = () => {
       <Navbar.Brand>
         <Navbar.Item href="#">
           <img
-            alt="Bulma: a modern CSS framework based on Flexbox"
+            alt="Icon"
             height="28"
-            src="https://bulma.io/images/bulma-logo.png"
-            width="112"
+            src="./favicon.ico"
+            width="28"
           />
         </Navbar.Item>
         <Navbar.Burger onClick={() => setActive(!isActive)} />
