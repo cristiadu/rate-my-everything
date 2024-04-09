@@ -22,23 +22,28 @@ class MyEntity {
     column2!: number
 }
 
-let connection: DataSource
+const DBConnection: DataSource = new DataSource({
+  name: 'default',
+  type: 'postgres',
+  url: process.env.DATABASE_URL,
+  entities: [MyEntity],
+  synchronize: true, // This will automatically create tables
+  ssl: {
+    rejectUnauthorized: false,
+  },
+})
 
-async function bootstrapData() {
+DBConnection.initialize()
+  .then(() => {
+    console.log('Data Source has been initialized!')
+  })
+  .catch((err) => {
+    console.error('Error during Data Source initialization', err)
+  })
+
+const bootstrapData = async () => {
   try {
-    connection = new DataSource({
-      name: 'default',
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      entities: [MyEntity],
-      synchronize: true, // This will automatically create tables
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    })
-    await connection.initialize()
-
-    const repository = connection.getRepository(MyEntity)
+    const repository = DBConnection.getRepository(MyEntity)
 
     // Insert initial data
     await repository.save([
@@ -54,13 +59,12 @@ async function bootstrapData() {
     console.error('Error bootstrapping data:', error)
   }
 }
-
 bootstrapData()
 
 // API endpoint
 app.get('/api/data', async (req: Request, res: Response) => {
   try {
-    const repository = connection.getRepository(MyEntity)
+    const repository = DBConnection.getRepository(MyEntity)
     const data = await repository.find()
     res.status(200).send(JSON.stringify(data))
   } catch (error) {
@@ -70,7 +74,6 @@ app.get('/api/data', async (req: Request, res: Response) => {
 })
 
 const PORT = process.env.PORT || 3000
-
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`)
 })
