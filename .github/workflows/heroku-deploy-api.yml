@@ -39,9 +39,8 @@ jobs:
                 "pg": "^8.11.5",
                 "request": "^2.88.2"
               },
-              "devDependencies": {
+            "devDependencies": {
                 "typescript": "^5.4.4"
-              }
             }
         }' > api/dist/package.json
 
