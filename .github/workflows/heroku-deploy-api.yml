@@ -23,6 +23,7 @@ jobs:
         # Initialize a new Git repository and add all files
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git init
         git add .
     
         # Commit the files
