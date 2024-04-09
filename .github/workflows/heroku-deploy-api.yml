@@ -20,7 +20,7 @@ jobs:
       with:
         heroku_api_key: ${{secrets.HEROKU_API_KEY}}
         heroku_app_name: "rate-my-everything" #Must be unique in Heroku
-        branch: "api-live"
+        branch: "main"
         remote_branch: "api-live"
         heroku_email: "cristiadu@gmail.com"
         appdir: "api/dist" # The directory to deploy
