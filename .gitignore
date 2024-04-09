@@ -32,6 +32,6 @@ storybook-static/
 
 # Dist folder
 dist/
-temp
+temp/
 
 *storybook.log
