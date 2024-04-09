@@ -1,6 +1,7 @@
 import 'reflect-metadata'
 import {
-  createConnection, getConnection, Entity, PrimaryGeneratedColumn, Column,
+  Entity, PrimaryGeneratedColumn, Column, getConnectionManager,
+  DataSource,
 } from 'typeorm'
 import express, { Request, Response } from 'express'
 import cors from 'cors'
@@ -22,14 +23,23 @@ class YourEntity {
     column2!: number
 }
 
+const connectionManager = getConnectionManager()
+let connection: DataSource
+
 async function bootstrapData() {
   try {
-    const connection = await createConnection({
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      entities: [YourEntity],
-      synchronize: true, // This will automatically create tables
-    })
+    if (!connectionManager.has('default')) {
+      connection = connectionManager.create({
+        name: 'default',
+        type: 'postgres',
+        url: process.env.DATABASE_URL,
+        entities: [YourEntity],
+        synchronize: true, // This will automatically create tables
+      })
+      await connection.initialize()
+    } else {
+      connection = connectionManager.get('default')
+    }
 
     const repository = connection.getRepository(YourEntity)
 
@@ -51,7 +61,6 @@ bootstrapData()
 // API endpoint
 app.get('/api/data', async (req: Request, res: Response) => {
   try {
-    const connection = getConnection()
     const repository = connection.getRepository(YourEntity)
     const data = await repository.find()
     res.status(200).send(JSON.stringify(data))
