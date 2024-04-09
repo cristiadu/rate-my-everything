@@ -23,13 +23,12 @@ jobs:
         # Initialize a new Git repository and add all files
         git config --global user.name "github-actions[bot]"
         git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-        git init
         git add .
     
         # Commit the files
         git commit -m "Deploy"
     
         # Push the commit to a new branch in the same repository
-        git push "https://${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:api-live -f
+        git push "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}" HEAD:api-live -f
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
