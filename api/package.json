@@ -2,11 +2,12 @@
   "name": "rate-my-everything-api",
   "version": "1.0.0",
   "description": "Rate My Everything API",
-  "main": "index.ts",
+  "main": "dist/bundle.js",
   "scripts": {
-    "start": "webpack-dev-server --mode development --open",
-    "deploy": "firebase deploy",
-    "build": "webpack --mode production",
+    "start": "npm run build && firebase emulators:start",
+    "build": "webpack --mode development",
+    "release": "webpack --mode production",
+    "deploy": "npm run release && firebase deploy",
     "test": "npm run test"
   },
   "author": "Cristiano Faustino",
@@ -20,9 +21,13 @@
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "firebase-admin": "^12.0.0",
+    "firebase-functions": "^4.9.0",
+    "request": "^2.88.2",
     "typescript": "^5.4.4"
   },
   "devDependencies": {
+    "copy-webpack-plugin": "^12.0.2",
+    "html-webpack-plugin": "^5.6.0",
     "webpack-bundle-analyzer": "^4.10.1",
     "webpack-cli": "^5.1.4",
     "webpack-dev-server": "^5.0.4"

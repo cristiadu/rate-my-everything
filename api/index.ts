@@ -1,3 +1,4 @@
+import * as functions from 'firebase-functions';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
 import bodyParser from 'body-parser';
@@ -19,7 +20,7 @@ app.use(cors());
 app.use(bodyParser.json());
 
 // API endpoint
-app.get('/api/data', async (req: Request, res: Response) => {
+app.get('/data', async (req: Request, res: Response) => {
   try {
     let snapshot = await db.collection('your-collection-name').get();
     let data: any[] = [];
@@ -35,7 +36,5 @@ app.get('/api/data', async (req: Request, res: Response) => {
   }
 });
 
-// Start server
-app.listen(8000, () => {
-  console.log('Server is running on port 3000');
-});
+// Export the API as a function
+exports.api = functions.https.onRequest(app);
