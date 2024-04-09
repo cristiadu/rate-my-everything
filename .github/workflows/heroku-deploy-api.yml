@@ -17,16 +17,18 @@ jobs:
       run: cd api && npm run build
     - name: Deploy to Heroku
       run: |
-        # Navigate to the directory to deploy
         # Create a new package.json file with only the necessary scripts and dependencies
         echo '{
-        "name": "rate-my-everything-api",
-        "version": "1.0.0",
-        "description": "",
-        "main": "index.js",
-        "scripts": {
+            "name": "my-app",
+            "version": "1.0.0",
+            "description": "",
+            "main": "index.js",
+            "scripts": {
             "start": "node index.js"
-        },
+            },
+            "dependencies": {
+            // Your dependencies here
+            }
         }' > api/dist/package.json
 
         cd api/dist

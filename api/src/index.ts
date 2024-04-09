@@ -26,7 +26,7 @@ app.get('/api/data', async (req: Request, res: Response) => {
     client.release()
     res.status(200).send(JSON.stringify(data))
   } catch (error) {
-    console.error(error)
+    console.error(error) // a
     res.status(500).send(error)
   }
 })
