@@ -10,16 +10,16 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
-@Entity(name = 'your_table_name')
+@Entity('your_table_name')
 class YourEntity {
   @PrimaryGeneratedColumn()
-    id: number
+    id!: number
 
   @Column()
-    column1: string
+    column1!: string
 
   @Column()
-    column2: number
+    column2!: number
 }
 
 async function bootstrapData() {
