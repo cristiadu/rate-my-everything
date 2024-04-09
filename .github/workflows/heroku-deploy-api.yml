@@ -18,6 +18,8 @@ jobs:
     - name: Deploy to Heroku
       run: |
         # Navigate to the directory to deploy
+        heroku config:set NPM_CONFIG_PRODUCTION=false --app rate-my-everything
+
         cp api/package.json api/dist/package.json
         cd api/dist
     
