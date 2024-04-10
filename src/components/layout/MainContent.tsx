@@ -20,14 +20,14 @@ const rankings: RankingItem[] = [
     item_name: 'Harry Potter and the Philosopher\'s Stone',
     item_id: 2,
     rating: 4.7,
-    item_img_url: 'https://images-na.ssl-images-amazon.com/images/I/51UoqRAxwEL._SX331_BO1,204,203,200_.jpg'
+    item_img_url: 'https://images-na.ssl-images-amazon.com/images/I/51UoqRAxwEL._SX331_BO1,204,203,200_.jpg',
   },
   {
     category: 'Movies',
     item_name: 'The Shawshank Redemption',
     item_id: 3,
     rating: 4.9,
-    item_img_url: 'https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg'
+    item_img_url: 'https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg',
   },
   // Add more example data as needed
 ]
