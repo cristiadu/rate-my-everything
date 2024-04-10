@@ -15,6 +15,9 @@ export default class RatedItemController {
   public initializeRoutes() {
     this.router.get('/', this.getAll)
     this.router.get('/:id', this.getById)
+    this.router.post('/', this.create)
+    this.router.put('/:id', this.update)
+    this.router.delete('/:id', this.delete)
     // Add more routes as needed
   }
 
@@ -36,6 +39,40 @@ export default class RatedItemController {
       } else {
         res.status(404).send('Data not found')
       }
+    } catch (error) {
+      console.error(error)
+      res.status(500).send(error)
+    }
+  }
+
+  public async create(req: Request, res: Response) {
+    try {
+      const data = await this.ratedItemService.create(req.body)
+      res.status(201).send(JSON.stringify(data))
+    } catch (error) {
+      console.error(error)
+      res.status(500).send(error)
+    }
+  }
+
+  public async update(req: Request, res: Response) {
+    try {
+      const data = await this.ratedItemService.update(req.params.id, req.body)
+      if (data) {
+        res.status(200).send(JSON.stringify(data))
+      } else {
+        res.status(404).send('Data not found')
+      }
+    } catch (error) {
+      console.error(error)
+      res.status(500).send(error)
+    }
+  }
+
+  public async delete(req: Request, res: Response) {
+    try {
+      await this.ratedItemService.delete(req.params.id)
+      res.status(204).send()
     } catch (error) {
       console.error(error)
       res.status(500).send(error)
