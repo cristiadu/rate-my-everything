@@ -30,7 +30,7 @@ const OverallRankings: React.FC<OverallRankingsProps> = ({ rankings }) => (
         {rankings.sort((a, b) => b.rating - a.rating).map((ranking) => (
           <tr key={ranking.item_id}>
             <td>
-              <Image size={64} alt="64x64" src={ranking.item_img_url} />
+              <Image size="square" alt="64x64" src={ranking.item_img_url} />
             </td>
             <td><strong>{ranking.item_name}</strong></td>
             <td>{ranking.category}</td>

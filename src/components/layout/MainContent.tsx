@@ -1,5 +1,5 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import { Content } from 'react-bulma-components'
 import Index from '../index/Index'
 import OverallRankings, { RankingItem } from '../rankings/OverallRankings'
