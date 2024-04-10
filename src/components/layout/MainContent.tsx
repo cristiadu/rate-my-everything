@@ -37,6 +37,7 @@ const MainContent = () => (
     <Router>
       <Routes>
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
+        <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/*" element={<Index />} />
         {/* Add other routes as needed */}
       </Routes>
