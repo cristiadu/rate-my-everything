@@ -45,6 +45,12 @@ const bootstrapData = async () => {
         user_id: 1,
         notes: 'Great movie!',
       },
+      {
+        item_id: 3,
+        rating: 3.0,
+        user_id: 2,
+        notes: 'Great movie!',
+      },
     ])
 
     console.log('Data bootstrapped successfully')

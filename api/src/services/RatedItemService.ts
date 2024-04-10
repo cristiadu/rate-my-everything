@@ -30,7 +30,6 @@ class RatedItemService {
 
   // Delete a RatedItem
   public async delete(id: number): Promise<void> {
-    // Implement the logic to delete a RatedItem
     const ratedItemRepository = DBConnection.getRepository(RatedItem)
     const ratedItem = await ratedItemRepository.findOne({ where: { id } })
     if (ratedItem) {
@@ -40,14 +39,12 @@ class RatedItemService {
 
   // get all RatedItems
   public async getAll(): Promise<RatedItem[]> {
-    // Implement the logic to get all RatedItems
     const ratedItemRepository = DBConnection.getRepository(RatedItem)
     return ratedItemRepository.find()
   }
 
   // get all RatedItems by user_id
   public async getAllByUserId(user_id: number): Promise<RatedItem[]> {
-    // Implement the logic to get all RatedItems by user_id
     const ratedItemRepository = DBConnection.getRepository(RatedItem)
     return ratedItemRepository.find({ where: { user_id } })
   }
