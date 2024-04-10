@@ -1,4 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm'
+import { Min, Max } from 'class-validator'
 
 @Entity()
 export default class RatedItem {
@@ -8,7 +9,9 @@ export default class RatedItem {
     @Column()
       item_id!: number
 
-    @Column()
+    @Column({ type: 'decimal', precision: 2, scale: 2 })
+    @Min(0.0)
+    @Max(10.0)
       rating!: number
 
     @Column()
