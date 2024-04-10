@@ -7,9 +7,9 @@ export default class RatedItemController {
   private ratedItemService = new RatedItemService()
 
   constructor() {
-    this.initializeRoutes()
     this.getAll = this.getAll.bind(this)
     this.getById = this.getById.bind(this)
+    this.initializeRoutes()
   }
 
   public initializeRoutes() {
