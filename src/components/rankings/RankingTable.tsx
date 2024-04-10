@@ -18,7 +18,7 @@ const RankingTable: React.FC<RankingTableProps> = ({ rankings }) => (
       </tr>
     </thead>
     <tbody>
-      {rankings.sort((a, b) => b.rating - a.rating).map((ranking) => (
+      {rankings.map((ranking) => (
         <RankingTableItem key={ranking.item_id} ranking={ranking} />
       ))}
     </tbody>

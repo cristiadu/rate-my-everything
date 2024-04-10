@@ -1,5 +1,5 @@
 import React from 'react'
-import { HashRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Content } from 'react-bulma-components'
 import Index from '../index/Index'
 import OverallRankings from '../rankings/OverallRankings'
@@ -12,7 +12,8 @@ const rankings: RankingItem[] = [
     item_name: 'iPhone 12',
     item_id: 1,
     rating: 4.5,
-    item_img_url: 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-blue-select-2020?wid=940&hei=1112&fmt=png-alpha&qlt=80&.v=1604343704000'
+    // eslint-disable-next-line max-len
+    item_img_url: 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-blue-select-2020?wid=940&hei=1112&fmt=png-alpha&qlt=80&.v=1604343704000',
   },
   {
     category: 'Books',
@@ -36,7 +37,6 @@ const MainContent = () => (
     <Router>
       <Routes>
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
-        <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/*" element={<Index />} />
         {/* Add other routes as needed */}
       </Routes>
