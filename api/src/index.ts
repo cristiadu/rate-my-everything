@@ -1,6 +1,6 @@
 import 'reflect-metadata'
-import { DataSource } from 'typeorm'
-import express, { Request, Response } from 'express'
+import { DataSource, getConnection } from 'typeorm'
+import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import RatedItem from './models/RatedItem'
@@ -10,29 +10,9 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
-export let DBConnection: DataSource
 const bootstrapData = async () => {
   try {
-    DBConnection = new DataSource({
-      name: 'default',
-      type: 'postgres',
-      url: process.env.DATABASE_URL,
-      entities: [RatedItem],
-      synchronize: true, // This will automatically create tables
-      ssl: {
-        rejectUnauthorized: false,
-      },
-    })
-
-    await DBConnection.initialize()
-      .then(() => {
-        console.log('Data Source has been initialized!')
-      })
-      .catch((err) => {
-        console.error('Error during Data Source initialization', err)
-      })
-
-    const repository = DBConnection.getRepository(RatedItem)
+    const repository = getConnection().getRepository(RatedItem)
     // Insert initial data
     await repository.save([
       {
@@ -60,7 +40,27 @@ const bootstrapData = async () => {
     console.error('Error bootstrapping data:', error)
   }
 }
-bootstrapData()
+
+// eslint-disable-next-line import/prefer-default-export
+export const DBConnection: DataSource = new DataSource({
+  name: 'default',
+  type: 'postgres',
+  url: process.env.DATABASE_URL,
+  entities: [RatedItem],
+  synchronize: true, // This will automatically create tables
+  ssl: {
+    rejectUnauthorized: false,
+  },
+})
+
+DBConnection.initialize()
+  .then(() => {
+    console.log('Data Source has been initialized!')
+    bootstrapData()
+  })
+  .catch((err) => {
+    console.error('Error during Data Source initialization', err)
+  })
 
 // API endpoint
 const ratedItemController = new RatedItemController()
