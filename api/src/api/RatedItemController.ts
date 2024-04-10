@@ -14,6 +14,7 @@ export default class RatedItemController {
 
   public initializeRoutes() {
     this.router.get('/', this.getAll)
+    this.router.get('/user/:user_id', this.getAllByUserId)
     this.router.get('/:id', this.getById)
     this.router.post('/', this.create)
     this.router.put('/:id', this.update)
@@ -31,9 +32,19 @@ export default class RatedItemController {
     }
   }
 
+  public async getAllByUserId(req: Request, res: Response) {
+    try {
+      const data = await this.ratedItemService.getAllByUserId(parseInt(req.params.user_id, 10))
+      res.status(200).send(JSON.stringify(data))
+    } catch (error) {
+      console.error(error)
+      res.status(500).send(error)
+    }
+  }
+
   public async getById(req: Request, res: Response) {
     try {
-      const data = await this.ratedItemService.get(req.params.id)
+      const data = await this.ratedItemService.get(parseInt(req.params.id, 10))
       if (data) {
         res.status(200).send(JSON.stringify(data))
       } else {
@@ -57,7 +68,7 @@ export default class RatedItemController {
 
   public async update(req: Request, res: Response) {
     try {
-      const data = await this.ratedItemService.update(req.params.id, req.body)
+      const data = await this.ratedItemService.update(parseInt(req.params.id, 10), req.body)
       if (data) {
         res.status(200).send(JSON.stringify(data))
       } else {
@@ -71,7 +82,7 @@ export default class RatedItemController {
 
   public async delete(req: Request, res: Response) {
     try {
-      await this.ratedItemService.delete(req.params.id)
+      await this.ratedItemService.delete(parseInt(req.params.id, 10))
       res.status(204).send()
     } catch (error) {
       console.error(error)

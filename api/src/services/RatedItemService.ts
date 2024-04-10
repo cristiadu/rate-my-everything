@@ -11,16 +11,16 @@ class RatedItemService {
   }
 
   // Read a RatedItem by id
-  public async get(id: string): Promise<RatedItem | null> {
+  public async get(id: number): Promise<RatedItem | null> {
     const ratedItemRepository = DBConnection.getRepository(RatedItem)
-    const ratedItem = await ratedItemRepository.findOne({ where: { id: parseInt(id, 10) } })
+    const ratedItem = await ratedItemRepository.findOne({ where: { id } })
     return ratedItem
   }
 
   // Update a RatedItem
-  public async update(id: string, ratedItem: RatedItem): Promise<RatedItem | null> {
+  public async update(id: number, ratedItem: RatedItem): Promise<RatedItem | null> {
     const ratedItemRepository = DBConnection.getRepository(RatedItem)
-    const updatedRatedItem = await ratedItemRepository.findOne({ where: { id: parseInt(id, 10) } })
+    const updatedRatedItem = await ratedItemRepository.findOne({ where: { id } })
     if (updatedRatedItem) {
       ratedItemRepository.merge(updatedRatedItem, ratedItem)
       return ratedItemRepository.save(updatedRatedItem)
@@ -29,10 +29,10 @@ class RatedItemService {
   }
 
   // Delete a RatedItem
-  public async delete(id: string): Promise<void> {
+  public async delete(id: number): Promise<void> {
     // Implement the logic to delete a RatedItem
     const ratedItemRepository = DBConnection.getRepository(RatedItem)
-    const ratedItem = await ratedItemRepository.findOne({ where: { id: parseInt(id, 10) } })
+    const ratedItem = await ratedItemRepository.findOne({ where: { id } })
     if (ratedItem) {
       await ratedItemRepository.remove(ratedItem)
     }
@@ -43,6 +43,13 @@ class RatedItemService {
     // Implement the logic to get all RatedItems
     const ratedItemRepository = DBConnection.getRepository(RatedItem)
     return ratedItemRepository.find()
+  }
+
+  // get all RatedItems by user_id
+  public async getAllByUserId(user_id: number): Promise<RatedItem[]> {
+    // Implement the logic to get all RatedItems by user_id
+    const ratedItemRepository = DBConnection.getRepository(RatedItem)
+    return ratedItemRepository.find({ where: { user_id } })
   }
 }
 
