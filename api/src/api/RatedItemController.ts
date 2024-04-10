@@ -8,7 +8,11 @@ export default class RatedItemController {
 
   constructor() {
     this.getAll = this.getAll.bind(this)
+    this.getAllByUserId = this.getAllByUserId.bind(this)
     this.getById = this.getById.bind(this)
+    this.create = this.create.bind(this)
+    this.update = this.update.bind(this)
+    this.delete = this.delete.bind(this)
     this.initializeRoutes()
   }
 
