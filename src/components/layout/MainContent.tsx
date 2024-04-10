@@ -2,7 +2,8 @@ import React from 'react'
 import { HashRouter as Router, Routes, Route } from 'react-router-dom'
 import { Content } from 'react-bulma-components'
 import Index from '../index/Index'
-import OverallRankings, { RankingItem } from '../rankings/OverallRankings'
+import OverallRankings from '../rankings/OverallRankings'
+import { RankingItem } from '../types'
 
 // populate with example data
 const rankings: RankingItem[] = [
@@ -35,6 +36,7 @@ const MainContent = () => (
     <Router>
       <Routes>
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
+        <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/*" element={<Index />} />
         {/* Add other routes as needed */}
       </Routes>
