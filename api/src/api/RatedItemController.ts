@@ -8,6 +8,8 @@ export default class RatedItemController {
 
   constructor() {
     this.initializeRoutes()
+    this.getAll = this.getAll.bind(this)
+    this.getById = this.getById.bind(this)
   }
 
   public initializeRoutes() {
