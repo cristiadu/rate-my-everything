@@ -1,5 +1,5 @@
 import 'reflect-metadata'
-import { DataSource, getConnection } from 'typeorm'
+import { DataSource } from 'typeorm'
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
@@ -10,9 +10,21 @@ const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
+// eslint-disable-next-line import/prefer-default-export
+export const DBConnection: DataSource = new DataSource({
+  name: 'default',
+  type: 'postgres',
+  url: process.env.DATABASE_URL,
+  entities: [RatedItem],
+  synchronize: true, // This will automatically create tables
+  ssl: {
+    rejectUnauthorized: false,
+  },
+})
+
 const bootstrapData = async () => {
   try {
-    const repository = getConnection().getRepository(RatedItem)
+    const repository = DBConnection.getRepository(RatedItem)
     // Insert initial data
     await repository.save([
       {
@@ -40,18 +52,6 @@ const bootstrapData = async () => {
     console.error('Error bootstrapping data:', error)
   }
 }
-
-// eslint-disable-next-line import/prefer-default-export
-export const DBConnection: DataSource = new DataSource({
-  name: 'default',
-  type: 'postgres',
-  url: process.env.DATABASE_URL,
-  entities: [RatedItem],
-  synchronize: true, // This will automatically create tables
-  ssl: {
-    rejectUnauthorized: false,
-  },
-})
 
 DBConnection.initialize()
   .then(() => {
