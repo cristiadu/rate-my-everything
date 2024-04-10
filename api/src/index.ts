@@ -1,35 +1,23 @@
 import 'reflect-metadata'
-import {
-  Entity, PrimaryGeneratedColumn, Column, DataSource,
-} from 'typeorm'
+import { DataSource } from 'typeorm'
 import express, { Request, Response } from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
+import RatedItem from './models/RatedItem'
+import RatedItemController from './api/RatedItemController'
 
 const app = express()
 app.use(cors())
 app.use(bodyParser.json())
 
-@Entity()
-class MyEntity {
-  @PrimaryGeneratedColumn()
-    id!: number
-
-  @Column()
-    column1!: string
-
-  @Column()
-    column2!: number
-}
-
-let DBConnection: DataSource
+export let DBConnection: DataSource
 const bootstrapData = async () => {
   try {
     DBConnection = new DataSource({
       name: 'default',
       type: 'postgres',
       url: process.env.DATABASE_URL,
-      entities: [MyEntity],
+      entities: [RatedItem],
       synchronize: true, // This will automatically create tables
       ssl: {
         rejectUnauthorized: false,
@@ -44,14 +32,27 @@ const bootstrapData = async () => {
         console.error('Error during Data Source initialization', err)
       })
 
-    const repository = DBConnection.getRepository(MyEntity)
+    const repository = DBConnection.getRepository(RatedItem)
     // Insert initial data
     await repository.save([
-      { column1: 'value1', column2: 1 },
-      { column1: 'value2', column2: 2 },
-      { column1: 'value3', column2: 3 },
-      { column1: 'value4', column2: 4 },
-      { column1: 'value5', column2: 5 },
+      {
+        item_id: 1,
+        rating: 4.5,
+        user_id: 1,
+        notes: 'Great phone!',
+      },
+      {
+        item_id: 2,
+        rating: 4.7,
+        user_id: 1,
+        notes: 'Great book!',
+      },
+      {
+        item_id: 3,
+        rating: 4.9,
+        user_id: 1,
+        notes: 'Great movie!',
+      },
     ])
 
     console.log('Data bootstrapped successfully')
@@ -62,16 +63,8 @@ const bootstrapData = async () => {
 bootstrapData()
 
 // API endpoint
-app.get('/api/data', async (req: Request, res: Response) => {
-  try {
-    const repository = DBConnection.getRepository(MyEntity)
-    const data = await repository.find()
-    res.status(200).send(JSON.stringify(data))
-  } catch (error) {
-    console.error(error)
-    res.status(500).send(error)
-  }
-})
+const ratedItemController = new RatedItemController()
+app.use('/api/ratings', ratedItemController.router)
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
