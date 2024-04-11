@@ -3,50 +3,50 @@ import RatedItem from '../models/RatedItem'
 
 // Method for CRUD of a RatedItem, which is a model for a rated item.
 class RatedItemService {
+  private ratedItemRepository
+
+  constructor() {
+    this.ratedItemRepository = DBConnection.getRepository(RatedItem);
+  }
+
   // Create a new RatedItem
   public async create(ratedItem: RatedItem): Promise<RatedItem> {
-    const ratedItemRepository = DBConnection.getRepository(RatedItem)
-    const newRatedItem = ratedItemRepository.create(ratedItem)
-    return ratedItemRepository.save(newRatedItem)
+    const newRatedItem = this.ratedItemRepository.create(ratedItem)
+    return this.ratedItemRepository.save(newRatedItem)
   }
 
   // Read a RatedItem by id
   public async get(id: number): Promise<RatedItem | null> {
-    const ratedItemRepository = DBConnection.getRepository(RatedItem)
-    const ratedItem = await ratedItemRepository.findOne({ where: { id } })
+    const ratedItem = await this.ratedItemRepository.findOne({ where: { id } })
     return ratedItem
   }
 
   // Update a RatedItem
   public async update(id: number, ratedItem: RatedItem): Promise<RatedItem | null> {
-    const ratedItemRepository = DBConnection.getRepository(RatedItem)
-    const updatedRatedItem = await ratedItemRepository.findOne({ where: { id } })
+    const updatedRatedItem = await this.get(id)
     if (updatedRatedItem) {
-      ratedItemRepository.merge(updatedRatedItem, ratedItem)
-      return ratedItemRepository.save(updatedRatedItem)
+      this.ratedItemRepository.merge(updatedRatedItem, ratedItem)
+      return this.ratedItemRepository.save(updatedRatedItem)
     }
     return null
   }
 
   // Delete a RatedItem
   public async delete(id: number): Promise<void> {
-    const ratedItemRepository = DBConnection.getRepository(RatedItem)
-    const ratedItem = await ratedItemRepository.findOne({ where: { id } })
+    const ratedItem = await this.get(id)
     if (ratedItem) {
-      await ratedItemRepository.remove(ratedItem)
+      await this.ratedItemRepository.remove(ratedItem)
     }
   }
 
   // get all RatedItems
   public async getAll(): Promise<RatedItem[]> {
-    const ratedItemRepository = DBConnection.getRepository(RatedItem)
-    return ratedItemRepository.find()
+    return this.ratedItemRepository.find()
   }
 
   // get all RatedItems by user_id
   public async getAllByUserId(user_id: number): Promise<RatedItem[]> {
-    const ratedItemRepository = DBConnection.getRepository(RatedItem)
-    return ratedItemRepository.find({ where: { user_id } })
+    return this.ratedItemRepository.find({ where: { user: { id: user_id } } })
   }
 }
 

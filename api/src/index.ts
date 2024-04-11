@@ -5,6 +5,7 @@ import cors from 'cors'
 import bodyParser from 'body-parser'
 import RatedItem from './models/RatedItem'
 import RatedItemController from './api/RatedItemController'
+import UserController from './api/UserController'
 
 const app = express()
 app.use(cors())
@@ -70,7 +71,9 @@ DBConnection.initialize()
 
 // API endpoint
 const ratedItemController = new RatedItemController()
+const userController = new UserController()
 app.use('/api/ratings', ratedItemController.router)
+app.use('/api/users', userController.router)
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
