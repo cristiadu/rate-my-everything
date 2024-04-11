@@ -15,9 +15,9 @@ export default class RatedItem {
   @Max(10.0)
   rating!: number
 
-  @ManyToOne(() => User, user => user.ratedItems)
+  @ManyToOne(() => User, (user) => user.ratedItems)
   @JoinColumn({ name: 'user_id' }) // This line names the column as 'user_id'
-  user!: User;
+  user!: User
 
   @Column({ nullable: true })
   notes!: string
