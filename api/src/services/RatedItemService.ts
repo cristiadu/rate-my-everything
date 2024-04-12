@@ -6,7 +6,7 @@ class RatedItemService {
   private ratedItemRepository
 
   constructor() {
-    this.ratedItemRepository = DBConnection.getRepository(RatedItem);
+    this.ratedItemRepository = DBConnection.getRepository(RatedItem)
   }
 
   // Create a new RatedItem

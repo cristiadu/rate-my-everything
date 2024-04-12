@@ -1,20 +1,20 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "typeorm";
-import RatedItem from "./RatedItem";
+import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "typeorm"
+import RatedItem from "./RatedItem"
 
 @Entity()
 export class User extends BaseEntity {
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: number
 
     @Column()
-    username!: string;
+    username!: string
 
     @Column()
-    email!: string;
+    email!: string
 
     @Column()
-    password!: string;
+    password!: string
 
-    @OneToMany(() => RatedItem, ratedItem => ratedItem.user)
-    ratedItems!: RatedItem[];
+    @OneToMany(() => RatedItem, (ratedItem) => ratedItem.user)
+    ratedItems!: RatedItem[]
 }
