@@ -1,4 +1,4 @@
-import { Column, Entity, OneToMany, PrimaryGeneratedColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
 import RatedItem from "./RatedItem";
 import ItemType from "./ItemType";
 import CategoryItem from "./CategoryItem";
@@ -14,7 +14,8 @@ export default class Item {
     @Column()
     description!: string;
 
-    @Column()
+    @ManyToOne(() => ItemType, type => type.items)
+    @JoinColumn({ name: 'type' }) // This line names the column as 'type'
     type!: ItemType;
 
     @OneToMany(() => RatedItem, ratedItem => ratedItem.item)
