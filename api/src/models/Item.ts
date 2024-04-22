@@ -1,26 +1,26 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import RatedItem from "./RatedItem";
-import ItemType from "./ItemType";
-import CategoryItem from "./CategoryItem";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn } from "typeorm"
+import RatedItem from "./RatedItem"
+import ItemType from "./ItemType"
+import CategoryItem from "./CategoryItem"
 
 @Entity()
 export default class Item {
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: number
 
     @Column()
-    name!: string;
+    name!: string
 
     @Column()
-    description!: string;
+    description!: string
 
-    @ManyToOne(() => ItemType, type => type.items)
+    @ManyToOne(() => ItemType, (type) => type.items)
     @JoinColumn({ name: 'type' }) // This line names the column as 'type'
-    type!: ItemType;
+    type!: ItemType
 
-    @OneToMany(() => RatedItem, ratedItem => ratedItem.item)
-    ratings!: RatedItem[];
+    @OneToMany(() => RatedItem, (ratedItem) => ratedItem.item)
+    ratings!: RatedItem[]
 
-    @OneToMany(() => CategoryItem, categoryItem => categoryItem.item)
-    categories!: CategoryItem[];
+    @OneToMany(() => CategoryItem, (categoryItem) => categoryItem.item)
+    categories!: CategoryItem[]
 }
