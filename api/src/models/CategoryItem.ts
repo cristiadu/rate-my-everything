@@ -9,13 +9,13 @@ export default class CategoryItem {
   @PrimaryGeneratedColumn()
   id!: number
 
-  @ManyToOne(() => Item, item => item.categories)
+  @ManyToOne(() => Item, (item) => item.categories)
   @JoinColumn({ name: 'item_id' }) // This line names the column as 'item_id '
   item!: Item
 
-  @ManyToOne(() => Category, category => category.items)
+  @ManyToOne(() => Category, (category) => category.items)
   @JoinColumn({ name: 'category_id' }) // This line names the column as 'user_id'
-  category!: Category;
+  category!: Category
 
   @Column()
   value!: string

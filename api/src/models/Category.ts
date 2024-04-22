@@ -1,21 +1,21 @@
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import ItemType from "./ItemType";
-import CategoryItem from "./CategoryItem";
+import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm"
+import ItemType from "./ItemType"
+import CategoryItem from "./CategoryItem"
 
 @Entity()
 export default class Category {
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: number
 
     @Column()
-    name!: string;
+    name!: string
 
     @Column()
-    valueType!: string;
+    valueType!: string
 
-    @ManyToMany(() => ItemType, itemType => itemType.categories)
-    itemTypes!: ItemType[];
-    
-    @OneToMany(() => CategoryItem, categoryItem => categoryItem.item)
-    items!: CategoryItem[];
+    @ManyToMany(() => ItemType, (itemType) => itemType.categories)
+    itemTypes!: ItemType[]
+
+    @OneToMany(() => CategoryItem, (categoryItem) => categoryItem.item)
+    items!: CategoryItem[]
 }

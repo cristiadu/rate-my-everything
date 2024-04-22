@@ -8,7 +8,7 @@ export default class RatedItem {
   @PrimaryGeneratedColumn()
   id!: number
 
-  @ManyToOne(() => Item, item => item.ratings)
+  @ManyToOne(() => Item, (item) => item.ratings)
   @JoinColumn({ name: 'item_id' }) // This line names the column as 'item_id '
   item!: Item
 
