@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "t
 import RatedItem from "./RatedItem"
 
 @Entity()
-export class User extends BaseEntity {
+export default class User {
     @PrimaryGeneratedColumn()
     id!: number
 

@@ -1,5 +1,5 @@
 import { DBConnection } from '..'
-import { User } from '../models/User'
+import User from '../models/User'
 
 // create user service based on RatedItemService.ts in this directory
 export class UserService {

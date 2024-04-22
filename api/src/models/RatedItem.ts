@@ -1,14 +1,16 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn } from 'typeorm'
 import { Min, Max } from 'class-validator'
-import { User } from './User'
+import User from './User'
+import Item from './Item'
 
 @Entity()
 export default class RatedItem {
   @PrimaryGeneratedColumn()
   id!: number
 
-  @Column()
-  item_id!: number
+  @ManyToOne(() => Item, item => item.ratings)
+  @JoinColumn({ name: 'item_id' }) // This line names the column as 'item_id '
+  item!: Item
 
   @Column({ type: 'decimal', precision: 4, scale: 2 })
   @Min(0.0)
