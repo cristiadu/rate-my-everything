@@ -3,7 +3,14 @@ import { DataSource } from 'typeorm'
 import express from 'express'
 import cors from 'cors'
 import bodyParser from 'body-parser'
+
 import RatedItem from './models/RatedItem'
+import Item from './models/Item'
+import User from './models/User'
+import Attribute from './models/Attribute'
+import AttributeValue from './models/AttributeValue'
+import Category from './models/Category'
+
 import RatedItemController from './api/RatedItemController'
 import UserController from './api/UserController'
 import AttributeController from './api/AttributeController'
@@ -19,54 +26,16 @@ export const DBConnection: DataSource = new DataSource({
   name: 'default',
   type: 'postgres',
   url: process.env.DATABASE_URL,
-  entities: [RatedItem],
+  entities: [RatedItem, Item, User, Attribute, AttributeValue, Category],
   synchronize: true, // This will automatically create tables
   ssl: {
     rejectUnauthorized: false,
   },
 })
 
-const bootstrapData = async () => {
-  try {
-    const repository = DBConnection.getRepository(RatedItem)
-    // Insert initial data
-    await repository.save([
-      {
-        item_id: 1,
-        rating: 4.5,
-        user_id: 1,
-        notes: 'Great phone!',
-      },
-      {
-        item_id: 2,
-        rating: 4.7,
-        user_id: 1,
-        notes: 'Great book!',
-      },
-      {
-        item_id: 3,
-        rating: 4.9,
-        user_id: 1,
-        notes: 'Great movie!',
-      },
-      {
-        item_id: 3,
-        rating: 3.0,
-        user_id: 2,
-        notes: 'Great movie!',
-      },
-    ])
-
-    console.log('Data bootstrapped successfully')
-  } catch (error) {
-    console.error('Error bootstrapping data:', error)
-  }
-}
-
 DBConnection.initialize()
   .then(() => {
     console.log('Data Source has been initialized!')
-    bootstrapData()
   })
   .catch((err) => {
     console.error('Error during Data Source initialization', err)
