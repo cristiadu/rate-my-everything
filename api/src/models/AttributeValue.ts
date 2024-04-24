@@ -13,7 +13,7 @@ export default class AttributeValue {
 
   @ManyToOne(() => Attribute, attribute => attribute.values)
   @JoinColumn({ name: 'attribute_id' }) // This line names the column as 'attribute_id'
-  attribute!: Attribute;
+  attribute!: Attribute
 
   @Column()
   value!: string

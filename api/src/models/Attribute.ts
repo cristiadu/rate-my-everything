@@ -1,21 +1,21 @@
-import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm";
-import AttributeValue from "./AttributeValue";
-import Category from "./Category";
+import { Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn } from "typeorm"
+import AttributeValue from "./AttributeValue"
+import Category from "./Category"
 
 @Entity()
 export default class Attribute {
     @PrimaryGeneratedColumn()
-    id!: number;
+    id!: number
 
     @Column()
-    name!: string;
+    name!: string
 
     @Column()
-    valueType!: string;
+    valueType!: string
 
     @ManyToMany(() => Category, category => category.attributes)
-    categories!: Category[];
+    categories!: Category[]
     
     @OneToMany(() => AttributeValue, attributeValue => attributeValue.attribute)
-    values!: AttributeValue[];
+    values!: AttributeValue[]
 }
