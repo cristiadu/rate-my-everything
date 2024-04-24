@@ -5,6 +5,7 @@ import AttributeValue from '../models/AttributeValue'
 // Method for CRUD of an Attribute and AttributeValue
 class AttributeService {
     private attributeRepository
+
     private attributeValueRepository
 
     constructor() {
@@ -79,7 +80,7 @@ class AttributeService {
 
     // get all attributes values by attribute
     public async getAllAttributeValuesByAttribute(id: number): Promise<AttributeValue[]> {
-        return this.attributeValueRepository.find({ where: { attribute: { id: id } } })
+        return this.attributeValueRepository.find({ where: { attribute: { id } } })
     }
 
     // get all AttributeValues

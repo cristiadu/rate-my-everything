@@ -7,9 +7,9 @@ export default class Category {
     @PrimaryColumn()
     name!: string
 
-    @ManyToMany(() => Attribute, attribute => attribute.categories)
+    @ManyToMany(() => Attribute, (attribute) => attribute.categories)
     attributes!: Attribute[]
 
-    @OneToMany(() => Item, item => item.category)
+    @OneToMany(() => Item, (item) => item.category)
     items!: Item[]
 }
