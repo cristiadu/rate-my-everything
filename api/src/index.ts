@@ -6,6 +6,9 @@ import bodyParser from 'body-parser'
 import RatedItem from './models/RatedItem'
 import RatedItemController from './api/RatedItemController'
 import UserController from './api/UserController'
+import AttributeController from './api/AttributeController'
+import ItemController from './api/ItemController'
+import CategoryController from './api/CategoryController'
 
 const app = express()
 app.use(cors())
@@ -72,8 +75,14 @@ DBConnection.initialize()
 // API endpoint
 const ratedItemController = new RatedItemController()
 const userController = new UserController()
+const attributeController = new AttributeController()
+const itemController = new ItemController()
+const categoryController = new CategoryController()
 app.use('/api/ratings', ratedItemController.router)
 app.use('/api/users', userController.router)
+app.use('/api/attributes', attributeController.router)
+app.use('/api/items', itemController.router)
+app.use('/api/categories', categoryController.router)
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
