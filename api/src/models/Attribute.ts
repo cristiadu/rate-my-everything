@@ -17,5 +17,5 @@ export default class Attribute {
     categories!: Category[];
     
     @OneToMany(() => AttributeValue, attributeValue => attributeValue.attribute)
-    items!: AttributeValue[];
+    values!: AttributeValue[];
 }
