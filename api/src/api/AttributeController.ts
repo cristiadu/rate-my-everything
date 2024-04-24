@@ -5,6 +5,7 @@ import AttributeService from '../services/AttributeService'
 
 export default class AttributeController {
     public router = Router()
+
     private attributeService = new AttributeService()
 
     constructor() {

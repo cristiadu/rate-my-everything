@@ -38,7 +38,7 @@ export default class ItemController { // Changed from RatedItemController to Ite
 
     public async getAllByCategory(req: Request, res: Response) {
         try {
-            const data = await this.itemService.getAllByCategory(req.params.category) 
+            const data = await this.itemService.getAllByCategory(req.params.category)
             res.status(200).send(JSON.stringify(data))
         } catch (error) {
             console.error(error)
