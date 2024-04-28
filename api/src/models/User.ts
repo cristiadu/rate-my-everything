@@ -2,7 +2,7 @@ import {
   Entity, PrimaryGeneratedColumn, Column, OneToMany,
 } from 'typeorm'
 import RatedItem from './RatedItem'
-import { UserRole } from './UserRole'
+import UserRole from './UserRole'
 
 @Entity()
 export default class User {
