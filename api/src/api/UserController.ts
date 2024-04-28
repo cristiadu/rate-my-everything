@@ -98,7 +98,7 @@ export default class UserController {
       const { username, password } = req.body
       const jwtToken = await this.userService.login(username, password)
       if (jwtToken) {
-        res.status(200).send(JSON.stringify({ "token": jwtToken }))
+        res.status(200).send(JSON.stringify({ token: jwtToken }))
       } else {
         res.status(401).send('Invalid username or password')
       }

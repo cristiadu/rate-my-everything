@@ -45,8 +45,8 @@ class RatedItemService {
   }
 
   // get all RatedItems by user_id
-  public async getAllByUserId(user_id: number): Promise<RatedItem[]> {
-    return this.ratedItemRepository.find({ where: { user: { id: user_id } } })
+  public async getAllByUserId(userId: number): Promise<RatedItem[]> {
+    return this.ratedItemRepository.find({ where: { user: { id: userId } } })
   }
 }
 

@@ -1,24 +1,26 @@
-import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "typeorm"
-import RatedItem from "./RatedItem"
-import { UserRole } from "./UserRole"
+import {
+  Entity, PrimaryGeneratedColumn, Column, OneToMany,
+} from 'typeorm'
+import RatedItem from './RatedItem'
+import { UserRole } from './UserRole'
 
 @Entity()
 export default class User {
     @PrimaryGeneratedColumn()
-    id!: number
+      id!: number
 
     @Column()
-    username!: string
+      username!: string
 
     @Column()
-    email!: string
+      email!: string
 
     @Column()
-    password!: string
+      password!: string
 
     @Column()
-    roles!: UserRole[]
+      roles!: UserRole[]
 
     @OneToMany(() => RatedItem, (ratedItem) => ratedItem.user)
-    ratedItems!: RatedItem[]
+      ratedItems!: RatedItem[]
 }
