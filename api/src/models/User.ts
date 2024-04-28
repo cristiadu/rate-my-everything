@@ -1,5 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, BaseEntity, OneToMany } from "typeorm"
 import RatedItem from "./RatedItem"
+import { UserRole } from "./UserRole"
 
 @Entity()
 export default class User {
@@ -14,6 +15,9 @@ export default class User {
 
     @Column()
     password!: string
+
+    @Column()
+    roles!: UserRole[]
 
     @OneToMany(() => RatedItem, (ratedItem) => ratedItem.user)
     ratedItems!: RatedItem[]

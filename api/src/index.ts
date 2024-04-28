@@ -1,4 +1,6 @@
 import 'reflect-metadata'
+import jwt from 'jsonwebtoken'
+
 import { DataSource } from 'typeorm'
 import express from 'express'
 import cors from 'cors'
@@ -16,6 +18,7 @@ import UserController from './api/UserController'
 import AttributeController from './api/AttributeController'
 import ItemController from './api/ItemController'
 import CategoryController from './api/CategoryController'
+import { UserRole } from './models/UserRole'
 
 const app = express()
 app.use(cors())
@@ -41,17 +44,54 @@ DBConnection.initialize()
     console.error('Error during Data Source initialization', err)
   })
 
-// API endpoint
-const ratedItemController = new RatedItemController()
-const userController = new UserController()
-const attributeController = new AttributeController()
-const itemController = new ItemController()
-const categoryController = new CategoryController()
-app.use('/api/ratings', ratedItemController.router)
-app.use('/api/users', userController.router)
-app.use('/api/attributes', attributeController.router)
-app.use('/api/items', itemController.router)
-app.use('/api/categories', categoryController.router)
+const unprotectedRoutes = new Set([
+  '/api/users/login',
+  '/api/users/register',
+  // Add more unprotected routes as needed
+]);
+
+const routes = [
+  { path: '/api/ratings', controller: new RatedItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
+  { path: '/api/users', controller: new UserController().router, roles: [UserRole.ADMIN] },
+  { path: '/api/attributes', controller: new AttributeController().router, roles: [UserRole.ADMIN] },
+  { path: '/api/items', controller: new ItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
+  { path: '/api/categories', controller: new CategoryController().router, roles: [UserRole.USER, UserRole.ADMIN] },
+  // Add more routes as needed
+];
+
+function authenticationFilter(req: any, res: any, next: any) {
+  // Check if the route is unprotected
+  if (unprotectedRoutes.has(req.path)) {
+    return next();
+  }
+
+  const authHeader = req.headers['authorization'];
+  const token = authHeader && authHeader.split(' ')[1];
+
+  if (token == null) {
+    return res.sendStatus(401); // if there isn't any token
+  }
+
+  jwt.verify(token, 'your-secret-key', (err: any, user: any) => {
+    if (err) {
+      return res.sendStatus(401);
+    }
+
+    // Find the route that matches the request
+    const route = routes.find(route => req.path.startsWith(route.path));
+    // Check if the user has one of the required roles
+    if (route && route.roles.some(role => user.roles.includes(role))) {
+      req.user = user;
+      next(); // pass the execution off to whatever request the client intended
+    } else {
+      res.sendStatus(403); // Forbidden
+    }
+  });
+}
+app.use(authenticationFilter);
+
+// Use the routes
+routes.forEach(route => app.use(route.path, route.controller));
 
 const PORT = process.env.PORT || 3000
 app.listen(PORT, () => {
