@@ -30,9 +30,8 @@ export function authenticationFilter(req: any, res: any, next: any) {
 
   const authHeader = req.headers.authorization
   const token = authHeader && authHeader.split(' ')[1]
-
-  if (token == null) {
-    return res.sendStatus(401) // if there isn't any token
+  if (authHeader == null || !authHeader.startsWith('Bearer ') || token == null) {
+    return res.sendStatus(401) // if the auth header is missing or not in the correct format
   }
 
   jwt.verify(token, 'your-secret-key', (err: any, user: any) => {
