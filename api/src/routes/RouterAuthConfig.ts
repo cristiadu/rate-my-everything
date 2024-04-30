@@ -6,16 +6,18 @@ import AttributeController from '../api/AttributeController'
 import ItemController from '../api/ItemController'
 import CategoryController from '../api/CategoryController'
 import UserRole from '../models/UserRole'
+import LoginController from '../api/LoginController'
 
 export const unprotectedRoutes = new Set([
-  '/api/users/login',
-  '/api/users/register',
+  '/api/login',
+  '/api/login/register',
   // Add more unprotected routes as needed
 ])
 
 export const routes = [
   { path: '/api/ratings', controller: () => new RatedItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/users', controller: () => new UserController().router, roles: [UserRole.ADMIN] },
+  { path: '/api/login', controller: () => new LoginController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/attributes', controller: () => new AttributeController().router, roles: [UserRole.ADMIN] },
   { path: '/api/items', controller: () => new ItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/categories', controller: () => new CategoryController().router, roles: [UserRole.USER, UserRole.ADMIN] },

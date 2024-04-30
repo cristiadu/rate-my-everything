@@ -11,7 +11,6 @@ export default class UserController {
     this.getByUsername = this.getByUsername.bind(this)
     this.getById = this.getById.bind(this)
     this.create = this.create.bind(this)
-    this.login = this.login.bind(this)
     this.update = this.update.bind(this)
     this.delete = this.delete.bind(this)
     this.initializeRoutes()
@@ -22,7 +21,6 @@ export default class UserController {
     this.router.get('/username/:username', this.getByUsername)
     this.router.get('/:id', this.getById)
     this.router.post('/', this.create)
-    this.router.post('/login', this.login)
     this.router.put('/:id', this.update)
     this.router.delete('/:id', this.delete)
     // Add more routes as needed
@@ -87,21 +85,6 @@ export default class UserController {
     try {
       await this.userService.delete(parseInt(req.params.id, 10))
       res.status(204).send()
-    } catch (error) {
-      console.error(error)
-      res.status(500).send(error)
-    }
-  }
-
-  public async login(req: Request, res: Response) {
-    try {
-      const { username, password } = req.body
-      const jwtToken = await this.userService.login(username, password)
-      if (jwtToken) {
-        res.status(200).send(JSON.stringify({ token: jwtToken }))
-      } else {
-        res.status(401).send('Invalid username or password')
-      }
     } catch (error) {
       console.error(error)
       res.status(500).send(error)
