@@ -14,11 +14,11 @@ export const unprotectedRoutes = new Set([
 ])
 
 export const routes = [
-  { path: '/api/ratings', controller: new RatedItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
-  { path: '/api/users', controller: new UserController().router, roles: [UserRole.ADMIN] },
-  { path: '/api/attributes', controller: new AttributeController().router, roles: [UserRole.ADMIN] },
-  { path: '/api/items', controller: new ItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
-  { path: '/api/categories', controller: new CategoryController().router, roles: [UserRole.USER, UserRole.ADMIN] },
+  { path: '/api/ratings', controller: () => new RatedItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
+  { path: '/api/users', controller: () => new UserController().router, roles: [UserRole.ADMIN] },
+  { path: '/api/attributes', controller: () => new AttributeController().router, roles: [UserRole.ADMIN] },
+  { path: '/api/items', controller: () => new ItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
+  { path: '/api/categories', controller: () => new CategoryController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   // Add more routes as needed
 ]
 

@@ -18,7 +18,7 @@ export default class User {
     @Column()
       password!: string
 
-    @Column()
+    @Column('text', { array: true })
       roles!: UserRole[]
 
     @OneToMany(() => RatedItem, (ratedItem) => ratedItem.user)

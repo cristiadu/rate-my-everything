@@ -32,17 +32,17 @@ export const DBConnection: DataSource = new DataSource({
 DBConnection.initialize()
   .then(() => {
     console.log('Data Source has been initialized!')
+
+    app.use(authenticationFilter)
+
+    // Use the routes
+    routes.forEach((route) => app.use(route.path, route.controller()))
+
+    const PORT = process.env.PORT || 3000
+    app.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`)
+    })
   })
   .catch((err) => {
     console.error('Error during Data Source initialization', err)
   })
-
-app.use(authenticationFilter)
-
-// Use the routes
-routes.forEach((route) => app.use(route.path, route.controller))
-
-const PORT = process.env.PORT || 3000
-app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`)
-})

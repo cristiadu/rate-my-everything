@@ -1,22 +1,28 @@
-import { DBConnection } from '..'
+import { DBConnection } from '../index'
 import Attribute from '../models/Attribute'
 import AttributeValue from '../models/AttributeValue'
+import BaseService from './BaseService'
 
 // Method for CRUD of an Attribute and AttributeValue
-class AttributeService {
-  private attributeRepository
-
-  private attributeValueRepository
+class AttributeService extends BaseService {
+  private privateAttValueRepository: any
 
   constructor() {
-    this.attributeRepository = DBConnection.getRepository(Attribute)
-    this.attributeValueRepository = DBConnection.getRepository(AttributeValue)
+    super(Attribute)
+  }
+
+  private get attributeValueRepository() {
+    if (!this.privateAttValueRepository) {
+      this.privateAttValueRepository = DBConnection.getRepository(AttributeValue)
+    }
+
+    return this.privateAttValueRepository
   }
 
   // Create a new Attribute
   public async createAttribute(attribute: Attribute): Promise<Attribute> {
-    const newAttribute = this.attributeRepository.create(attribute)
-    return this.attributeRepository.save(newAttribute)
+    const newAttribute = this.repository.create(attribute)
+    return this.repository.save(newAttribute)
   }
 
   // Create a new AttributeValue
@@ -27,7 +33,7 @@ class AttributeService {
 
   // Read an Attribute by id
   public async getAttribute(id: number): Promise<Attribute | null> {
-    const attribute = await this.attributeRepository.findOne({ where: { id } })
+    const attribute = await this.repository.findOne({ where: { id } })
     return attribute
   }
 
@@ -41,8 +47,8 @@ class AttributeService {
   public async updateAttribute(id: number, attribute: Attribute): Promise<Attribute | null> {
     const updatedAttribute = await this.getAttribute(id)
     if (updatedAttribute) {
-      this.attributeRepository.merge(updatedAttribute, attribute)
-      return this.attributeRepository.save(updatedAttribute)
+      this.repository.merge(updatedAttribute, attribute)
+      return this.repository.save(updatedAttribute)
     }
     return null
   }
@@ -61,7 +67,7 @@ class AttributeService {
   public async deleteAttribute(id: number): Promise<void> {
     const attribute = await this.getAttribute(id)
     if (attribute) {
-      await this.attributeRepository.remove(attribute)
+      await this.repository.remove(attribute)
     }
   }
 
@@ -75,7 +81,7 @@ class AttributeService {
 
   // get all Attributes
   public async getAllAttributes(): Promise<Attribute[]> {
-    return this.attributeRepository.find()
+    return this.repository.find()
   }
 
   // get all attributes values by attribute
