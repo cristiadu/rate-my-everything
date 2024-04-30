@@ -1,10 +1,10 @@
 import { Request, Response, Router } from 'express'
-import LoginService from '../services/LoginService'
+import UserService from '../services/UserService'
 
 export default class LoginController {
   public router = Router()
 
-  private loginService = new LoginService()
+  private userService = new UserService()
 
   constructor() {
     this.login = this.login.bind(this)
@@ -19,7 +19,7 @@ export default class LoginController {
   public async login(req: Request, res: Response) {
     try {
       const { username, password } = req.body
-      const jwtToken = await this.loginService.login(username, password)
+      const jwtToken = await this.userService.login(username, password)
       if (jwtToken) {
         res.status(200).send(JSON.stringify({ token: jwtToken }))
       } else {
