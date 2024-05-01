@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Content } from 'react-bulma-components'
 import Index from '../index/Index'
 import OverallRankings from '../rankings/OverallRankings'
+import CreateUserForm from '../users/CreateUserForm'
+
 import { RankingItem } from '../types'
 
 // populate with example data
@@ -36,6 +38,7 @@ const MainContent = () => (
   <Content id="content" key="content">
     <Router>
       <Routes>
+        <Route path="/user/create" element={<CreateUserForm />} />
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/*" element={<Index />} />
