@@ -6,10 +6,15 @@ import {
 import ApiConfig from '../../config/ApiConfig'
 
 const CreateUserForm: React.FC = () => {
-  const [name, setName] = useState('')
-  const [email, setEmail] = useState('')
-  const [password, setPassword] = useState('')
+  const [formFields, setFormFields] = useState({ name: '', email: '', password: '' })
   const [submitStatus, setSubmitStatus] = useState<{message: string, isSuccess: boolean} | null>(null)
+
+  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormFields({
+      ...formFields,
+      [e.target.name]: e.target.value,
+    })
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -22,7 +27,7 @@ const CreateUserForm: React.FC = () => {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${localStorage.getItem('token')}`,
         },
-        body: JSON.stringify({ name, email, password }),
+        body: JSON.stringify(formFields),
       })
 
       if (response.ok) {
@@ -52,10 +57,10 @@ const CreateUserForm: React.FC = () => {
           <Form.Input
             type="text"
             placeholder="Enter your name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
+            value={formFields.name}
+            onChange={handleInputChange}
             required
-            id="name-input"
+            name="name"
           />
         </Form.Control>
       </Form.Field>
@@ -66,9 +71,10 @@ const CreateUserForm: React.FC = () => {
           <Form.Input
             type="email"
             placeholder="Enter your email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
+            value={formFields.email}
+            onChange={handleInputChange}
             required
+            name="email"
           />
         </Form.Control>
       </Form.Field>
@@ -79,9 +85,10 @@ const CreateUserForm: React.FC = () => {
           <Form.Input
             type="password"
             placeholder="Enter your password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
+            value={formFields.password}
+            onChange={handleInputChange}
             required
+            name="password"
           />
         </Form.Control>
       </Form.Field>

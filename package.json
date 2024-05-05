@@ -28,7 +28,8 @@
     "release": "npm version patch && npm run deploy",
     "test": "jest",
     "format-code": "./node_modules/.bin/eslint \"./src/**\" \"./api/**\" --fix --ignore-path ./.eslintignore",
-    "check-code": "./node_modules/.bin/eslint \"./src/**\"  \"./api/**\" --ignore-path ./.eslintignore",
+    "install-api": "cd api && npm install",
+    "check-code": "npm install && npm run install-api && ./node_modules/.bin/eslint \"./src/**\"  \"./api/**\" --ignore-path ./.eslintignore",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build"
   },
