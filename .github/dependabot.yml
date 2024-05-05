@@ -18,7 +18,7 @@ updates:
     reviewers:
       - cristiadu
 
-  # Maintain dependencies for npm
+  # Maintain dependencies for npm UI
   - package-ecosystem: "npm"
     directory: "/"
     schedule:
@@ -26,6 +26,18 @@ updates:
     # Specify labels for npm pull requests
     labels:
       - "npm"
+      - "ui"
+      - "dependencies"
+    reviewers:
+      - cristiadu
+  - package-ecosystem: "npm"
+    directory: "/api"
+    schedule:
+      interval: "monthly"
+    # Specify labels for npm pull requests
+    labels:
+      - "npm"
+      - "api"
       - "dependencies"
     reviewers:
       - cristiadu
