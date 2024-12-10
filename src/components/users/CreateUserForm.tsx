@@ -37,7 +37,7 @@ const CreateUserForm: React.FC = () => {
         // Handle error response
         setSubmitStatus({ message: 'Failed to create user', isSuccess: false })
       }
-    } catch (error) {
+    } catch {
       setSubmitStatus({ message: 'Network error', isSuccess: false })
     }
   }
