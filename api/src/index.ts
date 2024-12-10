@@ -23,8 +23,6 @@ const limiter = rateLimit({
 })
 
 // apply rate limiter to all requests
-app.use(limiter)
-
 app.use(cors())
 app.use(bodyParser.json())
 
@@ -44,6 +42,7 @@ DBConnection.initialize()
   .then(() => {
     console.log('Data Source has been initialized!')
 
+    app.use(limiter)
     app.use(authenticationFilter)
 
     // Use the routes
