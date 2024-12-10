@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express'
 import UserService from '../services/UserService'
+import rateLimit from 'express-rate-limit'
 
 export default class LoginController {
   public router = Router()
@@ -12,7 +13,11 @@ export default class LoginController {
   }
 
   public initializeRoutes() {
-    this.router.post('/', this.login)
+    const limiter = rateLimit({
+      windowMs: 15 * 60 * 1000, // 15 minutes
+      max: 100, // limit each IP to 100 requests per windowMs
+    })
+    this.router.post('/', limiter, this.login)
     // Add more routes as needed
   }
 
