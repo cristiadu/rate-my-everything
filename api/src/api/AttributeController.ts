@@ -44,7 +44,7 @@ export default class AttributeController {
       res.status(200).send(JSON.stringify(data))
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -54,7 +54,7 @@ export default class AttributeController {
       res.status(200).send(JSON.stringify(data))
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -64,7 +64,7 @@ export default class AttributeController {
       res.status(200).send(JSON.stringify(data))
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -78,7 +78,7 @@ export default class AttributeController {
       }
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -92,7 +92,7 @@ export default class AttributeController {
       }
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -102,7 +102,7 @@ export default class AttributeController {
       res.status(201).send(JSON.stringify(data))
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
