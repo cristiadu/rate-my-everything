@@ -2,6 +2,7 @@ import 'reflect-metadata'
 
 import { DataSource } from 'typeorm'
 import express from 'express'
+import rateLimit from 'express-rate-limit'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 
@@ -14,6 +15,16 @@ import Category from './models/Category'
 import { routes, authenticationFilter } from './routes/RouterAuthConfig'
 
 const app = express()
+
+// set up rate limiter: maximum of 100 requests per 15 minutes
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 100, // max 100 requests per windowMs
+})
+
+// apply rate limiter to all requests
+app.use(limiter)
+
 app.use(cors())
 app.use(bodyParser.json())
 
