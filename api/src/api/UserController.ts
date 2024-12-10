@@ -33,7 +33,7 @@ export default class UserController {
       res.status(200).send(JSON.stringify(data))
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -43,7 +43,7 @@ export default class UserController {
       res.status(200).send(JSON.stringify(data))
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -53,7 +53,7 @@ export default class UserController {
       res.status(200).send(JSON.stringify(data))
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -63,7 +63,7 @@ export default class UserController {
       res.status(201).send(JSON.stringify(data))
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -77,7 +77,7 @@ export default class UserController {
       }
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -87,7 +87,7 @@ export default class UserController {
       res.status(204).send()
     } catch (error) {
       console.error(error)
-      res.status(500).send(error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 }

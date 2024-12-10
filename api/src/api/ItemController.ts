@@ -31,8 +31,8 @@ export default class ItemController { // Changed from RatedItemController to Ite
       const data = await this.itemService.getAll()
       res.status(200).send(JSON.stringify(data))
     } catch (error) {
-      console.error(error)
-      res.status(500).send(error)
+      console.error((error as Error).stack || error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -41,8 +41,8 @@ export default class ItemController { // Changed from RatedItemController to Ite
       const data = await this.itemService.getAllByCategory(req.params.category)
       res.status(200).send(JSON.stringify(data))
     } catch (error) {
-      console.error(error)
-      res.status(500).send(error)
+      console.error((error as Error).stack || error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -55,8 +55,8 @@ export default class ItemController { // Changed from RatedItemController to Ite
         res.status(404).send('Data not found')
       }
     } catch (error) {
-      console.error(error)
-      res.status(500).send(error)
+      console.error((error as Error).stack || error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -65,8 +65,8 @@ export default class ItemController { // Changed from RatedItemController to Ite
       const data = await this.itemService.create(req.body)
       res.status(201).send(JSON.stringify(data))
     } catch (error) {
-      console.error(error)
-      res.status(500).send(error)
+      console.error((error as Error).stack || error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -79,8 +79,8 @@ export default class ItemController { // Changed from RatedItemController to Ite
         res.status(404).send('Data not found')
       }
     } catch (error) {
-      console.error(error)
-      res.status(500).send(error)
+      console.error((error as Error).stack || error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 
@@ -89,8 +89,8 @@ export default class ItemController { // Changed from RatedItemController to Ite
       await this.itemService.delete(parseInt(req.params.id, 10))
       res.status(204).send()
     } catch (error) {
-      console.error(error)
-      res.status(500).send(error)
+      console.error((error as Error).stack || error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 }

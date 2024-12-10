@@ -26,8 +26,8 @@ export default class LoginController {
         res.status(401).send('Invalid username or password')
       }
     } catch (error) {
-      console.error(error)
-      res.status(500).send(error)
+      console.error('Exception occurred:', error)
+      res.status(500).send('An internal server error occurred')
     }
   }
 }
