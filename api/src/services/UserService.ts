@@ -51,10 +51,10 @@ export default class UserService extends BaseService {
       const payload = { username: user.username, id: user.id, roles: user.roles }
 
       // Secret key used to sign the token
-      const secretKey = 'your-secret-key'
+      const secretKey = Buffer.from('your-secret-key')
 
       // Options for the token
-      const options = { expiresIn: '3d' }
+      const options = { expiresIn: 3 * 24 * 60 * 60 } // 3 days in seconds
 
       // Generate the token
       const token = jwt.sign(payload, secretKey, options)
