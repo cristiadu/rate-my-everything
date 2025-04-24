@@ -72,7 +72,7 @@
     "jest-watch-typeahead": "^2.2.2",
     "storybook": "^8.4.7",
     "style-loader": "^4.0.0",
-    "ts-jest": "^29.2.5",
+    "ts-jest": "^29.3.1",
     "webpack": "^5.97.1",
     "webpack-bundle-analyzer": "^4.10.2",
     "webpack-cli": "^5.1.4",
