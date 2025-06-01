@@ -36,7 +36,14 @@ export function authenticationFilter(req: any, res: any, next: any) {
     return res.sendStatus(401) // if the auth header is missing or not in the correct format
   }
 
-  jwt.verify(token, process.env.JWT_SECRET, (err: any, user: any) => {
+  // Make sure JWT_SECRET is defined
+  const jwtSecret = process.env.JWT_SECRET;
+  if (!jwtSecret) {
+    console.error('JWT_SECRET environment variable is not defined');
+    return res.sendStatus(500); // Internal server error
+  }
+
+  jwt.verify(token, jwtSecret, (err: any, user: any) => {
     if (err) {
       return res.sendStatus(401)
     }

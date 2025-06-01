@@ -9,7 +9,7 @@
     "deploy": "echo \"Deploy API\"",
     "release": "echo \"Release API\"",
     "test": "echo \"WARN: no tests specified\" && exit 0",
-    "lint": "echo \"Lint API\"",
+    "lint": "eslint --ext .ts src/",
     "upgrade-dependencies": "pnpm up --latest"
   },
   "author": "Cristiano Faustino",

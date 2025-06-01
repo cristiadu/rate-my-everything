@@ -1,9 +1,9 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Columns, Hero, Navbar } from 'react-bulma-components'
 import ResizeObserver from 'resize-observer-polyfill'
-import Header from './layout/Header'
-import Footer from './layout/Footer'
-import MainContent from './layout/MainContent'
+import Header from '@/components/layout/Header'
+import Footer from '/layout/Footer'
+import MainContent from '/layout/MainContent'
 import FilterMenu from './filters/FilterMenu'
 
 const App = () => {

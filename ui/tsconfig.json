@@ -18,7 +18,10 @@
       "esnext"
     ],
     "noFallthroughCasesInSwitch": true,
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@/*": ["./src/*"]
+    }
   },
   "include": [
     "src"
