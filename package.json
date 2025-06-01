@@ -8,12 +8,12 @@
   ],
   "scripts": {
     "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
-    "start": "echo \"Start UI and API\"",
-    "build": "echo \"Build UI and API\"",
-    "deploy": "echo \"Deploy UI and API\"",
-    "release": "echo \"Release UI and API\"",
-    "test": "echo \"Test UI and API\"",
-    "lint": "echo \"Lint UI and API\"",
+    "start": "pnpm --parallel -r run start",
+    "build": "pnpm --parallel -r run build",
+    "deploy": "pnpm --parallel -r run deploy",
+    "release": "pnpm --parallel -r run release",
+    "test": "pnpm --parallel -r run test",
+    "lint": "pnpm --parallel -r run lint",
     "upgrade-dependencies": "pnpm up --latest && pnpm -C ui upgrade-dependencies && pnpm -C api upgrade-dependencies"
   },
   "devDependencies": {
