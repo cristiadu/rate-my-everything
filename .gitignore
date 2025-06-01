@@ -26,6 +26,11 @@ hs_err_pid*
 node_modules/
 build/
 storybook-static/
+.pnpm-store/
+.pnpm-debug.log
+*-debug.log
+package-lock.json
+# We keep pnpm-lock.yaml in git
 
 #MacOS files
 .DS_Store
