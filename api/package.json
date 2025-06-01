@@ -23,7 +23,7 @@
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.21",
+    "typeorm": "^0.3.22",
     "express-rate-limit": "^7.4.1"
   },
   "devDependencies": {
