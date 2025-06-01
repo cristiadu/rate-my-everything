@@ -36,7 +36,7 @@ export function authenticationFilter(req: any, res: any, next: any) {
     return res.sendStatus(401) // if the auth header is missing or not in the correct format
   }
 
-  jwt.verify(token, 'your-secret-key', (err: any, user: any) => {
+  jwt.verify(token, process.env.JWT_SECRET, (err: any, user: any) => {
     if (err) {
       return res.sendStatus(401)
     }

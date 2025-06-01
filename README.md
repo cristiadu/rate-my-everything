@@ -54,3 +54,23 @@ Open [http://localhost:6006](http://localhost:6006) to view it in the browser.
 Applies ESLint on code in `src` folder.
 
 The difference is that `format-code` will reformat the code automatically based on the linter rules, while `check-code` will just report the problems.
+
+## Required Environment Variables
+
+- `JWT_SECRET`: The secret key used to sign and verify JWT tokens. Example: `my-dev-secret` (choose your own secret for development)
+
+## How to run the API locally
+
+You must set the `JWT_SECRET` environment variable when starting the API server. For example:
+
+```
+JWT_SECRET=my-dev-secret npm start
+```
+
+Or, if you use Windows:
+
+```
+set JWT_SECRET=my-dev-secret && npm start
+```
+
+If you use a process manager or VS Code launch configuration, set `JWT_SECRET` in your environment accordingly.

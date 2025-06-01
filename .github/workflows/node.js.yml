@@ -48,4 +48,6 @@ jobs:
         cache: 'npm'
     - run: cd api && npm install
     - run: cd api && npm run build
+    - name: Set JWT_SECRET for API
+      run: echo "JWT_SECRET=test-secret" >> $GITHUB_ENV
     - run: cd api && npm test
