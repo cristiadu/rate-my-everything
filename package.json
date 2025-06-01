@@ -6,6 +6,7 @@
     "api",
     "ui"
   ],
+  "packageManager": "pnpm@10.11.0",
   "scripts": {
     "clean": "find . -name 'node_modules' -type d -prune -exec rm -rf '{}' + && find . -name 'dist' -type d -prune -exec rm -rf '{}' +",
     "start": "pnpm --parallel -r run start",
