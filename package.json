@@ -15,6 +15,7 @@
     "release": "pnpm --parallel -r run release",
     "test": "pnpm --parallel -r run test",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "upgrade-dependencies": "pnpm up --latest && pnpm -C ui upgrade-dependencies && pnpm -C api upgrade-dependencies"
   },
   "devDependencies": {

@@ -1,17 +1,17 @@
-import js from '@eslint/js';
-import { FlatCompat } from '@eslint/eslintrc';
-import path from 'path';
-import { fileURLToPath } from 'url';
+import js from '@eslint/js'
+import { FlatCompat } from '@eslint/eslintrc'
+import path from 'path'
+import { fileURLToPath } from 'url'
 
 // Determine dirname in ESM
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
 // Create compatibility layer to use legacy plugins
 const compat = new FlatCompat({
   baseDirectory: __dirname,
   recommendedConfig: js.configs.recommended,
-});
+})
 
 export default [
   // Global ESLint settings
@@ -39,7 +39,7 @@ export default [
 
   // Apply JavaScript settings
   js.configs.recommended,
-  
+
   // Use legacy configs through FlatCompat
   ...compat.extends('plugin:@typescript-eslint/recommended'),
   ...compat.extends('plugin:react/recommended'),
@@ -50,7 +50,7 @@ export default [
   {
     files: ['**/*.{js,mjs,cjs,jsx,ts,tsx}'],
     rules: {
-      'semi': ['error', 'never'],
+      semi: ['error', 'never'],
       'max-len': ['error', {
         code: 140,
         tabWidth: 2,
@@ -146,4 +146,4 @@ export default [
       'import/no-extraneous-dependencies': 'off',
     },
   },
-];
+]

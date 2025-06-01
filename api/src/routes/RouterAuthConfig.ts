@@ -37,10 +37,10 @@ export function authenticationFilter(req: any, res: any, next: any) {
   }
 
   // Make sure JWT_SECRET is defined
-  const jwtSecret = process.env.JWT_SECRET;
+  const jwtSecret = process.env.JWT_SECRET
   if (!jwtSecret) {
-    console.error('JWT_SECRET environment variable is not defined');
-    return res.sendStatus(500); // Internal server error
+    console.error('JWT_SECRET environment variable is not defined')
+    return res.sendStatus(500) // Internal server error
   }
 
   jwt.verify(token, jwtSecret, (err: any, user: any) => {
