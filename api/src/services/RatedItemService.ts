@@ -1,5 +1,5 @@
-import RatedItem from '../models/RatedItem'
-import BaseService from './BaseService'
+import RatedItem from '@/models/RatedItem'
+import BaseService from '@/services/BaseService'
 
 // Method for CRUD of a RatedItem, which is a model for a rated item.
 class RatedItemService extends BaseService {

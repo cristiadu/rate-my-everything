@@ -1,7 +1,7 @@
-import { DBConnection } from '../index'
-import Attribute from '../models/Attribute'
-import AttributeValue from '../models/AttributeValue'
-import BaseService from './BaseService'
+import { DBConnection } from '@/index'
+import Attribute from '@/models/Attribute'
+import AttributeValue from '@/models/AttributeValue'
+import BaseService from '@/services/BaseService'
 
 // Method for CRUD of an Attribute and AttributeValue
 class AttributeService extends BaseService {

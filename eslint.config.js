@@ -3,6 +3,14 @@ import { FlatCompat } from '@eslint/eslintrc'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+// Import plugins using ES modules
+import importPlugin from 'eslint-plugin-import'
+import reactPlugin from 'eslint-plugin-react'
+import reactHooksPlugin from 'eslint-plugin-react-hooks'
+import jsxA11yPlugin from 'eslint-plugin-jsx-a11y'
+import typescriptPlugin from '@typescript-eslint/eslint-plugin'
+import storybookPlugin from 'eslint-plugin-storybook'
+
 // Determine dirname in ESM
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -11,18 +19,27 @@ const __dirname = path.dirname(__filename)
 const compat = new FlatCompat({
   baseDirectory: __dirname,
   recommendedConfig: js.configs.recommended,
+  plugins: {
+    // Define all plugins here so they can be used throughout the config
+    import: importPlugin,
+    react: reactPlugin,
+    'react-hooks': reactHooksPlugin,
+    'jsx-a11y': jsxA11yPlugin,
+    '@typescript-eslint': typescriptPlugin,
+    storybook: storybookPlugin,
+  },
 })
 
 export default [
   // Global ESLint settings
   {
     ignores: [
-      'node_modules/**',
-      'dist/**',
-      'build/**',
-      'coverage/**',
-      '.storybook/**',
-      'storybook-static/**',
+      '**/node_modules/**',
+      '**/dist/**',
+      '**/build/**',
+      '**/coverage/**',
+      '**/.storybook/**',
+      '**/storybook-static/**',
     ],
   },
 
@@ -44,7 +61,6 @@ export default [
   ...compat.extends('plugin:@typescript-eslint/recommended'),
   ...compat.extends('plugin:react/recommended'),
   ...compat.extends('plugin:storybook/recommended'),
-  ...compat.extends('airbnb'),
 
   // Base rules for all files
   {
@@ -67,6 +83,10 @@ export default [
           jsx: true,
         },
       },
+    },
+    plugins: {
+      import: importPlugin,
+      react: reactPlugin
     },
     rules: {
       'react/jsx-props-no-spreading': ['off'],
@@ -93,6 +113,14 @@ export default [
         },
       ],
     },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          project: './ui/tsconfig.json',
+          alwaysTryTypes: true,
+        },
+      },
+    },
   },
 
   // Rules for TypeScript files
@@ -109,11 +137,18 @@ export default [
   // Rules for API TypeScript files
   {
     files: ['api/src/**/*.ts'],
+    plugins: {
+      import: importPlugin
+    },
     rules: {
       'import/extensions': ['error', 'never'],
     },
     settings: {
       'import/resolver': {
+        typescript: {
+          project: './api/tsconfig.json',
+          alwaysTryTypes: true,
+        },
         node: {
           extensions: ['.js', '.ts'],
         },
@@ -142,6 +177,9 @@ export default [
   // Storybook files
   {
     files: ['**/*.stories.@(js|jsx|ts|tsx)'],
+    plugins: {
+      import: importPlugin
+    },
     rules: {
       'import/no-extraneous-dependencies': 'off',
     },

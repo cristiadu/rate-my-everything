@@ -1,8 +1,8 @@
 import {
   Entity, ManyToMany, OneToMany, PrimaryColumn,
 } from 'typeorm'
-import Attribute from './Attribute'
-import Item from './Item'
+import Attribute from '@/models/Attribute'
+import Item from '@/models/Item'
 
 @Entity()
 export default class Category {

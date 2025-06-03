@@ -1,10 +1,10 @@
 import { Request, Response, Router } from 'express'
-import ItemService from '../services/ItemService' // Changed from RatedItemService to ItemService
+import ItemService from '@/services/ItemService'
 
-export default class ItemController { // Changed from RatedItemController to ItemController
+export default class ItemController {
   public router = Router()
 
-  private itemService = new ItemService() // Changed from ratedItemService to itemService
+  private itemService = new ItemService()
 
   constructor() {
     this.getAll = this.getAll.bind(this)

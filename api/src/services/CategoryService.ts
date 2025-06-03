@@ -1,5 +1,5 @@
-import Category from '../models/Category'
-import BaseService from './BaseService'
+import Category from '@/models/Category'
+import BaseService from '@/services/BaseService'
 
 // Method for CRUD of a Category, which is a model for a category.
 class CategoryService extends BaseService {

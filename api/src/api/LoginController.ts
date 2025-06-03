@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express'
-import UserService from '../services/UserService'
+import UserService from '@/services/UserService'
 
 export default class LoginController {
   public router = Router()

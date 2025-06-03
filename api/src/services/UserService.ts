@@ -1,6 +1,6 @@
 import jwt from 'jsonwebtoken'
-import User from '../models/User'
-import BaseService from './BaseService'
+import User from '@/models/User'
+import BaseService from '@/services/BaseService'
 
 // create user service based on RatedItemService.ts in this directory
 export default class UserService extends BaseService {

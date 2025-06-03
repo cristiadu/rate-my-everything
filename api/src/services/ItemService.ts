@@ -1,5 +1,5 @@
-import Item from '../models/Item'
-import BaseService from './BaseService'
+import Item from '@/models/Item'
+import BaseService from '@/services/BaseService'
 
 // Method for CRUD of an Item, which is a model for an item.
 class ItemService extends BaseService {

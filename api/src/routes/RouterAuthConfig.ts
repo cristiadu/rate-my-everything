@@ -1,12 +1,12 @@
 import jwt from 'jsonwebtoken'
 
-import RatedItemController from '../api/RatedItemController'
-import UserController from '../api/UserController'
-import AttributeController from '../api/AttributeController'
-import ItemController from '../api/ItemController'
-import CategoryController from '../api/CategoryController'
-import UserRole from '../models/UserRole'
-import LoginController from '../api/LoginController'
+import RatedItemController from '@/api/RatedItemController'
+import UserController from '@/api/UserController'
+import AttributeController from '@/api/AttributeController'
+import ItemController from '@/api/ItemController'
+import CategoryController from '@/api/CategoryController'
+import UserRole from '@/models/UserRole'
+import LoginController from '@/api/LoginController'
 
 export const unprotectedRoutes = new Set([
   '/api/login',

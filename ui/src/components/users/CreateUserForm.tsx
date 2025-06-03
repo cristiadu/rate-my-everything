@@ -3,7 +3,7 @@ import {
   Form, Button,
   Message,
 } from 'react-bulma-components'
-import ApiConfig from '../../config/ApiConfig'
+import ApiConfig from '@/config/ApiConfig'
 
 const CreateUserForm: React.FC = () => {
   const [formFields, setFormFields] = useState({ name: '', email: '', password: '' })

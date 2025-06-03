@@ -1,5 +1,5 @@
 import { Repository } from 'typeorm'
-import { DBConnection } from '../index'
+import { DBConnection } from '@/index'
 
 export default class BaseService {
   private privateRepository: Repository<any> | null = null

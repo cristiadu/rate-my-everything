@@ -3,7 +3,7 @@ import {
   Block, Form, Button, Tag,
 } from 'react-bulma-components'
 import { slide as SlideMenu } from 'react-burger-menu'
-import Arrow from './Arrow'
+import Arrow from '@/components/filters/Arrow'
 
 const FilterMenu = () => {
   const [isOpen, setIsOpen] = useState(false)

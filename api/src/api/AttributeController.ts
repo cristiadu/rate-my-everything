@@ -1,7 +1,5 @@
-// Create AttributeController that uses AttributeService to create attributes and attribute values.
-
 import { Router, Request, Response } from 'express'
-import AttributeService from '../services/AttributeService'
+import AttributeService from '@/services/AttributeService'
 
 export default class AttributeController {
   public router = Router()

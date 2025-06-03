@@ -15,11 +15,6 @@
   "author": "Cristiano Faustino",
   "license": "ISC",
   "dependencies": {
-    "@types/body-parser": "^1.19.5",
-    "@types/cors": "^2.8.18",
-    "@types/express": "^5.0.2",
-    "@types/node": "^22.15.29",
-    "@types/pg": "^8.15.4",
     "body-parser": "^2.2.0",
     "class-validator": "^0.14.2",
     "cors": "^2.8.5",
@@ -30,6 +25,11 @@
     "typeorm": "^0.3.24"
   },
   "devDependencies": {
+    "@types/body-parser": "^1.19.5",
+    "@types/cors": "^2.8.18",
+    "@types/express": "^5.0.2",
+    "@types/node": "^22.15.29",
+    "@types/pg": "^8.15.4",
     "@types/jsonwebtoken": "^9.0.9",
     "typescript": "^5.8.3"
   }

@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express'
-import RatedItemService from '../services/RatedItemService'
+import RatedItemService from '@/services/RatedItemService'
 
 export default class RatedItemController {
   public router = Router()

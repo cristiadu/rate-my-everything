@@ -2,8 +2,8 @@ import React from 'react'
 import {
   Container, Heading, Hero,
 } from 'react-bulma-components'
-import HeaderMenu from './HeaderMenu'
-import UserHeaderMenu from '../users/UserHeaderMenu'
+import HeaderMenu from '@/components/layout/HeaderMenu'
+import UserHeaderMenu from '@/components/users/UserHeaderMenu'
 
 const Header = () => (
   <Hero color="danger" size="small" style={{ width: '100%' }}>

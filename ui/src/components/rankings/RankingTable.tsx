@@ -1,7 +1,7 @@
 import React from 'react'
 import { Table } from 'react-bulma-components'
-import { RankingItem } from '../types'
-import RankingTableItem from './RankingTableItem'
+import { RankingItem } from '@/components/types'
+import RankingTableItem from '@/components/rankings/RankingTableItem'
 
 interface RankingTableProps {
     rankings: RankingItem[];

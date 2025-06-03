@@ -1,5 +1,5 @@
 import { Request, Response, Router } from 'express'
-import CategoryService from '../services/CategoryService'
+import CategoryService from '@/services/CategoryService'
 
 export default class CategoryController {
   public router = Router()

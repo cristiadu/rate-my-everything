@@ -1,9 +1,9 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Content } from 'react-bulma-components'
-import Index from '../index/Index'
-import OverallRankings from '../rankings/OverallRankings'
-import CreateUserForm from '../users/CreateUserForm'
+import Index from '@/components/index/Index'
+import OverallRankings from '@/components/rankings/OverallRankings'
+import CreateUserForm from '@/components/users/CreateUserForm'
 
 import { RankingItem } from '../types'
 

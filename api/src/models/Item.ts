@@ -1,9 +1,9 @@
 import {
   Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryGeneratedColumn,
 } from 'typeorm'
-import RatedItem from './RatedItem'
-import Category from './Category'
-import AttributeValue from './AttributeValue'
+import RatedItem from '@/models/RatedItem'
+import Category from '@/models/Category'
+import AttributeValue from '@/models/AttributeValue'
 
 @Entity()
 export default class Item {

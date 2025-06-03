@@ -1,8 +1,8 @@
 import {
   Entity, PrimaryGeneratedColumn, Column, OneToMany,
 } from 'typeorm'
-import RatedItem from './RatedItem'
-import UserRole from './UserRole'
+import RatedItem from '@/models/RatedItem'
+import UserRole from '@/models/UserRole'
 
 @Entity()
 export default class User {

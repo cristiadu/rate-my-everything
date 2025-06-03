@@ -6,13 +6,13 @@ import rateLimit from 'express-rate-limit'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 
-import RatedItem from './models/RatedItem'
-import Item from './models/Item'
-import User from './models/User'
-import Attribute from './models/Attribute'
-import AttributeValue from './models/AttributeValue'
-import Category from './models/Category'
-import { routes, authenticationFilter } from './routes/RouterAuthConfig'
+import RatedItem from '@/models/RatedItem'
+import Item from '@/models/Item'
+import User from '@/models/User'
+import Attribute from '@/models/Attribute'
+import AttributeValue from '@/models/AttributeValue'
+import Category from '@/models/Category'
+import { routes, authenticationFilter } from '@/routes/RouterAuthConfig'
 
 const app = express()
 
@@ -26,7 +26,7 @@ const limiter = rateLimit({
 app.use(cors())
 app.use(bodyParser.json())
 
-// eslint-disable-next-line import/prefer-default-export
+ 
 export const DBConnection: DataSource = new DataSource({
   name: 'default',
   type: 'postgres',

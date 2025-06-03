@@ -1,8 +1,8 @@
 import {
   Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn,
 } from 'typeorm'
-import Item from './Item'
-import Attribute from './Attribute'
+import Item from '@/models/Item'
+import Attribute from '@/models/Attribute'
 
 @Entity()
 export default class AttributeValue {

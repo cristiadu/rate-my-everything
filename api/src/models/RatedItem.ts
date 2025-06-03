@@ -2,8 +2,8 @@ import {
   Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn,
 } from 'typeorm'
 import { Min, Max } from 'class-validator'
-import User from './User'
-import Item from './Item'
+import User from '@/models/User'
+import Item from '@/models/Item'
 
 @Entity()
 export default class RatedItem {
