@@ -4,7 +4,7 @@ Web-based application focused on rating different objects/interests based of mul
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
-[![Node.js CI](https://github.com/cristiadu/rate-my-everything/actions/workflows/node.js.yml/badge.svg)](https://github.com/cristiadu/rate-my-everything/actions/workflows/node.js.yml)
+[![Project's CI](https://github.com/cristiadu/rate-my-everything/actions/workflows/node.js.yml/badge.svg)](https://github.com/cristiadu/rate-my-everything/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/cristiadu/rate-my-everything/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/cristiadu/rate-my-everything/actions/workflows/codeql-analysis.yml)
 
 ## Development Progress
