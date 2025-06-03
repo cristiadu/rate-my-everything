@@ -3,7 +3,7 @@ import User from '@/models/User'
 import BaseService from '@/services/BaseService'
 
 // create user service based on RatedItemService.ts in this directory
-export default class UserService extends BaseService {
+export default class UserService extends BaseService<User> {
   constructor() {
     super(User)
   }

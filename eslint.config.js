@@ -31,7 +31,9 @@ const compat = new FlatCompat({
 })
 
 export default [
-  // Global ESLint settings
+  // ===========================
+  // ROOT CONFIGURATION - Shared settings for all modules
+  // ===========================
   {
     ignores: [
       '**/node_modules/**',
@@ -42,8 +44,6 @@ export default [
       '**/storybook-static/**',
     ],
   },
-
-  // Base settings for all files
   {
     languageOptions: {
       ecmaVersion: 'latest',
@@ -53,16 +53,8 @@ export default [
       reportUnusedDisableDirectives: true,
     },
   },
-
-  // Apply JavaScript settings
   js.configs.recommended,
-
-  // Use legacy configs through FlatCompat
   ...compat.extends('plugin:@typescript-eslint/recommended'),
-  ...compat.extends('plugin:react/recommended'),
-  ...compat.extends('plugin:storybook/recommended'),
-
-  // Base rules for all files
   {
     files: ['**/*.{js,mjs,cjs,jsx,ts,tsx}'],
     rules: {
@@ -73,8 +65,44 @@ export default [
       }],
     },
   },
+  {
+    files: ['**/*.{ts,tsx}'],
+    rules: {
+      'no-shadow': 'off',
+      '@typescript-eslint/no-shadow': 'error',
+      'no-unused-vars': 'off',
+      '@typescript-eslint/no-unused-vars': 'error',
+    },
+  },
+  {
+    files: [
+      '**/*.test.{js,jsx,ts,tsx}',
+      '**/__tests__/**/*.{js,jsx,ts,tsx}',
+    ],
+    languageOptions: {
+      globals: {
+        jest: true,
+        expect: true,
+        describe: true,
+        it: true,
+        beforeEach: true,
+        afterEach: true,
+      },
+    },
+  },
 
-  // Rules for UI React files
+  // ===========================
+  // UI MODULE CONFIGURATION
+  // ===========================
+  {
+    settings: {
+      react: {
+        version: '19.1.0',
+      },
+    },
+  },
+  ...compat.extends('plugin:react/recommended'),
+  ...compat.extends('plugin:storybook/recommended'),
   {
     files: ['ui/**/*.{jsx,tsx}'],
     languageOptions: {
@@ -87,6 +115,15 @@ export default [
     plugins: {
       import: importPlugin,
       react: reactPlugin
+    },
+    settings: {
+      'import/resolver': {
+        typescript: {
+          project: './ui/tsconfig.json',
+          alwaysTryTypes: true,
+        },
+        node: true,
+      },
     },
     rules: {
       'react/jsx-props-no-spreading': ['off'],
@@ -112,29 +149,23 @@ export default [
           stories: 'always',
         },
       ],
-    },
-    settings: {
-      'import/resolver': {
-        typescript: {
-          project: './ui/tsconfig.json',
-          alwaysTryTypes: true,
-        },
-      },
+      'import/no-unresolved': 'error',
     },
   },
-
-  // Rules for TypeScript files
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.stories.@(js|jsx|ts|tsx)'],
+    plugins: {
+      import: importPlugin
+    },
     rules: {
-      'no-shadow': 'off',
-      '@typescript-eslint/no-shadow': 'error',
-      'no-unused-vars': 'off',
-      '@typescript-eslint/no-unused-vars': 'error',
+      'import/no-extraneous-dependencies': 'off',
+      'react/prop-types': 'off',
     },
   },
 
-  // Rules for API TypeScript files
+  // ===========================
+  // API MODULE CONFIGURATION
+  // ===========================
   {
     files: ['api/src/**/*.ts'],
     plugins: {
@@ -142,6 +173,7 @@ export default [
     },
     rules: {
       'import/extensions': ['error', 'never'],
+      'import/no-unresolved': 'error',
     },
     settings: {
       'import/resolver': {
@@ -152,36 +184,13 @@ export default [
         node: {
           extensions: ['.js', '.ts'],
         },
+        alias: {
+          map: [
+            ['@', './api/src']
+          ],
+          extensions: ['.ts', '.js', '.json']
+        }
       },
-    },
-  },
-
-  // Test file configurations
-  {
-    files: [
-      '**/*.test.{js,jsx,ts,tsx}',
-      '**/__tests__/**/*.{js,jsx,ts,tsx}',
-    ],
-    languageOptions: {
-      globals: {
-        jest: true,
-        expect: true,
-        describe: true,
-        it: true,
-        beforeEach: true,
-        afterEach: true,
-      },
-    },
-  },
-
-  // Storybook files
-  {
-    files: ['**/*.stories.@(js|jsx|ts|tsx)'],
-    plugins: {
-      import: importPlugin
-    },
-    rules: {
-      'import/no-extraneous-dependencies': 'off',
     },
   },
 ]

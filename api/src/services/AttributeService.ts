@@ -2,10 +2,11 @@ import { DBConnection } from '@/index'
 import Attribute from '@/models/Attribute'
 import AttributeValue from '@/models/AttributeValue'
 import BaseService from '@/services/BaseService'
+import { Repository } from 'typeorm'
 
 // Method for CRUD of an Attribute and AttributeValue
-class AttributeService extends BaseService {
-  private privateAttValueRepository: any
+class AttributeService extends BaseService<Attribute> {
+  private privateAttValueRepository: Repository<AttributeValue> | null = null
 
   constructor() {
     super(Attribute)

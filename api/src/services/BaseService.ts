@@ -1,12 +1,12 @@
-import { Repository } from 'typeorm'
+import { EntityTarget, Repository } from 'typeorm'
 import { DBConnection } from '@/index'
 
-export default class BaseService {
-  private privateRepository: Repository<any> | null = null
+export default class BaseService<T extends object> {
+  private privateRepository: Repository<T> | null = null
 
-  private repositoryType: any
+  private repositoryType: EntityTarget<T>
 
-  constructor(repositoryType: any) {
+  constructor(repositoryType: EntityTarget<T>) {
     this.repositoryType = repositoryType
   }
 

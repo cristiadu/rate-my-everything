@@ -1,5 +1,5 @@
 import React from 'react'
-import { StoryFn, Meta } from '@storybook/react'
+import { StoryFn, Meta } from '@storybook/react-webpack5'
 import { Button } from 'react-bulma-components'
 
 export default {
@@ -12,7 +12,7 @@ export type ButtonStoryOptions = {
   text: string
 }
 
-const Template: StoryFn<any> = ({ props, text }: ButtonStoryOptions) => <Button {...props}>{ text }</Button>
+const Template: StoryFn<ButtonStoryOptions> = ({ props, text }) => <Button {...props}>{ text }</Button>
 
 export const Primary = Template.bind({})
 Primary.args = {
