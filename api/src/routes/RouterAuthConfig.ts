@@ -45,7 +45,7 @@ export function authenticationFilter(req: Request, res: Response, next: NextFunc
     return res.sendStatus(500) // Internal server error
   }
 
-  jwt.verify(token, jwtSecret, undefined, (err: VerifyErrors | null, user: string | JwtPayload | undefined) => {
+  return jwt.verify(token, jwtSecret, undefined, (err: VerifyErrors | null, user: string | JwtPayload | undefined) => {
     if (err) {
       return res.sendStatus(401)
     }
@@ -70,9 +70,8 @@ export function authenticationFilter(req: Request, res: Response, next: NextFunc
       return res.sendStatus(403) // Forbidden
     }
 
-    req.user = user as User
+    // Pass the user information to the next middleware by using res.locals instead of req.user
+    res.locals.user = user as User
     return next() // pass the execution off to whatever request the client intended
   })
-
-  return res.sendStatus(500) // invalid status
 }

@@ -43,7 +43,11 @@ DBConnection.initialize()
     console.log('Data Source has been initialized!')
 
     app.use(limiter)
-    app.use(authenticationFilter)
+    
+    // Apply authentication filter to all routes except unprotected ones
+    app.use((req, res, next) => {
+      authenticationFilter(req, res, next)
+    })
 
     // Use the routes
     routes.forEach((route) => app.use(route.path, route.controller()))

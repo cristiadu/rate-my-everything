@@ -7,22 +7,29 @@ jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/checkout@v4
+      - name: Setup PNPM
+        uses: pnpm/action-setup@a7487c7e89a18df4991f7f222e4898a00d66ddda # 4.1.0
         with:
-          node-version: '21'
+          package_json_file: package.json
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 #4.4.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
       - name: Set git user
         run: |
           git fetch origin main
           git config --global user.name "$(git log -1 --pretty=format:'%an' origin/main)"
           git config --global user.email "$(git log -1 --pretty=format:'%ae' origin/main)"
       - name: Install Dependencies
-        run: npm ci
-      - name: Run tests
-        run: npm run test
+        run: pnpm install
+      - name: Build
+        run: pnpm build
       - name: Release
         env:
           ACTIONS_DEPLOY_KEY: ${{ secrets.GITHUB_TOKEN }}
-        run: npm run release
+        run: pnpm release
