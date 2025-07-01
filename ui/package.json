@@ -14,7 +14,7 @@
         "build-storybook": "storybook build"
     },
     "dependencies": {
-        "@types/node": "^22.15.29",
+        "@types/node": "^24.0.10",
         "@types/react": "^19.1.6",
         "@types/react-dom": "^19.1.5",
         "react": "^19.1.0",
