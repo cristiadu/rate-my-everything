@@ -30,7 +30,7 @@
         "@babel/preset-env": "^7.27.2",
         "@babel/preset-react": "^7.27.1",
         "@babel/preset-typescript": "^7.27.1",
-        "@chromatic-com/storybook": "^4.0.0",
+        "@chromatic-com/storybook": "^4.1.1",
         "@storybook/addon-links": "^9.0.4",
         "@storybook/addon-onboarding": "^9.0.4",
         "@storybook/addon-webpack5-compiler-swc": "^3.0.0",
