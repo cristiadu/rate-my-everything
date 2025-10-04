@@ -33,9 +33,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
 
       localStorage.setItem('authToken', data.token)
       onSuccess(data.token)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during login')
+    } catch (err) {
+      const errorMessage = err instanceof Error ? err.message : 'An error occurred during login'
+      setError(errorMessage)
     } finally {
       setIsLoading(false)
     }

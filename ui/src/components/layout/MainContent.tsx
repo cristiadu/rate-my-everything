@@ -14,8 +14,9 @@ const rankings: RankingItem[] = [
     item_name: 'iPhone 12',
     item_id: 1,
     rating: 4.5,
-    // eslint-disable-next-line max-len
-    item_img_url: 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-blue-select-2020?wid=940&hei=1112&fmt=png-alpha&qlt=80&.v=1604343704000',
+    item_img_url: 
+      'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-blue-select-2020?' + 
+      'wid=940&hei=1112&fmt=png-alpha&qlt=80&.v=1604343704000',
   },
   {
     category: 'Books',
