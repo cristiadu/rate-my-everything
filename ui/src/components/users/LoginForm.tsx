@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import ApiConfig from '../../config/ApiConfig';
+import React, { useState } from 'react'
+import ApiConfig from '../../config/ApiConfig'
 
 interface LoginFormProps {
   onSuccess: (token: string) => void;
 }
 
 const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    setError('');
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    setIsLoading(true)
+    setError('')
 
     try {
       const response = await fetch(`${ApiConfig.API_URL}${ApiConfig.ENDPOINTS.LOGIN}`, {
@@ -23,22 +23,23 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username, password }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to login');
+        throw new Error(data.error || 'Failed to login')
       }
 
-      localStorage.setItem('authToken', data.token);
-      onSuccess(data.token);
+      localStorage.setItem('authToken', data.token)
+      onSuccess(data.token)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      setError(err.message || 'An error occurred during login');
+      setError(err.message || 'An error occurred during login')
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="box">
@@ -84,7 +85,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
         </div>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default LoginForm;
+export default LoginForm

@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express'
 import UserService from '@/services/UserService'
+import User from '@/models/User'
 
 export default class LoginController {
   public router = Router()
@@ -13,7 +14,7 @@ export default class LoginController {
   public initializeRoutes() {
     this.router.post('/', this.login)
     this.router.post('/register', (req, res) => {
-      this.register(req, res);
+      this.register(req, res)
     })
   }
 
@@ -50,11 +51,14 @@ export default class LoginController {
         email,
         password,
         roles: roles || [],
-        ratedItems: [],
+        ratedItems: []
       }
-      const user = await this.userService.create(userObj as any)
-      // Never return password
-      const { password: _, ...userSafe } = user
+      
+      // Using Omit<User, 'id'> since id is auto-generated
+      const user = await this.userService.create(userObj as Omit<User, 'id'>)
+      
+      // Never return password - destructure to omit password from response
+      const userSafe = { ...user, password: undefined }
       res.status(201).json(userSafe)
     } catch (error) {
       console.error('Registration error:', error)

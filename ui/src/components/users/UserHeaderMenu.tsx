@@ -39,8 +39,9 @@ const UserHeaderMenu = () => {
       // Reset form
       setUsername('')
       setPassword('')
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
-      setError(err.message)
+      setError(err.message || 'An error occurred')
     } finally {
       setIsLoading(false)
     }

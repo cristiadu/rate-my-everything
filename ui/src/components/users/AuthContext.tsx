@@ -1,4 +1,5 @@
-import React, { createContext, useState, useContext, useEffect } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
 
 interface AuthContextType {
   isAuthenticated: boolean;
@@ -12,58 +13,62 @@ const AuthContext = createContext<AuthContextType>({
   token: null,
   login: () => {},
   logout: () => {},
-});
+})
 
-export const useAuth = () => useContext(AuthContext);
+export const useAuth = () => useContext(AuthContext)
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'));
-  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!token);
+  const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'))
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!token)
 
   useEffect(() => {
     // Check for token on initial load
-    const storedToken = localStorage.getItem('authToken');
+    const storedToken = localStorage.getItem('authToken')
     if (storedToken) {
-      setToken(storedToken);
-      setIsAuthenticated(true);
+      setToken(storedToken)
+      setIsAuthenticated(true)
     }
-  }, []);
+  }, [])
 
   const login = (newToken: string) => {
-    localStorage.setItem('authToken', newToken);
-    setToken(newToken);
-    setIsAuthenticated(true);
-  };
+    localStorage.setItem('authToken', newToken)
+    setToken(newToken)
+    setIsAuthenticated(true)
+  }
 
   const logout = () => {
-    localStorage.removeItem('authToken');
-    setToken(null);
-    setIsAuthenticated(false);
-  };
+    localStorage.removeItem('authToken')
+    setToken(null)
+    setIsAuthenticated(false)
+  }
 
   return (
     <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
       {children}
     </AuthContext.Provider>
-  );
-};
+  )
+}
 
 // Create a HOC (Higher Order Component) for protected routes
 export const withAuth = <P extends object>(
   Component: React.ComponentType<P>,
-  redirectPath: string = '/'
+  redirectPath: string = '/login'
 ) => {
-  return (props: P) => {
-    const { isAuthenticated } = useAuth();
+  const WithAuthComponent = (props: P) => {
+    const { isAuthenticated } = useAuth()
+    const location = useLocation()
     
-    // If not authenticated, could redirect here using React Router
-    // For now, we'll just render null or could show a login prompt
+    // If not authenticated, redirect to login page
     if (!isAuthenticated) {
-      return <div>Please log in to access this page. Redirecting...</div>;
+      // Redirect to login page with the return URL in state
+      return <Navigate to={redirectPath} state={{ from: location }} replace />
     }
     
-    return <Component {...props} />;
-  };
-};
+    return <Component {...props} />
+  }
+  
+  WithAuthComponent.displayName = `WithAuth(${Component.displayName || Component.name || 'Component'})`
+  return WithAuthComponent
+}
 
-export default AuthContext;
+export default AuthContext

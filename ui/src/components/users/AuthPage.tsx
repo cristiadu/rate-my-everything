@@ -1,20 +1,20 @@
-import React, { useState } from 'react';
-import LoginForm from '@/components/users/LoginForm';
-import RegisterForm from '@/components/users/RegisterForm';
-import { useAuth } from '@/components/users/AuthContext';
+import React, { useState } from 'react'
+import LoginForm from '@/components/users/LoginForm'
+import RegisterForm from '@/components/users/RegisterForm'
+import { useAuth } from '@/components/users/AuthContext'
 
 const AuthPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login');
-  const { login } = useAuth();
+  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
+  const { login } = useAuth()
   
   const handleLoginSuccess = (token: string) => {
-    login(token);
+    login(token)
     // In a real app, you might redirect here
-  };
+  }
   
   const handleRegisterSuccess = () => {
-    setActiveTab('login');
-  };
+    setActiveTab('login')
+  }
 
   return (
     <div className="container">
@@ -39,7 +39,7 @@ const AuthPage: React.FC = () => {
         </div>
       </div>
     </div>
-  );
-};
+  )
+}
 
-export default AuthPage;
+export default AuthPage

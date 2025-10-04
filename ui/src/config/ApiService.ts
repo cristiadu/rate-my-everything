@@ -1,7 +1,8 @@
-import ApiConfig from './ApiConfig';
+import ApiConfig from './ApiConfig'
 
 interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   body?: any;
   includeAuth?: boolean;
 }
@@ -12,17 +13,17 @@ export default class ApiService {
       method = 'GET', 
       body = null, 
       includeAuth = true 
-    } = options;
+    } = options
     
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
-    };
+    }
 
     // Add authorization header if token exists and includeAuth is true
     if (includeAuth) {
-      const token = localStorage.getItem('authToken');
+      const token = localStorage.getItem('authToken')
       if (token) {
-        headers.Authorization = `Bearer ${token}`;
+        headers.Authorization = `Bearer ${token}`
       }
     }
 
@@ -30,51 +31,49 @@ export default class ApiService {
       method,
       headers,
       body: body ? JSON.stringify(body) : null,
-    };
-
-    const url = `${ApiConfig.API_URL}${endpoint}`;
-    
-    try {
-      const response = await fetch(url, config);
-      
-      // Check if response is JSON before parsing
-      const contentType = response.headers.get('content-type');
-      let data;
-      
-      if (contentType && contentType.includes('application/json')) {
-        data = await response.json();
-      } else {
-        data = await response.text();
-      }
-      
-      if (!response.ok) {
-        // Format error message from response if available
-        const errorMessage = typeof data === 'object' && data.error 
-          ? data.error 
-          : 'An error occurred with the API request';
-          
-        throw new Error(errorMessage);
-      }
-      
-      return data as T;
-    } catch (error) {
-      throw error;
     }
+
+    const url = `${ApiConfig.API_URL}${endpoint}`
+    
+    const response = await fetch(url, config)
+      
+    // Check if response is JSON before parsing
+    const contentType = response.headers.get('content-type')
+    let data
+      
+    if (contentType && contentType.includes('application/json')) {
+      data = await response.json()
+    } else {
+      data = await response.text()
+    }
+      
+    if (!response.ok) {
+      // Format error message from response if available
+      const errorMessage = typeof data === 'object' && data.error 
+        ? data.error 
+        : 'An error occurred with the API request'
+          
+      throw new Error(errorMessage)
+    }
+      
+    return data as T
   }
 
   static get<T>(endpoint: string, includeAuth = true): Promise<T> {
-    return this.request<T>(endpoint, { method: 'GET', includeAuth });
+    return this.request<T>(endpoint, { method: 'GET', includeAuth })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static post<T>(endpoint: string, body: any, includeAuth = true): Promise<T> {
-    return this.request<T>(endpoint, { method: 'POST', body, includeAuth });
+    return this.request<T>(endpoint, { method: 'POST', body, includeAuth })
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   static put<T>(endpoint: string, body: any, includeAuth = true): Promise<T> {
-    return this.request<T>(endpoint, { method: 'PUT', body, includeAuth });
+    return this.request<T>(endpoint, { method: 'PUT', body, includeAuth })
   }
 
   static delete<T>(endpoint: string, includeAuth = true): Promise<T> {
-    return this.request<T>(endpoint, { method: 'DELETE', includeAuth });
+    return this.request<T>(endpoint, { method: 'DELETE', includeAuth })
   }
 }

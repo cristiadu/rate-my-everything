@@ -9,7 +9,7 @@ export default class UserService extends BaseService<User> {
     super(User)
   }
 
-  async create(user: User): Promise<User> {
+  async create(user: Omit<User, 'id'>): Promise<User> {
     // Hash the password before saving
     const saltRounds = 10
     const hashedPassword = await bcrypt.hash(user.password, saltRounds)

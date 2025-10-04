@@ -1,28 +1,28 @@
-import React, { useState } from 'react';
-import ApiConfig from '@/config/ApiConfig';
+import React, { useState } from 'react'
+import ApiConfig from '@/config/ApiConfig'
 
 interface RegisterFormProps {
   onSuccess: () => void;
 }
 
 const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
-  const [error, setError] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
+  const [username, setUsername] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [confirmPassword, setConfirmPassword] = useState('')
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
     
     if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
+      setError('Passwords do not match')
+      return
     }
     
-    setIsLoading(true);
-    setError('');
+    setIsLoading(true)
+    setError('')
 
     try {
       const response = await fetch(`${ApiConfig.API_URL}${ApiConfig.ENDPOINTS.REGISTER}`, {
@@ -36,21 +36,25 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
           password,
           roles: [], // Default to no roles, admin can add roles later
         }),
-      });
+      })
 
-      const data = await response.json();
+      const data = await response.json()
 
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to register');
+        throw new Error(data.error || 'Failed to register')
       }
 
-      onSuccess();
-    } catch (err: any) {
-      setError(err.message || 'An error occurred during registration');
+      onSuccess()
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || 'An error occurred during registration')
+      } else {
+        setError('An error occurred during registration')
+      }
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <div className="box">
@@ -124,7 +128,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
         </div>
       </form>
     </div>
-  );
-};
+  )
+}
 
-export default RegisterForm;
+export default RegisterForm
