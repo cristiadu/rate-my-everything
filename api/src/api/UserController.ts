@@ -7,12 +7,6 @@ export default class UserController {
   private userService = new UserService()
 
   constructor() {
-    this.getAll = this.getAll.bind(this)
-    this.getByUsername = this.getByUsername.bind(this)
-    this.getById = this.getById.bind(this)
-    this.create = this.create.bind(this)
-    this.update = this.update.bind(this)
-    this.delete = this.delete.bind(this)
     this.initializeRoutes()
   }
 

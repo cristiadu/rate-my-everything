@@ -7,11 +7,6 @@ export default class CategoryController {
   private categoryService = new CategoryService()
 
   constructor() {
-    this.getAll = this.getAll.bind(this)
-    this.getByName = this.getByName.bind(this)
-    this.create = this.create.bind(this)
-    this.update = this.update.bind(this)
-    this.delete = this.delete.bind(this)
     this.initializeRoutes()
   }
 

@@ -7,13 +7,14 @@ export default class LoginController {
   private userService = new UserService()
 
   constructor() {
-    this.login = this.login.bind(this)
     this.initializeRoutes()
   }
 
   public initializeRoutes() {
     this.router.post('/', this.login)
-    // Add more routes as needed
+    this.router.post('/register', (req, res) => {
+      this.register(req, res);
+    })
   }
 
   public async login(req: Request, res: Response) {
@@ -21,13 +22,43 @@ export default class LoginController {
       const { username, password } = req.body
       const jwtToken = await this.userService.login(username, password)
       if (jwtToken) {
-        res.status(200).send(JSON.stringify({ token: jwtToken }))
+        res.status(200).json({ token: jwtToken })
       } else {
-        res.status(401).send('Invalid username or password')
+        res.status(401).json({ error: 'Invalid username or password' })
       }
     } catch (error) {
       console.error('Exception occurred:', error)
-      res.status(500).send('An internal server error occurred')
+      res.status(500).json({ error: 'An internal server error occurred' })
+    }
+  }
+
+  public async register(req: Request, res: Response) {
+    try {
+      const { username, email, password, roles } = req.body
+      if (!username || !email || !password) {
+        return res.status(400).json({ error: 'Missing required fields' })
+      }
+
+      // Check if user already exists
+      const existingUser = await this.userService.getByUsername(username)
+      if (existingUser) {
+        return res.status(409).json({ error: 'Username already exists' })
+      }
+
+      const userObj = {
+        username,
+        email,
+        password,
+        roles: roles || [],
+        ratedItems: [],
+      }
+      const user = await this.userService.create(userObj as any)
+      // Never return password
+      const { password: _, ...userSafe } = user
+      res.status(201).json(userSafe)
+    } catch (error) {
+      console.error('Registration error:', error)
+      res.status(500).json({ error: 'An internal server error occurred' })
     }
   }
 }
