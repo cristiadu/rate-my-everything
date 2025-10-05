@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react';
+import React, { useEffect } from 'react'
 
 const HealthCheck: React.FC = () => {
   useEffect(() => {
@@ -6,22 +6,22 @@ const HealthCheck: React.FC = () => {
     const healthStatus = {
       status: 'ok',
       message: 'Frontend is healthy',
-      timestamp: new Date().toISOString(),
-    };
+      timestamp: new Date().toISOString()
+    }
     
     // This will be visible in the Network tab for the /health route
-    document.title = 'Health Check OK';
+    document.title = 'Health Check OK'
     
     // For APIs that might want to consume this endpoint
-    const meta = document.createElement('meta');
-    meta.name = 'health-status';
-    meta.content = JSON.stringify(healthStatus);
-    document.head.appendChild(meta);
+    const meta = document.createElement('meta')
+    meta.name = 'health-status'
+    meta.content = JSON.stringify(healthStatus)
+    document.head.appendChild(meta)
     
     return () => {
-      document.head.removeChild(meta);
-    };
-  }, []);
+      document.head.removeChild(meta)
+    }
+  }, [])
 
   // Return an empty div with health status as data attribute
   return (
@@ -31,7 +31,7 @@ const HealthCheck: React.FC = () => {
       data-timestamp={new Date().toISOString()}
       style={{ display: 'none' }}
     />
-  );
-};
+  )
+}
 
-export default HealthCheck;
+export default HealthCheck
