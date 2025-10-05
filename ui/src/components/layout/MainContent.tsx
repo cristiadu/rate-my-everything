@@ -4,6 +4,7 @@ import { Content } from 'react-bulma-components'
 import Index from '@/components/index/Index'
 import OverallRankings from '@/components/rankings/OverallRankings'
 import CreateUserForm from '@/components/users/CreateUserForm'
+import HealthCheck from '@/components/health/HealthCheck'
 
 import { RankingItem } from '../types'
 
@@ -42,6 +43,7 @@ const MainContent = () => (
         <Route path="/user/create" element={<CreateUserForm />} />
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
+        <Route path="/health" element={<HealthCheck />} />
         <Route path="/*" element={<Index />} />
         {/* Add other routes as needed */}
       </Routes>

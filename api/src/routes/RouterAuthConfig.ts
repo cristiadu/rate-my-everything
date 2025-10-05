@@ -7,12 +7,14 @@ import ItemController from '@/api/ItemController'
 import CategoryController from '@/api/CategoryController'
 import UserRole from '@/models/UserRole'
 import LoginController from '@/api/LoginController'
+import HealthController from '@/api/HealthController'
 import { NextFunction, Request, Response } from 'express'
 import User from '@/models/User'
 
 export const unprotectedRoutes = new Set([
   '/api/login',
   '/api/login/register',
+  '/api/health',
   // Add more unprotected routes as needed
 ])
 
@@ -23,6 +25,7 @@ export const routes = [
   { path: '/api/attributes', controller: () => new AttributeController().router, roles: [UserRole.ADMIN] },
   { path: '/api/items', controller: () => new ItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/categories', controller: () => new CategoryController().router, roles: [UserRole.USER, UserRole.ADMIN] },
+  { path: '/api/health', controller: () => new HealthController().router, roles: [] },
   // Add more routes as needed
 ]
 

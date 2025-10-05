@@ -14,8 +14,6 @@ jobs:
   build:
     name: Project's CI
     runs-on: ubuntu-latest
-    env:
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
     steps:
     - uses: actions/checkout@v4
     - name: Setup PNPM
@@ -35,3 +33,87 @@ jobs:
     - run: pnpm build
     - run: pnpm -C ui build-storybook
     - run: pnpm test
+    
+    # Set up database for backend tests
+    - name: Set up PostgreSQL
+      run: |
+        docker run --name postgres-test -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=rate_my_everything_test -p 5432:5432 -d postgres
+        # Wait for PostgreSQL to start
+        sleep 5
+    
+    # Health check for backend application
+    - name: Start Backend and verify it's running
+      run: |
+        # Export environment variables for the backend
+        export DATABASE_URL="postgresql://postgres:postgres@localhost:5432/rate_my_everything_test"
+        export JWT_SECRET="test-jwt-secret-for-ci"
+        export PORT=3000
+        
+        # Start the backend application
+        cd api && nohup pnpm start > backend.log 2>&1 &
+        # Save the PID to stop it later
+        echo "BACKEND_PID=$!" >> $GITHUB_ENV
+        
+        # Wait for backend to become available with retries
+        attempt_counter=0
+        max_attempts=15
+        echo "Waiting for backend to start..."
+        
+        until $(curl --output /dev/null --silent --fail http://localhost:3000/api/health); do
+          if [ ${attempt_counter} -eq ${max_attempts} ]; then
+            echo "Max attempts reached. Backend health check failed."
+            cat backend.log
+            exit 1
+          fi
+          
+          printf '.'
+          attempt_counter=$(($attempt_counter+1))
+          sleep 3
+        done
+        
+        # Verify backend health
+        response=$(curl -s http://localhost:3000/api/health)
+        echo "Backend Health Response: $response"
+        if [[ "$response" != *"status\":\"ok"* ]]; then
+          echo "Backend health check failed"
+          cat backend.log
+          exit 1
+        fi
+        
+        echo "✅ Backend is running successfully"
+    
+    # Health check for frontend application
+    - name: Start Frontend and verify it's running
+      run: |
+        # Start the frontend application on a different port
+        cd ui && PORT=3001 nohup pnpm start > frontend.log 2>&1 &
+        # Save the PID to stop it later
+        echo "FRONTEND_PID=$!" >> $GITHUB_ENV
+        
+        # Wait for frontend to become available with retries
+        attempt_counter=0
+        max_attempts=15
+        echo "Waiting for frontend to start..."
+        
+        until $(curl --output /dev/null --silent --fail http://localhost:3001/health); do
+          if [ ${attempt_counter} -eq ${max_attempts} ]; then
+            echo "Max attempts reached. Frontend health check failed."
+            cat frontend.log
+            exit 1
+          fi
+          
+          printf '.'
+          attempt_counter=$(($attempt_counter+1))
+          sleep 3
+        done
+        
+        echo "✅ Frontend is running successfully"
+    
+    # Clean up processes
+    - name: Cleanup processes
+      if: always()
+      run: |
+        kill $BACKEND_PID || true
+        kill $FRONTEND_PID || true
+        docker stop postgres-test || true
+        docker rm postgres-test || true
