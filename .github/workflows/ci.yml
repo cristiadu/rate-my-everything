@@ -50,7 +50,17 @@ jobs:
         export PORT=3000
         
         # Start the backend application
-        cd api && nohup pnpm start > backend.log 2>&1 &
+        cd api
+        # Show the output directory structure
+        echo "Dist folder content:"
+        ls -la ./dist
+        
+        # Show the compiled index.js file
+        echo "First 30 lines of index.js:"
+        head -n 30 ./dist/index.js
+        
+        # Start the application
+        nohup pnpm start > backend.log 2>&1 &
         # Save the PID to stop it later
         echo "BACKEND_PID=$!" >> $GITHUB_ENV
         
