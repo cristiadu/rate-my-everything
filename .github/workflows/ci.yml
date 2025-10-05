@@ -50,14 +50,22 @@ jobs:
         export PORT=3000
         
         # Start the backend application
-        cd api && nohup pnpm start > backend.log 2>&1 &
+        cd api
+        nohup pnpm start > backend.log 2>&1 &
         # Save the PID to stop it later
         echo "BACKEND_PID=$!" >> $GITHUB_ENV
+        
+        # Print working directory and check if log file exists
+        pwd
+        ls -la
         
         # Wait for backend to become available with retries
         attempt_counter=0
         max_attempts=15
         echo "Waiting for backend to start..."
+        
+        # Allow some time for server to start before checking health
+        sleep 10
         
         until $(curl --output /dev/null --silent --fail http://localhost:3000/api/health); do
           if [ ${attempt_counter} -eq ${max_attempts} ]; then
@@ -94,6 +102,13 @@ jobs:
         attempt_counter=0
         max_attempts=15
         echo "Waiting for frontend to start..."
+        
+        # Print working directory and check if log file exists
+        pwd
+        ls -la
+        
+        # Allow some time for server to start before checking health
+        sleep 10
         
         until $(curl --output /dev/null --silent --fail http://localhost:3001/health); do
           if [ ${attempt_counter} -eq ${max_attempts} ]; then
