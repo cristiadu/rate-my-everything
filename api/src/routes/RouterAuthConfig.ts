@@ -26,7 +26,6 @@ export const routes = [
   { path: '/api/items', controller: () => new ItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/categories', controller: () => new CategoryController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/health', controller: () => new HealthController().router, roles: [] },
-  // Add more routes as needed
 ]
 
 export function authenticationFilter(req: Request, res: Response, next: NextFunction) {

@@ -50,36 +50,7 @@ jobs:
         export PORT=3000
         
         # Start the backend application
-        cd api
-        
-        # Show the output directory structure
-        echo "Dist folder content:"
-        ls -la ./dist
-        
-        # Show the compiled index.js file
-        echo "First 30 lines of index.js:"
-        head -n 30 ./dist/index.js
-        
-        # Install tsconfig-paths to handle @ aliases at runtime
-        pnpm add tsconfig-paths
-        
-        # Create tsconfig-paths config file
-        cat > tsconfig-paths-config.js << 'EOF'
-        const { register } = require('tsconfig-paths');
-        register({
-          baseUrl: './dist',
-          paths: {
-            '@/*': ['*']
-          }
-        });
-        EOF
-        
-                # Use build folder directly to match path aliases
-        export NODE_PATH=./dist
-        
-        # Start the application
-        nohup pnpm start > backend.log 2>&1 &
-        
+        cd api && nohup pnpm start > backend.log 2>&1 &
         # Save the PID to stop it later
         echo "BACKEND_PID=$!" >> $GITHUB_ENV
         
@@ -87,9 +58,6 @@ jobs:
         attempt_counter=0
         max_attempts=15
         echo "Waiting for backend to start..."
-        
-        # Allow some time for server to start
-        sleep 5
         
         until $(curl --output /dev/null --silent --fail http://localhost:3000/api/health); do
           if [ ${attempt_counter} -eq ${max_attempts} ]; then
