@@ -7,17 +7,6 @@ export default class AttributeController {
   private attributeService = new AttributeService()
 
   constructor() {
-    this.getAllAttributes = this.getAllAttributes.bind(this)
-    this.getAllAttributeValues = this.getAllAttributeValues.bind(this)
-    this.getAllAttributeValuesByAttribute = this.getAllAttributeValuesByAttribute.bind(this)
-    this.getAttribute = this.getAttribute.bind(this)
-    this.getAttributeValue = this.getAttributeValue.bind(this)
-    this.createAttribute = this.createAttribute.bind(this)
-    this.createAttributeValue = this.createAttributeValue.bind(this)
-    this.updateAttribute = this.updateAttribute.bind(this)
-    this.updateAttributeValue = this.updateAttributeValue.bind(this)
-    this.deleteAttribute = this.deleteAttribute.bind(this)
-    this.deleteAttributeValue = this.deleteAttributeValue.bind(this)
     this.initializeRoutes()
   }
 
@@ -33,7 +22,6 @@ export default class AttributeController {
     this.router.put('/values/:id', this.updateAttributeValue)
     this.router.delete('/:id', this.deleteAttribute)
     this.router.delete('/values/:id', this.deleteAttributeValue)
-    // Add more routes as needed
   }
 
   public async getAllAttributes(req: Request, res: Response) {

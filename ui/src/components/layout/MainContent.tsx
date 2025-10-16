@@ -4,6 +4,7 @@ import { Content } from 'react-bulma-components'
 import Index from '@/components/index/Index'
 import OverallRankings from '@/components/rankings/OverallRankings'
 import CreateUserForm from '@/components/users/CreateUserForm'
+import HealthCheck from '@/components/health/HealthCheck'
 
 import { RankingItem } from '../types'
 
@@ -14,8 +15,9 @@ const rankings: RankingItem[] = [
     item_name: 'iPhone 12',
     item_id: 1,
     rating: 4.5,
-    // eslint-disable-next-line max-len
-    item_img_url: 'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-blue-select-2020?wid=940&hei=1112&fmt=png-alpha&qlt=80&.v=1604343704000',
+    item_img_url: 
+      'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-blue-select-2020?' + 
+      'wid=940&hei=1112&fmt=png-alpha&qlt=80&.v=1604343704000',
   },
   {
     category: 'Books',
@@ -41,6 +43,7 @@ const MainContent = () => (
         <Route path="/user/create" element={<CreateUserForm />} />
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
+        <Route path="/health" element={<HealthCheck />} />
         <Route path="/*" element={<Index />} />
         {/* Add other routes as needed */}
       </Routes>

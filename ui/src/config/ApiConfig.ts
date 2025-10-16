@@ -8,6 +8,7 @@ const ApiConfig = {
     ATTRIBUTES: '/attributes',
     ITEMS: '/items',
     CATEGORIES: '/categories',
+    HEALTH: '/health',
   },
 }
 

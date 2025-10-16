@@ -19,7 +19,6 @@ const CreateUserForm: React.FC = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
 
-    // Call your API here to create the user
     try {
       const response = await fetch(ApiConfig.API_URL + ApiConfig.ENDPOINTS.USERS, {
         method: 'POST',

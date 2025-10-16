@@ -7,12 +7,6 @@ export default class ItemController {
   private itemService = new ItemService()
 
   constructor() {
-    this.getAll = this.getAll.bind(this)
-    this.getAllByCategory = this.getAllByCategory.bind(this)
-    this.getById = this.getById.bind(this)
-    this.create = this.create.bind(this)
-    this.update = this.update.bind(this)
-    this.delete = this.delete.bind(this)
     this.initializeRoutes()
   }
 

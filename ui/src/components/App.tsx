@@ -5,6 +5,7 @@ import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import MainContent from '@/components/layout/MainContent'
 import FilterMenu from '@/components/filters/FilterMenu'
+import { AuthProvider } from '@/components/users/AuthContext'
 
 const App = () => {
   const navbarRef = useRef(null)
@@ -27,7 +28,7 @@ const App = () => {
   }, [])
 
   return (
-    <>
+    <AuthProvider>
       <Navbar className="is-fixed-top">
         <div ref={navbarRef} style={{ width: '100%' }}>
           <Header />
@@ -46,7 +47,7 @@ const App = () => {
           <Footer />
         </Hero.Footer>
       </Hero>
-    </>
+    </AuthProvider>
   )
 }
 export default App
