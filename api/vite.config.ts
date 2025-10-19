@@ -1,6 +1,6 @@
-import { defineConfig } from 'vite';
-import { VitePluginNode } from 'vite-plugin-node';
-import { resolve } from 'path';
+import { defineConfig } from 'vite'
+import { VitePluginNode } from 'vite-plugin-node'
+import { resolve } from 'path'
 
 export default defineConfig({
   resolve: {
@@ -37,4 +37,4 @@ export default defineConfig({
       exportName: 'app', // Not used here but required by the plugin
     }),
   ],
-});
+})
