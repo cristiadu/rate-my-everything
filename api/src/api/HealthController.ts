@@ -1,5 +1,4 @@
 import { Request, Response, Router } from 'express'
-import { DBConnection } from '@/index'
 import { runHealthChecks } from '@/services/HealthIndicators'
 import { HealthStatus } from '@/models/Health'
 import { NewApiError } from '@/models/APIError'
@@ -19,7 +18,7 @@ export default class HealthController {
 
   public async getHealth(_req: Request, res: Response) {
     try {
-      const health = await runHealthChecks();
+      const health = await runHealthChecks()
       
       if (health.status === HealthStatus.HEALTHY) {
         return res.status(200).json(health)

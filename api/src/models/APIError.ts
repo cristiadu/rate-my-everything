@@ -1,18 +1,18 @@
 export default class APIError {
-    code: string;
-    status: number;
-    message: string;
+    code: string
+    status: number
+    message: string
 
     constructor(code: APIErrorCodes, status: HttpStatusCode, message: string) {
-        this.code = code;
-        this.status = status;
-        this.message = message;
+        this.code = code
+        this.status = status
+        this.message = message
     }
 }
 
 export const NewApiError = (code: APIErrorCodes, status: HttpStatusCode, message: string): APIError => {
-    return new APIError(code, status, message);
-};
+    return new APIError(code, status, message)
+}
 
 export const API_ERROR_CODES = {
     UNAUTHORIZED: "UNAUTHORIZED",
@@ -22,7 +22,7 @@ export const API_ERROR_CODES = {
     VALIDATION_ERROR: "VALIDATION_ERROR",
     CONFLICT: "CONFLICT",
     TOO_MANY_REQUESTS: "TOO_MANY_REQUESTS"
-};
+}
 export type APIErrorCodes = typeof API_ERROR_CODES[keyof typeof API_ERROR_CODES];
 
 export type HttpStatusCode =
