@@ -9,7 +9,7 @@
     "dev": "vite",
     "deploy": "echo \"Deploy API\"",
     "release": "echo \"Release API\"",
-    "pretest": "docker run --name postgres-test -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=rate_my_everything_test -p 5432:5432 -d postgres:16",
+    "pretest": "docker rm -f postgres-test 2>/dev/null || true && docker run --name postgres-test -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=rate_my_everything_test -p 5432:5432 -d postgres:16",
     "test": "vitest run",
     "posttest": "docker stop postgres-test && docker rm postgres-test",
     "test:watch": "vitest",

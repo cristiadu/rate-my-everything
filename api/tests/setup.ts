@@ -2,7 +2,7 @@ import 'reflect-metadata'
 import * as dotenv from 'dotenv'
 import path from 'path'
 import '@testing-library/jest-dom'
-import { beforeAll } from 'vitest'
+import { beforeAll, afterAll } from 'vitest'
 import request from 'supertest'
 import bcrypt from 'bcrypt'
 
@@ -25,13 +25,12 @@ export let authToken: string | null = null
 
 beforeAll(async () => {
     // Wait for database connection to be initialized
-    const maxRetries = 10
+    const maxRetries = 15
     let retries = 0
     while (!DBConnection.isInitialized && retries < maxRetries) {
       console.log(`Waiting for database connection to initialize... (Attempt ${retries + 1}/${maxRetries})`)
       try {
-        // Wait a bit longer between attempts
-        await new Promise(resolve => setTimeout(resolve, 2000))
+        await new Promise(resolve => setTimeout(resolve, 3000))
         retries++
       } catch (err) {
         console.error('Error waiting for database initialization:', err)
@@ -82,4 +81,12 @@ beforeAll(async () => {
     } catch (error) {
       console.error('Error getting auth token:', error instanceof Error ? error.message : 'Unknown error')
     }
+})
+
+// Simple cleanup after all tests
+afterAll(async () => {
+  if (DBConnection.isInitialized) {
+    await DBConnection.destroy()
+    console.log('Database connection closed after tests')
+  }
 })

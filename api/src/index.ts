@@ -52,6 +52,12 @@ const DBConnection: DataSource = new DataSource({
   database: process.env.PGDATABASE || process.env.DATABASE_NAME,
   entities: [RatedItem, Item, User, Attribute, AttributeValue, Category],
   synchronize: true, // This will automatically create tables
+  connectTimeoutMS: 10000, // 10 seconds timeout for connection
+  extra: {
+    // Retry logic for connecting to the database
+    max: 10, // Maximum number of clients in the pool
+    connectionTimeoutMillis: 10000,
+  }
 })
 
 DBConnection.initialize()
