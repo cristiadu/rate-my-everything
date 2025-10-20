@@ -12,7 +12,7 @@ const config = {
     },
     '.': {
       project: ['./*.{ts,js}'],
-      ignoreDependencies: ["eslint-import-resolver-typescript"],
+      ignoreDependencies: [],
     },
   },
   ignore: [

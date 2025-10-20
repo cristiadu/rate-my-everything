@@ -10,7 +10,7 @@ export class AppHealthIndicator implements HealthIndicator {
     name = 'app'
 
     async checkHealth(): Promise<{ [key: string]: ComponentHealth }> {
-        return { [this.name]: new ComponentHealth(HealthStatus.HEALTHY) }
+        return { [this.name]: new ComponentHealth(HealthStatus.HEALTHY, 'Application is running smoothly') }
     }
 }
 
@@ -20,7 +20,7 @@ export class DatabaseHealthIndicator implements HealthIndicator {
     async checkHealth(): Promise<{ [key: string]: ComponentHealth }> {
         const isDbConnected = DBConnection.isInitialized
         const status = isDbConnected ? HealthStatus.HEALTHY : HealthStatus.UNHEALTHY
-        const message = isDbConnected ? undefined : 'Database connection failed'
+        const message = isDbConnected ? 'Database connection is healthy' : 'Database connection failed'
         return { [this.name]: new ComponentHealth(status, message) }
     }
 }

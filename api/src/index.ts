@@ -29,6 +29,24 @@ app.use(bodyParser.json())
 app.use(addDefaultHeaders)
 
  
+// Use dotenv directly here to ensure environment variables are loaded
+// This will handle the case when .env.test might not be loaded yet
+import * as dotenv from 'dotenv'
+import path from 'path'
+
+// Load environment-specific .env file
+if (process.env.NODE_ENV === 'test') {
+  dotenv.config({
+    path: path.resolve(__dirname, '../.env.test'),
+    override: true
+  })
+} else {
+  dotenv.config({
+    path: path.resolve(__dirname, '../.env'),
+    override: true
+  })
+}
+
 const DBConnection: DataSource = new DataSource({
   name: 'default',
   type: 'postgres',

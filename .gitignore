@@ -25,7 +25,6 @@ hs_err_pid*
 #Node.js and React.js build files
 node_modules/
 build/
-storybook-static/
 .pnpm-store/
 .pnpm-debug.log
 *-debug.log
@@ -38,5 +37,3 @@ package-lock.json
 # Dist folder
 dist/
 temp/
-
-*storybook.log

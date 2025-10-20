@@ -9,7 +9,6 @@ import reactPlugin from 'eslint-plugin-react'
 import reactHooksPlugin from 'eslint-plugin-react-hooks'
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y'
 import typescriptPlugin from '@typescript-eslint/eslint-plugin'
-import storybookPlugin from 'eslint-plugin-storybook'
 
 // Determine dirname in ESM
 const __filename = fileURLToPath(import.meta.url)
@@ -26,7 +25,6 @@ const compat = new FlatCompat({
     'react-hooks': reactHooksPlugin,
     'jsx-a11y': jsxA11yPlugin,
     '@typescript-eslint': typescriptPlugin,
-    storybook: storybookPlugin,
   },
 })
 
@@ -40,8 +38,6 @@ export default [
       '**/dist/**',
       '**/build/**',
       '**/coverage/**',
-      '**/.storybook/**',
-      '**/storybook-static/**',
     ],
   },
   {
@@ -102,7 +98,6 @@ export default [
     },
   },
   ...compat.extends('plugin:react/recommended'),
-  ...compat.extends('plugin:storybook/recommended'),
   {
     files: ['ui/**/*.{jsx,tsx}'],
     languageOptions: {
