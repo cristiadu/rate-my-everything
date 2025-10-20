@@ -24,13 +24,22 @@ export { app }
 export let authToken: string | null = null
 
 beforeAll(async () => {
-    if (!DBConnection.isInitialized) {
-      console.log('Waiting for database connection to initialize...')
+    // Wait for database connection to be initialized
+    const maxRetries = 10
+    let retries = 0
+    while (!DBConnection.isInitialized && retries < maxRetries) {
+      console.log(`Waiting for database connection to initialize... (Attempt ${retries + 1}/${maxRetries})`)
       try {
-        await new Promise(resolve => setTimeout(resolve, 1000))
+        // Wait a bit longer between attempts
+        await new Promise(resolve => setTimeout(resolve, 2000))
+        retries++
       } catch (err) {
         console.error('Error waiting for database initialization:', err)
       }
+    }
+
+    if (!DBConnection.isInitialized) {
+      throw new Error('Database connection failed to initialize after multiple attempts')
     }
     
     try {
