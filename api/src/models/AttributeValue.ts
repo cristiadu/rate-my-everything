@@ -17,6 +17,6 @@ export default class AttributeValue {
   @JoinColumn({ name: 'attribute_id' }) // This line names the column as 'attribute_id'
     attribute!: Attribute
 
-  @Column()
+  @Column('varchar')
     value!: string
 }

@@ -1,5 +1,8 @@
 import { Request, Response, Router } from 'express'
 import { DBConnection } from '@/index'
+import { runHealthChecks } from '@/services/HealthIndicators'
+import { HealthStatus } from '@/models/Health'
+import { NewApiError } from '@/models/APIError'
 
 export default class HealthController {
   public router = Router()
@@ -16,35 +19,16 @@ export default class HealthController {
 
   public async getHealth(_req: Request, res: Response) {
     try {
-      // Check database connection
-      const isConnected = DBConnection.isInitialized
+      const health = await runHealthChecks();
       
-      if (isConnected) {
-        return res.status(200).json({
-          status: 'ok',
-          message: 'API is healthy',
-          timestamp: new Date().toISOString(),
-          database: {
-            connected: true
-          }
-        })
+      if (health.status === HealthStatus.HEALTHY) {
+        return res.status(200).json(health)
       } else {
-        return res.status(503).json({
-          status: 'error',
-          message: 'Database connection issue',
-          timestamp: new Date().toISOString(),
-          database: {
-            connected: false
-          }
-        })
+        return res.status(500).json(health)
       }
     } catch (error) {
       console.error('Health check failed:', error)
-      return res.status(500).json({
-        status: 'error',
-        message: 'Health check failed',
-        timestamp: new Date().toISOString()
-      })
+      return res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 }

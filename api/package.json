@@ -9,7 +9,11 @@
     "dev": "vite",
     "deploy": "echo \"Deploy API\"",
     "release": "echo \"Release API\"",
-    "test": "echo \"WARN: no tests specified\" && exit 0",
+    "pretest": "docker rm -f postgres-test || true && docker run --name postgres-test -e POSTGRES_PASSWORD=postgres -e POSTGRES_USER=postgres -e POSTGRES_DB=rate_my_everything_test -p 5432:5432 -d postgres:16 && sleep 5",
+    "test": "vitest run",
+    "posttest": "docker stop postgres-test || true && docker rm postgres-test || true",
+    "test:watch": "vitest",
+    "test:coverage": "vitest run --coverage",
     "lint": "eslint --ext .ts src/",
     "upgrade-dependencies": "pnpm up --latest"
   },
@@ -28,14 +32,24 @@
     "typeorm": "^0.3.24"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
     "@types/body-parser": "^1.19.5",
     "@types/cors": "^2.8.18",
     "@types/express": "^5.0.2",
     "@types/jsonwebtoken": "^9.0.9",
     "@types/node": "^24.0.10",
     "@types/pg": "^8.15.4",
+    "@types/supertest": "^6.0.3",
+    "@vitest/coverage-v8": "^3.2.4",
+    "@vitest/ui": "^3.2.4",
+    "dotenv": "^17.2.3",
+    "msw": "^2.11.5",
+    "pg": "^8.16.3",
+    "supertest": "^7.1.4",
     "typescript": "^5.8.3",
     "vite": "^7.1.9",
-    "vite-plugin-node": "^7.0.0"
+    "vite-plugin-node": "^7.0.0",
+    "vite-tsconfig-paths": "^5.1.4",
+    "vitest": "^3.2.4"
   }
 }

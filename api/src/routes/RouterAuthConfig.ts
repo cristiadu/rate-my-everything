@@ -10,6 +10,7 @@ import LoginController from '@/api/LoginController'
 import HealthController from '@/api/HealthController'
 import { NextFunction, Request, Response } from 'express'
 import User from '@/models/User'
+import { NewApiError } from '@/models/APIError'
 
 export const unprotectedRoutes = new Set([
   '/api/login',
@@ -28,7 +29,7 @@ export const routes = [
   { path: '/api/health', controller: () => new HealthController().router, roles: [] },
 ]
 
-export function authenticationFilter(req: Request, res: Response, next: NextFunction) {
+export const authenticationFilter = (req: Request, res: Response, next: NextFunction) => {
   // Check if the route is unprotected
   if (unprotectedRoutes.has(req.path)) {
     return next()
@@ -37,31 +38,29 @@ export function authenticationFilter(req: Request, res: Response, next: NextFunc
   const authHeader = req.headers.authorization
   const token = authHeader && authHeader.split(' ')[1]
   if (authHeader == null || !authHeader.startsWith('Bearer ') || token == null) {
-    return res.sendStatus(401) // if the auth header is missing or not in the correct format
+    return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Missing or invalid authorization header'))
   }
 
   // Make sure JWT_SECRET is defined
   const jwtSecret = process.env.JWT_SECRET
   if (!jwtSecret) {
     console.error('JWT_SECRET environment variable is not defined')
-    return res.sendStatus(500) // Internal server error
+    return res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'Internal server error'))
   }
 
   return jwt.verify(token, jwtSecret, undefined, (err: VerifyErrors | null, user: string | JwtPayload | undefined) => {
     if (err) {
-      return res.sendStatus(401)
+      return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Invalid token'))
     }
 
     // User must be JwtPayload and parsed to User type
     if (typeof user !== 'object' || !('id' in user) || !('roles' in user)) {
-      console.error('Invalid user object in JWT payload:', user)
-      return res.sendStatus(401) // Unauthorized
+      return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Invalid user object in JWT payload'))
     }
 
     // Ensure user is of type User
     if (!Array.isArray(user.roles) || !user.roles.every(role => Object.values(UserRole).includes(role))) {
-      console.error('Invalid roles in user object:', user.roles)
-      return res.sendStatus(401) // Unauthorized
+      return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Invalid roles in user object'))
     }
 
     // Find the route that matches the request
@@ -69,11 +68,16 @@ export function authenticationFilter(req: Request, res: Response, next: NextFunc
 
     // Check if the user has one of the required roles
     if (!route || !route.roles.some((role) => user.roles.includes(role))) {
-      return res.sendStatus(403) // Forbidden
+      return res.status(403).json(NewApiError('FORBIDDEN', 403, 'You do not have permission to access this resource'))
     }
 
     // Pass the user information to the next middleware by using res.locals instead of req.user
     res.locals.user = user as User
     return next() // pass the execution off to whatever request the client intended
   })
+}
+
+export const addDefaultHeaders = (req: Request, res: Response, next: NextFunction) => {
+  res.setHeader('Content-Type', 'application/json')
+  next()
 }

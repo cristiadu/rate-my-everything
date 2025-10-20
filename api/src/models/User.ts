@@ -9,13 +9,13 @@ export default class User {
     @PrimaryGeneratedColumn()
       id!: number
 
-    @Column()
+    @Column('varchar')
       username!: string
 
-    @Column()
+    @Column('varchar')
       email!: string
 
-    @Column()
+    @Column('varchar')
       password!: string
 
     @Column('text', { array: true })

@@ -12,7 +12,9 @@ export default class LoginController {
   }
 
   public initializeRoutes() {
-    this.router.post('/', this.login)
+    this.router.post('/', (req, res) => {
+      this.login(req, res)
+    })
     this.router.post('/register', (req, res) => {
       this.register(req, res)
     })
@@ -21,9 +23,23 @@ export default class LoginController {
   public async login(req: Request, res: Response) {
     try {
       const { username, password } = req.body
-      const jwtToken = await this.userService.login(username, password)
-      if (jwtToken) {
-        res.status(200).json({ token: jwtToken })
+      
+      // Check for missing credentials
+      if (!username || !password) {
+        return res.status(400).json({ error: 'Username and password are required' })
+      }
+
+      const result = await this.userService.login(username, password)
+      if (result) {
+        const { token, user } = result
+        // Remove password from user object for security
+        const safeUser = {
+          id: user.id,
+          email: user.email,
+          name: user.username,
+          roles: user.roles
+        }
+        res.status(200).json({ token, user: safeUser })
       } else {
         res.status(401).json({ error: 'Invalid username or password' })
       }

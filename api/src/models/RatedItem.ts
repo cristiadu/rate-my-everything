@@ -23,6 +23,6 @@ export default class RatedItem {
   @JoinColumn({ name: 'user_id' }) // This line names the column as 'user_id'
     user!: User
 
-  @Column({ nullable: true })
+  @Column('varchar', { nullable: true })
     notes!: string
 }
