@@ -26,15 +26,10 @@ if (process.env.NODE_ENV === 'test') {
 
 const app = express()
 let server: http.Server
-
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 })
-
-app.use(limiter)
-app.use(cors())
-app.use(bodyParser.json())
 
 const DBConnection: DataSource = new DataSource({
   name: 'default',
@@ -56,6 +51,9 @@ const DBConnection: DataSource = new DataSource({
 const appReady: Promise<typeof app> = DBConnection.initialize()
   .then(() => {
     console.log('Data Source has been initialized!')
+    app.use(limiter)
+    app.use(cors())
+    app.use(bodyParser.json())
     routes.forEach((route) => app.use(route.path, route.controller()))
     app.use(authenticationFilter)
     app.use('/api', (_req, res) => {
