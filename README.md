@@ -1,93 +1,56 @@
+
 # Rate My Everything
 
-Web-based application focused on rating different objects/interests based of multiple reviews from each user, focused more into individual rating rather than a collective one.
-
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+Web-based application for rating items/interests based on individual user reviews. Focuses on personal ratings rather than collective scores.
 
 [![Project's CI](https://github.com/cristiadu/rate-my-everything/actions/workflows/ci.yml/badge.svg)](https://github.com/cristiadu/rate-my-everything/actions/workflows/ci.yml)
 [![CodeQL](https://github.com/cristiadu/rate-my-everything/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/cristiadu/rate-my-everything/actions/workflows/codeql-analysis.yml)
 
-## Development Progress
-See [Issues](https://github.com/cristiadu/rate-my-everything/issues) for a more detailed list of tasks.
-
-## Package Manager
-
-This project uses [pnpm](https://pnpm.io/) as its package manager. If you don't have pnpm installed, you can install it by following the instructions on their [official website](https://pnpm.io/installation).
-
-## Available Scripts
-
-In the project directory, you can run:
-
-### `pnpm install`
-Will install all needed dependencies.
-
-### `pnpm start`
-
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
-
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
-
-### `pnpm test`
-
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
-
-### `pnpm build`
-
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
-
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
-
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
-
-### `pnpm lint` and `pnpm lint:fix`
-
-Applies ESLint on code in the project.
-
-The difference is that `lint:fix` will reformat the code automatically based on the linter rules, while `lint` will just report the problems.
-
-### `pnpm upgrade-dependencies`
-
-Updates all dependencies to their latest versions.
-
-### `pnpm knip` and `pnpm knip:fix`
-
-Analyzes the project for unused files, dependencies and exports.
-
-## Required Environment Variables
-
-- `JWT_SECRET`: The secret key used to sign and verify JWT tokens. Example: `my-dev-secret` (choose your own secret for development)
-
-## How to run the API locally
-
-You must set the `JWT_SECRET` environment variable when starting the API server. For example:
-
-```
-JWT_SECRET=my-dev-secret pnpm start
-```
-
-Or, if you use Windows:
-
-```
-set JWT_SECRET=my-dev-secret && pnpm start
-```
-
-If you use a process manager or VS Code launch configuration, set `JWT_SECRET` in your environment accordingly.
-
 ## Project Structure
 
-This is a monorepo with the following workspaces:
+This is a monorepo with two main apps:
+- `ui/`: React frontend (TypeScript, Vite, Webpack)
+- `api/`: Node.js backend (TypeScript, Vite, REST API)
 
-- `api`: Backend API server
-- `ui`: Frontend user interface
+## Package Manager & Scripts
 
-To run commands in specific workspaces, you can use:
+- Install dependencies: `pnpm install` (from root)
+- Start all apps: `pnpm start` (runs both UI and API)
+- Start only API: `pnpm --filter api dev`
+- Start only UI: `pnpm --filter ui start`
+- Build UI: `pnpm --filter ui build`
+- Test: `pnpm test` (runs tests in both apps)
+- Lint: `pnpm lint` or `pnpm lint:fix`
+- Upgrade dependencies: `pnpm upgrade-dependencies`
+- Analyze unused code: `pnpm knip` or `pnpm knip:fix`
+- Clean: `pnpm clean` (removes all `node_modules` and `dist` folders)
 
-```
-pnpm --filter api start  # Run the API server
-pnpm --filter ui start   # Run the UI development server
-```
+## Environment Variables
+
+- Both UI and API require environment variables. See below for details.
+- API requires `JWT_SECRET` for authentication (e.g., `JWT_SECRET=my-dev-secret`).
+
+## UI (Frontend)
+
+- **Tech stack:** React, TypeScript, Vite, Webpack
+- **Component organization:** Feature-based folders (`users/`, `rankings/`, `layout/`, `filters/`, `health/`)
+- **API calls:** Use `src/config/ApiService.ts` and `ApiConfig.ts` for backend communication
+- **Auth:** Managed via `src/components/users/AuthContext.tsx`
+- **Testing:** React Testing Library; tests in `src/components/tests/`
+
+## API (Backend)
+
+- **Tech stack:** Node.js, TypeScript, Vite
+- **Controllers:** REST endpoints in `src/api/*Controller.ts`
+- **Services:** Business logic in `src/services/`
+- **Models:** Shared types in `src/models/`
+- **Routing/Auth:** Config in `src/routes/`
+- **Error handling:** Use `APIError.ts` in controllers
+- **Testing:** Vitest; integration tests in `src/tests/integration/`
+
+## Integration & Patterns
+
+- API endpoints defined in `api/src/api/*Controller.ts`
+- Frontend API calls abstracted in `ui/src/config/ApiService.ts`
+- Authentication managed via frontend context and backend controller
+- Linting and code analysis required before merging (see CI/CD)
