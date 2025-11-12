@@ -1,30 +1,26 @@
-import 'reflect-metadata'
-import * as dotenv from 'dotenv'
-import path from 'path'
-import '@testing-library/jest-dom'
-import { beforeAll, afterAll } from 'vitest'
-import request from 'supertest'
 import bcrypt from 'bcrypt'
+import dotenv from 'dotenv'
+import path from 'path'
+import request from 'supertest'
+import { app, DBConnection } from '@/index'
 
 dotenv.config({
-  path: path.resolve(__dirname, '../.env.test')
+  path: path.resolve(__dirname, '../.env.test'),
+  override: true
 })
-
-import User from '@/models/User'
-import UserRole from '@/models/UserRole'
-import { app, DBConnection } from '@/index'
 
 export const TEST_USER = {
   email: 'test@example.com',
   password: 'Password123!',
   name: 'Test User'
 }
-
-export { app }
 export let authToken: string | null = null
 
-beforeAll(async () => {
-    // Wait for database connection to be initialized
+import User from '@/models/User'
+import UserRole from '@/models/UserRole'
+
+// Export the setup function for global setup
+export default async function setup() {
     const maxRetries = 15
     let retries = 0
     while (!DBConnection.isInitialized && retries < maxRetries) {
@@ -63,6 +59,9 @@ beforeAll(async () => {
     }
     
     try {
+      // Wait a bit for routes to be registered after DB connection
+      await new Promise(resolve => setTimeout(resolve, 1000))
+      
       console.log('Attempting to get auth token...')
       const loginResponse = await request(app)
         .post('/api/login')
@@ -81,12 +80,13 @@ beforeAll(async () => {
     } catch (error) {
       console.error('Error getting auth token:', error instanceof Error ? error.message : 'Unknown error')
     }
-})
+    
+    return async () => {
+      if (DBConnection.isInitialized) {
+        await DBConnection.destroy()
+        console.log('Database connection closed after tests')
+      }
+    }
+}
 
-// Simple cleanup after all tests
-afterAll(async () => {
-  if (DBConnection.isInitialized) {
-    await DBConnection.destroy()
-    console.log('Database connection closed after tests')
-  }
-})
+export { app }

@@ -79,5 +79,5 @@ export const authenticationFilter = (req: Request, res: Response, next: NextFunc
 
 export const addDefaultHeaders = (req: Request, res: Response, next: NextFunction) => {
   res.setHeader('Content-Type', 'application/json')
-  next()
+  return next()
 }

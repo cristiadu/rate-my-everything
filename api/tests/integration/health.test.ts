@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import request from 'supertest'
-import { app } from '../setup'
+import { app } from '@@/testutils/setup'
 
 describe('Health API Integration Test', () => {
   it('should return health status with database connected', async () => {

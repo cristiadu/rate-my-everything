@@ -5,7 +5,8 @@ import express from 'express'
 import rateLimit from 'express-rate-limit'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-
+import * as dotenv from 'dotenv'
+import path from 'path'
 import RatedItem from '@/models/RatedItem'
 import Item from '@/models/Item'
 import User from '@/models/User'
@@ -14,7 +15,13 @@ import AttributeValue from '@/models/AttributeValue'
 import Category from '@/models/Category'
 import { routes, authenticationFilter, addDefaultHeaders } from '@/routes/RouterAuthConfig'
 
-// Export the app so it can be used in tests
+if (process.env.NODE_ENV === 'test') {
+  dotenv.config({
+    path: path.resolve(__dirname, '../.env.test'),
+    override: true
+  })
+}
+
 const app = express()
 
 // set up rate limiter: maximum of 100 requests per 15 minutes
@@ -23,24 +30,12 @@ const limiter = rateLimit({
   max: 100, // max 100 requests per windowMs
 })
 
-// apply rate limiter to all requests
+app.use(limiter)
 app.use(cors())
 app.use(bodyParser.json())
 app.use(addDefaultHeaders)
 
- 
-// Use dotenv directly here to ensure environment variables are loaded
-// This will handle the case when .env.test might not be loaded yet
-import * as dotenv from 'dotenv'
-import path from 'path'
-
-// Load environment-specific .env file
-if (process.env.NODE_ENV === 'test') {
-  dotenv.config({
-    path: path.resolve(__dirname, '../.env.test'),
-    override: true
-  })
-}
+// Only basic middleware is applied here - route registration will happen after DB initialization
 
 const DBConnection: DataSource = new DataSource({
   name: 'default',
@@ -54,7 +49,6 @@ const DBConnection: DataSource = new DataSource({
   synchronize: true, // This will automatically create tables
   connectTimeoutMS: 10000, // 10 seconds timeout for connection
   extra: {
-    // Retry logic for connecting to the database
     max: 10, // Maximum number of clients in the pool
     connectionTimeoutMillis: 10000,
   }
@@ -63,17 +57,13 @@ const DBConnection: DataSource = new DataSource({
 DBConnection.initialize()
   .then(() => {
     console.log('Data Source has been initialized!')
-
-    app.use(limiter)
     
-    // Apply authentication filter to all routes except unprotected ones
-    app.use((req, res, next) => {
-      authenticationFilter(req, res, next)
-    })
-
-    // Use the routes
+    // Register routes only after DB is initialized
     routes.forEach((route) => app.use(route.path, route.controller()))
-
+    
+    // Apply authentication filter after routes
+    app.use(authenticationFilter)
+    
     const PORT = process.env.PORT || 3000
     app.listen(PORT, () => {
       console.log(`Server is running on port ${PORT}`)

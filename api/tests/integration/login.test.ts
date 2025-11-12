@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import request from 'supertest'
-import { app, TEST_USER } from '../setup'
+import { app, TEST_USER } from '@@/testutils/setup'
 
 describe('Login API Integration Tests', () => {
   it('should return a token when credentials are valid', async () => {
