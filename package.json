@@ -34,7 +34,6 @@
     "eslint-plugin-react": "^7.37.5",
     "eslint-plugin-react-hooks": "^7.0.1",
     "knip": "^5.69.0",
-    "typescript": "^5.9.3",
-    "eslint-plugin-storybook": "^10.0.7"
+    "typescript": "^5.9.3"
   }
 }

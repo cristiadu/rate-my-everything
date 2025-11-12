@@ -8,12 +8,12 @@ interface ApiOptions {
 
 export default class ApiService {
   static async request<T>(endpoint: string, options: ApiOptions = {}): Promise<T> {
-    const { 
-      method = 'GET', 
-      body = null, 
-      includeAuth = true 
+    const {
+      method = 'GET',
+      body = null,
+      includeAuth = true
     } = options
-    
+
     const headers: Record<string, string> = {
       'Content-Type': 'application/json',
     }
@@ -33,28 +33,28 @@ export default class ApiService {
     }
 
     const url = `${ApiConfig.API_URL}${endpoint}`
-    
+
     const response = await fetch(url, config)
-      
+
     // Check if response is JSON before parsing
     const contentType = response.headers.get('content-type')
     let data
-      
+
     if (contentType && contentType.includes('application/json')) {
       data = await response.json()
     } else {
       data = await response.text()
     }
-      
+
     if (!response.ok) {
       // Format error message from response if available
-      const errorMessage = typeof data === 'object' && data.error 
-        ? data.error 
+      const errorMessage = typeof data === 'object' && data.error
+        ? data.error
         : 'An error occurred with the API request'
-          
+
       throw new Error(errorMessage)
     }
-      
+
     return data as T
   }
 
