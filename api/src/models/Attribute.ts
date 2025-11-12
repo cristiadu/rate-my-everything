@@ -9,10 +9,10 @@ export default class Attribute {
     @PrimaryGeneratedColumn()
       id!: number
 
-    @Column()
+    @Column('varchar')
       name!: string
 
-    @Column()
+    @Column('varchar')
       valueType!: string
 
     @ManyToMany(() => Category, (category) => category.attributes)

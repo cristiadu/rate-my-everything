@@ -44,15 +44,6 @@ Your app is ready to be deployed!
 
 See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
 
-### `pnpm build-storybook`
-
-Builds the storybook with the catalog of React Components used by the application.
-
-### `pnpm storybook`
-
-Serve the storybook component catalog.
-Open [http://localhost:6006](http://localhost:6006) to view it in the browser.
-
 ### `pnpm lint` and `pnpm lint:fix`
 
 Applies ESLint on code in the project.

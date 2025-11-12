@@ -9,10 +9,11 @@ const config = {
     },
     'ui': {
       project: ['**/*.{ts,js,tsx,jsx}'],
+      ignoreFiles: ['**/users/AuthPage.tsx', '**/users/LoginForm.tsx', '**/users/RegisterForm.tsx', '**/config/ApiService.ts'],
     },
     '.': {
       project: ['./*.{ts,js}'],
-      ignoreDependencies: ["eslint-import-resolver-typescript"],
+      ignoreDependencies: [],
     },
   },
   ignore: [

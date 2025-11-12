@@ -10,10 +10,10 @@ export default class Item {
     @PrimaryGeneratedColumn()
       id!: number
 
-    @Column()
+    @Column('varchar')
       name!: string
 
-    @Column()
+    @Column('varchar')
       description!: string
 
     @ManyToOne(() => Category, (category) => category.items)

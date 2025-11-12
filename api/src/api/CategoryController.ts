@@ -1,5 +1,6 @@
 import { Request, Response, Router } from 'express'
 import CategoryService from '@/services/CategoryService'
+import { NewApiError } from '@/models/APIError'
 
 export default class CategoryController {
   public router = Router()
@@ -7,50 +8,55 @@ export default class CategoryController {
   private categoryService = new CategoryService()
 
   constructor() {
-    this.getAll = this.getAll.bind(this)
-    this.getByName = this.getByName.bind(this)
-    this.create = this.create.bind(this)
-    this.update = this.update.bind(this)
-    this.delete = this.delete.bind(this)
     this.initializeRoutes()
   }
 
   public initializeRoutes() {
-    this.router.get('/', this.getAll)
-    this.router.get('/:name', this.getByName)
-    this.router.post('/', this.create)
-    this.router.put('/:name', this.update)
-    this.router.delete('/:name', this.delete)
+    this.router.get('/', (req, res) => this.getAll(req, res))
+    this.router.get('/:name', (req, res) => this.getByName(req, res))
+    this.router.post('/', (req, res) => this.create(req, res))
+    this.router.put('/:name', (req, res) => this.update(req, res))
+    this.router.delete('/:name', (req, res) => this.delete(req, res))
     // Add more routes as needed
   }
 
   public async getAll(req: Request, res: Response) {
     try {
       const data = await this.categoryService.getAll()
-      res.status(200).send(JSON.stringify(data))
+      res.status(200)
+        .json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).send('An internal server error occurred')
+      res.status(500)
+        .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 
   public async getByName(req: Request, res: Response) {
     try {
       const data = await this.categoryService.get(req.params.name)
-      res.status(200).send(JSON.stringify(data))
+      if (!data) {
+        return res.status(404)
+          .json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Category not found'))
+      }
+      res.status(200)
+        .json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).send('An internal server error occurred')
+      res.status(500)
+        .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 
   public async create(req: Request, res: Response) {
     try {
       const data = await this.categoryService.create(req.body)
-      res.status(201).send(JSON.stringify(data))
+      res.status(201)
+        .json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).send('An internal server error occurred')
+      res.status(500)
+        .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 
@@ -58,23 +64,23 @@ export default class CategoryController {
     try {
       const data = await this.categoryService.update(req.params.name, req.body)
       if (data) {
-        res.status(200).send(JSON.stringify(data))
+        res.status(200).json(data)
       } else {
-        res.status(404).send('Data not found')
+        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Category not found'))
       }
     } catch (error) {
       console.error(error)
-      res.status(500).send('An internal server error occurred')
+      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 
   public async delete(req: Request, res: Response) {
     try {
       await this.categoryService.delete(req.params.name)
-      res.status(204).send()
+      res.status(204).json({})
     } catch (error) {
       console.error(error)
-      res.status(500).send('An internal server error occurred')
+      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 }

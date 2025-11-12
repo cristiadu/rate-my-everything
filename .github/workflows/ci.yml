@@ -14,8 +14,6 @@ jobs:
   build:
     name: Project's CI
     runs-on: ubuntu-latest
-    env:
-      JWT_SECRET: ${{ secrets.JWT_SECRET }}
     steps:
     - uses: actions/checkout@v5
     - name: Setup PNPM
@@ -32,6 +30,6 @@ jobs:
         cache-dependency-path: pnpm-lock.yaml
     - run: pnpm install
     - run: pnpm lint
-    - run: pnpm build
-    - run: pnpm -C ui build-storybook
     - run: pnpm test
+    - run: pnpm build
+    - run: pnpm knip

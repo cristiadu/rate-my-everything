@@ -1,6 +1,9 @@
 import jwt from 'jsonwebtoken'
+import bcrypt from 'bcrypt'
 import User from '@/models/User'
 import BaseService from '@/services/BaseService'
+
+const TOKEN_EXPIRY = 3 * 24 * 60 * 60 // 3 days in seconds
 
 // create user service based on RatedItemService.ts in this directory
 export default class UserService extends BaseService<User> {
@@ -8,8 +11,11 @@ export default class UserService extends BaseService<User> {
     super(User)
   }
 
-  async create(user: User): Promise<User> {
-    const newUser = this.repository.create(user)
+  async create(user: Omit<User, 'id'>): Promise<User> {
+    // Hash the password before saving
+    const saltRounds = 10
+    const hashedPassword = await bcrypt.hash(user.password, saltRounds)
+    const newUser = this.repository.create({ ...user, password: hashedPassword })
     return this.repository.save(newUser)
   }
 
@@ -43,23 +49,22 @@ export default class UserService extends BaseService<User> {
     return user || null
   }
 
-  // login method
-  async login(username: string, password: string): Promise<string | null> {
+  async login(username: string, password: string): Promise<{ token: string, user: User } | null> {
     const user = await this.repository.findOne({ where: { username } })
-    if (user && user.password === password) {
-      // Payload that will be included in the token
+    
+    if (user && await bcrypt.compare(password, user.password)) {
       const payload = { username: user.username, id: user.id, roles: user.roles }
 
-      // Secret key used to sign the token
-      const secretKey = Buffer.from('your-secret-key')
+      const secretKey = process.env.JWT_SECRET
+      if (!secretKey) {
+        throw new Error('JWT_SECRET environment variable is not defined')
+      }
 
-      // Options for the token
-      const options = { expiresIn: 3 * 24 * 60 * 60 } // 3 days in seconds
+      const options = { expiresIn: TOKEN_EXPIRY }
 
-      // Generate the token
       const token = jwt.sign(payload, secretKey, options)
 
-      return token
+      return { token, user }
     }
 
     return null
