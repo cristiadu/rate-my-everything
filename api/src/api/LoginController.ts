@@ -27,7 +27,6 @@ export default class LoginController {
       // Check for missing credentials
       if (!username || !password) {
         return res.status(400)
-          .type('application/json')
           .json({ error: 'Username and password are required' })
       }
       const result = await this.userService.login(username, password)
@@ -41,17 +40,14 @@ export default class LoginController {
           roles: user.roles
         }
         res.status(200)
-          .type('application/json')
           .json({ token, user: safeUser })
       } else {
         res.status(401)
-          .type('application/json')
           .json({ error: 'Invalid username or password' })
       }
     } catch (error) {
       console.error('Exception occurred:', error)
       res.status(500)
-        .type('application/json')
         .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
@@ -61,7 +57,6 @@ export default class LoginController {
       const { username, email, password, roles } = req.body
       if (!username || !email || !password) {
         return res.status(400)
-          .type('application/json')
           .json(NewApiError('MISSING_FIELDS', 400, 'Missing required fields'))
       }
 
@@ -69,7 +64,6 @@ export default class LoginController {
       const existingUser = await this.userService.getByUsername(username)
       if (existingUser) {
         return res.status(409)
-          .type('application/json')
           .json(NewApiError('USER_ALREADY_EXISTS', 422, 'Username already exists'))
       }
 
@@ -87,12 +81,10 @@ export default class LoginController {
       // Never return password - destructure to omit password from response
       const userSafe = { ...user, password: undefined }
       res.status(201)
-        .type('application/json')
         .json(userSafe)
     } catch (error) {
       console.error('Registration error:', error)
       res.status(500)
-        .type('application/json')
         .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }

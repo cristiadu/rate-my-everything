@@ -33,7 +33,8 @@ class CategoryService extends BaseService<Category> {
   public async delete(name: string): Promise<void> {
     const category = await this.get(name)
     if (category) {
-      await this.repository.remove(category)
+      console.log(`Deleting category: ${JSON.stringify(category)}`)
+      await this.repository.delete(category.id)
     }
   }
 

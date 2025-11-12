@@ -1,58 +1,94 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, afterAll, beforeAll } from 'vitest'
 import request from 'supertest'
-import { app, authToken } from '@@/testutils/setup'
+import { appReady } from '@/index'
+import { authToken } from '@@/testutils/setup'
+import Category from '@/models/Category'
+import { response } from 'express'
 
-describe('Category API Integration Tests', () => {
+describe('Category API Integration Tests', async () => {
+  const app = await appReady
+
+  beforeAll(async () => {
+   // Delete all categories beforehand so env is clean for test run.
+
+   // Get all categories
+   const categoriesResponse = await request(app)
+     .get('/api/categories')
+     .set('Authorization', `Bearer ${authToken}`)
+     .expect(200)
+
+    console.log('Categories to delete:', categoriesResponse.body)
+
+    const categories = categoriesResponse.body
+    for (const category of categories) {
+      let response = await request(app)
+        .delete(`/api/categories/${category.name}`)
+        .set('Authorization', `Bearer ${authToken}`)
+
+      console.log(`Deleted category: ${JSON.stringify(category)}`)
+    }
+  })
+
   it('should create a new category when authorized', async () => {
     const newCategory = {
-      name: 'Test Category',
+      name: `Test-Category-${Date.now()}`,
       description: 'Created during integration tests'
     }
-    
-    const response = await request(app)
+
+    await request(app)
       .post('/api/categories')
       .set('Authorization', `Bearer ${authToken}`)
       .send(newCategory)
       .expect('Content-Type', /json/)
       .expect(201)
-    
-    expect(response.body).toHaveProperty('id')
-    expect(response.body.name).toBe(newCategory.name)
-    expect(response.body.description).toBe(newCategory.description)
+      .expect(res => {
+        expect(res.body).toHaveProperty('id')
+        expect(res.body.name).toBe(newCategory.name)
+        expect(res.body.description).toBe(newCategory.description)
+      }
+      )
   })
-  
+
   it('should return all categories', async () => {
-    const response = await request(app)
+    await request(app)
       .get('/api/categories')
       .set('Authorization', `Bearer ${authToken}`)
       .expect('Content-Type', /json/)
       .expect(200)
-    
-    expect(Array.isArray(response.body)).toBe(true)
-    expect(response.body.length).toBeGreaterThan(0)
-    expect(response.body[0]).toHaveProperty('id')
-    expect(response.body[0]).toHaveProperty('name')
-    expect(response.body[0]).toHaveProperty('description')
+      .expect(res => {
+        expect(Array.isArray(res.body)).toBe(true)
+        expect(res.body.length).toBe(1)
+        expect(res.body[0]).toStrictEqual({
+          id: expect.any(Number),
+          name: expect.stringContaining('Test-Category-'),
+          description: "Created during integration tests"
+        })
+      })
   })
-  
+
   it('should return a specific category by name', async () => {
     const categoriesResponse = await request(app)
       .get('/api/categories')
       .set('Authorization', `Bearer ${authToken}`)
+      .expect('Content-Type', /json/)
       .expect(200)
-  
-    expect(categoriesResponse.body).toBeInstanceOf(Array)
-    expect(categoriesResponse.body.length).toBeGreaterThan(0)
+      .expect(res => {
+        expect(Array.isArray(res.body)).toBe(true)
+        expect(res.body.length).toBe(1)
+      })
+
     const categoryName = categoriesResponse.body[0].name
-    
-    const response = await request(app)
+
+    await request(app)
       .get(`/api/categories/${categoryName}`)
       .set('Authorization', `Bearer ${authToken}`)
       .expect('Content-Type', /json/)
       .expect(200)
-    
-    expect(response.body).toHaveProperty('name', categoryName)
-    expect(response.body).toHaveProperty('id')
-    expect(response.body).toHaveProperty('description')
+      .expect(res => {
+        expect(res.body).toHaveProperty('id')
+        expect(res.body.name).toBe(categoryName)
+        expect(res.body.description).toBe("Created during integration tests")
+      }
+      )
   })
 })

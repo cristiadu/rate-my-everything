@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt'
 import dotenv from 'dotenv'
 import path from 'path'
 import request from 'supertest'
-import { app, DBConnection } from '@/index'
+import { appReady, DBConnection, server } from '@/index'
 
 dotenv.config({
   path: path.resolve(__dirname, '../.env.test'),
@@ -21,6 +21,7 @@ import UserRole from '@/models/UserRole'
 
 // Export the setup function for global setup
 export default async function setup() {
+    const app = await appReady
     const maxRetries = 15
     let retries = 0
     while (!DBConnection.isInitialized && retries < maxRetries) {
@@ -84,9 +85,8 @@ export default async function setup() {
     return async () => {
       if (DBConnection.isInitialized) {
         await DBConnection.destroy()
+        server.close()
         console.log('Database connection closed after tests')
       }
     }
 }
-
-export { app }

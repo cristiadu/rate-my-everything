@@ -6,14 +6,16 @@ import rateLimit from 'express-rate-limit'
 import cors from 'cors'
 import bodyParser from 'body-parser'
 import * as dotenv from 'dotenv'
-import path from 'path'
 import RatedItem from '@/models/RatedItem'
 import Item from '@/models/Item'
 import User from '@/models/User'
 import Attribute from '@/models/Attribute'
 import AttributeValue from '@/models/AttributeValue'
 import Category from '@/models/Category'
-import { routes, authenticationFilter, addDefaultHeaders } from '@/routes/RouterAuthConfig'
+import { routes, authenticationFilter } from '@/routes/RouterAuthConfig'
+import { NewApiError } from '@/models/APIError'
+import path from 'path'
+import http from 'http'
 
 if (process.env.NODE_ENV === 'test') {
   dotenv.config({
@@ -23,19 +25,16 @@ if (process.env.NODE_ENV === 'test') {
 }
 
 const app = express()
+let server: http.Server
 
-// set up rate limiter: maximum of 100 requests per 15 minutes
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 minutes
-  max: 100, // max 100 requests per windowMs
+  windowMs: 15 * 60 * 1000,
+  max: 100,
 })
 
 app.use(limiter)
 app.use(cors())
 app.use(bodyParser.json())
-app.use(addDefaultHeaders)
-
-// Only basic middleware is applied here - route registration will happen after DB initialization
 
 const DBConnection: DataSource = new DataSource({
   name: 'default',
@@ -46,31 +45,34 @@ const DBConnection: DataSource = new DataSource({
   password: process.env.PGPASSWORD || process.env.DATABASE_PASSWORD,
   database: process.env.PGDATABASE || process.env.DATABASE_NAME,
   entities: [RatedItem, Item, User, Attribute, AttributeValue, Category],
-  synchronize: true, // This will automatically create tables
-  connectTimeoutMS: 10000, // 10 seconds timeout for connection
+  synchronize: true,
+  connectTimeoutMS: 10000,
   extra: {
-    max: 10, // Maximum number of clients in the pool
+    max: 10,
     connectionTimeoutMillis: 10000,
   }
 })
 
-DBConnection.initialize()
+const appReady: Promise<typeof app> = DBConnection.initialize()
   .then(() => {
     console.log('Data Source has been initialized!')
-    
-    // Register routes only after DB is initialized
     routes.forEach((route) => app.use(route.path, route.controller()))
-    
-    // Apply authentication filter after routes
     app.use(authenticationFilter)
-    
-    const PORT = process.env.PORT || 3000
-    app.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`)
+    app.use('/api', (_req, res) => {
+      res.status(404).json(NewApiError('NOT_FOUND', 404, 'The requested resource was not found'))
     })
+    return app
   })
   .catch((err) => {
     console.error('Error during Data Source initialization', err)
+    throw err
   })
 
-export { app, DBConnection }
+appReady.then((appInstance) => {
+  const PORT = process.env.PORT || 3000
+  server = appInstance.listen(PORT, () => {
+    console.log(`Server is running on port ${PORT}`)
+  })
+})
+
+export { appReady, DBConnection, server }

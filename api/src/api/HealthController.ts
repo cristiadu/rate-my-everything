@@ -22,7 +22,6 @@ export default class HealthController {
       
       if (health.status === HealthStatus.HEALTHY) {
           res.status(200)
-            .type('application/json')
             .json(health)
       } else {
         return res.status(500).json(health)
@@ -30,7 +29,6 @@ export default class HealthController {
     } catch (error) {
       console.error('Health check failed:', error)
         res.status(500)
-          .type('application/json')
           .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }

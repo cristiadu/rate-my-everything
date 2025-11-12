@@ -15,8 +15,8 @@ export default class CategoryController {
     this.router.get('/', (req, res) => this.getAll(req, res))
     this.router.get('/:name', (req, res) => this.getByName(req, res))
     this.router.post('/', (req, res) => this.create(req, res))
-    this.router.put('/:id', (req, res) => this.update(req, res))
-    this.router.delete('/:id', (req, res) => this.delete(req, res))
+    this.router.put('/:name', (req, res) => this.update(req, res))
+    this.router.delete('/:name', (req, res) => this.delete(req, res))
     // Add more routes as needed
   }
 
@@ -24,12 +24,10 @@ export default class CategoryController {
     try {
       const data = await this.categoryService.getAll()
       res.status(200)
-        .type('application/json')
         .json(data)
     } catch (error) {
       console.error(error)
       res.status(500)
-        .type('application/json')
         .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
@@ -39,16 +37,13 @@ export default class CategoryController {
       const data = await this.categoryService.get(req.params.name)
       if (!data) {
         return res.status(404)
-          .type('application/json')
           .json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Category not found'))
       }
       res.status(200)
-        .type('application/json')
         .json(data)
     } catch (error) {
       console.error(error)
       res.status(500)
-        .type('application/json')
         .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
@@ -57,12 +52,10 @@ export default class CategoryController {
     try {
       const data = await this.categoryService.create(req.body)
       res.status(201)
-        .type('application/json')
         .json(data)
     } catch (error) {
       console.error(error)
       res.status(500)
-        .type('application/json')
         .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
