@@ -1,31 +1,25 @@
-import { describe, it, expect, afterAll, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll } from 'vitest'
 import request from 'supertest'
 import { appReady } from '@/index'
 import { authToken } from '@@/testutils/setup'
-import Category from '@/models/Category'
-import { response } from 'express'
 
 describe('Category API Integration Tests', async () => {
   const app = await appReady
 
   beforeAll(async () => {
    // Delete all categories beforehand so env is clean for test run.
-
-   // Get all categories
    const categoriesResponse = await request(app)
      .get('/api/categories')
      .set('Authorization', `Bearer ${authToken}`)
      .expect(200)
-
     console.log('Categories to delete:', categoriesResponse.body)
 
     const categories = categoriesResponse.body
     for (const category of categories) {
-      let response = await request(app)
+      await request(app)
         .delete(`/api/categories/${category.name}`)
         .set('Authorization', `Bearer ${authToken}`)
-
-      console.log(`Deleted category: ${JSON.stringify(category)}`)
+      console.log(`Deleted category: ${category.name}`)
     }
   })
 
