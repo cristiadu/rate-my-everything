@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express'
 import UserService from '@/services/UserService'
 import User from '@/models/User'
+import { NewApiError } from '@/models/APIError'
 
 export default class LoginController {
   public router = Router()
@@ -23,12 +24,12 @@ export default class LoginController {
   public async login(req: Request, res: Response) {
     try {
       const { username, password } = req.body
-      
       // Check for missing credentials
       if (!username || !password) {
-        return res.status(400).json({ error: 'Username and password are required' })
+        return res.status(400)
+          .type('application/json')
+          .json({ error: 'Username and password are required' })
       }
-
       const result = await this.userService.login(username, password)
       if (result) {
         const { token, user } = result
@@ -39,13 +40,19 @@ export default class LoginController {
           name: user.username,
           roles: user.roles
         }
-        res.status(200).json({ token, user: safeUser })
+        res.status(200)
+          .type('application/json')
+          .json({ token, user: safeUser })
       } else {
-        res.status(401).json({ error: 'Invalid username or password' })
+        res.status(401)
+          .type('application/json')
+          .json({ error: 'Invalid username or password' })
       }
     } catch (error) {
       console.error('Exception occurred:', error)
-      res.status(500).json({ error: 'An internal server error occurred' })
+      res.status(500)
+        .type('application/json')
+        .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 
@@ -53,13 +60,17 @@ export default class LoginController {
     try {
       const { username, email, password, roles } = req.body
       if (!username || !email || !password) {
-        return res.status(400).json({ error: 'Missing required fields' })
+        return res.status(400)
+          .type('application/json')
+          .json(NewApiError('MISSING_FIELDS', 400, 'Missing required fields'))
       }
 
       // Check if user already exists
       const existingUser = await this.userService.getByUsername(username)
       if (existingUser) {
-        return res.status(409).json({ error: 'Username already exists' })
+        return res.status(409)
+          .type('application/json')
+          .json(NewApiError('USER_ALREADY_EXISTS', 422, 'Username already exists'))
       }
 
       const userObj = {
@@ -75,10 +86,14 @@ export default class LoginController {
       
       // Never return password - destructure to omit password from response
       const userSafe = { ...user, password: undefined }
-      res.status(201).json(userSafe)
+      res.status(201)
+        .type('application/json')
+        .json(userSafe)
     } catch (error) {
       console.error('Registration error:', error)
-      res.status(500).json({ error: 'An internal server error occurred' })
+      res.status(500)
+        .type('application/json')
+        .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 }

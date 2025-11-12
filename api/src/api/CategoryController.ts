@@ -23,10 +23,14 @@ export default class CategoryController {
   public async getAll(req: Request, res: Response) {
     try {
       const data = await this.categoryService.getAll()
-      res.status(200).json(data)
+      res.status(200)
+        .type('application/json')
+        .json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500)
+        .type('application/json')
+        .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 
@@ -34,22 +38,32 @@ export default class CategoryController {
     try {
       const data = await this.categoryService.get(req.params.name)
       if (!data) {
-        return res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Category not found'))
+        return res.status(404)
+          .type('application/json')
+          .json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Category not found'))
       }
-      res.status(200).json(data)
+      res.status(200)
+        .type('application/json')
+        .json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500)
+        .type('application/json')
+        .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 
   public async create(req: Request, res: Response) {
     try {
       const data = await this.categoryService.create(req.body)
-      res.status(201).json(data)
+      res.status(201)
+        .type('application/json')
+        .json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500)
+        .type('application/json')
+        .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 

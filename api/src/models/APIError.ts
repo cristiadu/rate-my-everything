@@ -27,5 +27,5 @@ export type APIErrorCodes = typeof API_ERROR_CODES[keyof typeof API_ERROR_CODES]
 
 export type HttpStatusCode =
     200 | 201 | 202 | 204 | // Success
-    400 | 401 | 403 | 404 | 429 | // Client Errors
+    400 | 401 | 403 | 404 | 422 | 429 | // Client Errors
     500; // Server Errors

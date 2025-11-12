@@ -21,13 +21,17 @@ export default class HealthController {
       const health = await runHealthChecks()
       
       if (health.status === HealthStatus.HEALTHY) {
-        return res.status(200).json(health)
+          res.status(200)
+            .type('application/json')
+            .json(health)
       } else {
         return res.status(500).json(health)
       }
     } catch (error) {
       console.error('Health check failed:', error)
-      return res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+        res.status(500)
+          .type('application/json')
+          .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
     }
   }
 }
