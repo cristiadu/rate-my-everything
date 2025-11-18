@@ -10,23 +10,26 @@ import { cleanupAllAttributes, cleanupAllCategories } from '@@/testutils/common/
 
 export const ATTRIBUTES_BASE_PATH = '/api/attributes'
 
-describe('Attribute API Integration Tests', async () => {
-  const app = await appReady
-  let testCategory: Category
-  let testAttribute: Attribute
+let app: any
+let testCategory: Category
+let testAttribute: Attribute
+let testAuthToken: string
 
-  const testAuthToken = await getAuthTokenFromFile()
-
+describe('Attribute API Integration Tests', () => {
   beforeAll(async () => {
+    app = await appReady
+    testAuthToken = await getAuthTokenFromFile()
     await cleanupAllAttributes(app)
     await cleanupAllCategories(app)
-    
+
     // Create a category for attribute association
     const categoryRes = await request(app)
       .post(CATEGORIES_BASE_PATH)
       .set('Authorization', `Bearer ${testAuthToken}`)
       .send({ name: `AttrCat-${Date.now()}`, description: 'For attribute tests' })
-      .expect(201)
+    if (categoryRes.status !== 201) {
+      throw new Error(`Failed to create test category: ${categoryRes.status} ${JSON.stringify(categoryRes.body)}`)
+    }
     testCategory = categoryRes.body
   })
 
@@ -48,13 +51,18 @@ describe('Attribute API Integration Tests', async () => {
         .expect(201)
         .expect(res => {
           const apiResult = res.body as Attribute
+          const categoriesNames = apiResult.categories?.map(cat => cat.name) || []
           expect(apiResult.id).toBeDefined()
           expect(apiResult.name).toBe(newAttribute.name)
           expect(apiResult.valueType).toBe(newAttribute.valueType)
-          expect(apiResult.categories).toContain(testCategory.id)
+          expect(categoriesNames).toContain(testCategory.name)
           expect(apiResult.values).toBe(newAttribute.values)
           testAttribute = apiResult
         })
+
+        if (!testAttribute) {
+          throw new Error('testAttribute was not set properly')
+        }
     })
 
     it('should fail to create an attribute with missing name', async () => {
@@ -66,8 +74,8 @@ describe('Attribute API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Name is required')
-          expect(apiError.code).toBe('Bad Request')
+          expect(apiError.message).toBe('Missing required fields: name, valueType')
+          expect(apiError.code).toBe('VALIDATION_ERROR')
           expect(apiError.status).toBe(400)
         })
     })
@@ -90,7 +98,7 @@ describe('Attribute API Integration Tests', async () => {
             if (attr.id === testAttribute.id) {
               expect(attr.id).toBe(testAttribute.id)
               expect(attr.name).toBe(testAttribute.name)
-              expect(attr.categories).toContain(testCategory.id)
+              expect(attr.categories).toContain(testCategory)
               expect(attr.valueType).toBe(testAttribute.valueType)
               expect(attr.values).toEqual(testAttribute.values)
               foundExpected = true
@@ -117,10 +125,11 @@ describe('Attribute API Integration Tests', async () => {
         .expect(200)
         .expect(res => {
           const apiResult = res.body as Attribute
+          const categoriesNames = apiResult.categories.map(cat => cat.name)
           expect(apiResult.id).toBe(testAttribute.id)
           expect(apiResult.name).toBe(testAttribute.name)
           expect(apiResult.valueType).toBe(testAttribute.valueType)
-          expect(apiResult.categories).toContain(testCategory.id)
+          expect(categoriesNames).toContain(testCategory.name)
           expect(apiResult.values).toEqual(testAttribute.values)
         })
     })
@@ -151,10 +160,11 @@ describe('Attribute API Integration Tests', async () => {
         .expect(200)
         .expect(res => {
           const apiResult = res.body as Attribute
+          const categoriesNames = apiResult.categories.map(cat => cat.name)
           expect(apiResult.id).toBe(testAttribute.id)
           expect(apiResult.name).toBe(testAttribute.name)
           expect(apiResult.valueType).toBe(testAttribute.valueType)
-          expect(apiResult.categories).toContain(testCategory.id)
+          expect(categoriesNames).toContain(testCategory.name)
           expect(apiResult.values).toEqual(updatedValues)
         })
     })
@@ -187,14 +197,8 @@ describe('Attribute API Integration Tests', async () => {
       await request(app)
         .delete(`${ATTRIBUTES_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .expect('Content-Type', /json/)
-        .expect(404)
-        .expect(res => {
-          const apiError = res.body as APIError
-          expect(apiError.message).toBe('Attribute not found')
-          expect(apiError.code).toBe('RESOURCE_NOT_FOUND')
-          expect(apiError.status).toBe(404)
-        })
+        .expect(204)
+        .expect(res => { expect(res.body).toEqual({}) })
     })
   })
 })

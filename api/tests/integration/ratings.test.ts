@@ -76,8 +76,8 @@ describe('RatedItem API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('ItemId is required')
-          expect(apiError.code).toBe('Bad Request')
+          expect(apiError.message).toBe('Missing required fields: item_id, user_id, rating')
+          expect(apiError.code).toBe('VALIDATION_ERROR')
           expect(apiError.status).toBe(400)
         })
     })

@@ -69,9 +69,9 @@ export default async function setup() {
         })
             
       const response = loginResponse.body as UserTokenResponse
-      console.log('Login response body:', JSON.stringify(loginResponse.body, null, 2))
       if (loginResponse.status === 200 && response && response.token) {
         writeAuthTokenToFile(response.token)
+        console.log('Auth token obtained and written to file successfully')
       } else {
         console.error('Failed to get valid auth token')
         console.error('Response body:', JSON.stringify(loginResponse.body, null, 2))

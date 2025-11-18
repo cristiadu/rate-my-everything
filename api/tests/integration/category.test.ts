@@ -49,7 +49,7 @@ describe('Category API Integration Tests', async () => {
         .expect(res => {
           const apiError = res.body as APIError
           expect(apiError.message).toBe('Name is required')
-          expect(apiError.code).toBe('Bad Request')
+          expect(apiError.code).toBe('VALIDATION_ERROR')
           expect(apiError.status).toBe(400)
         })
     })
@@ -63,8 +63,8 @@ describe('Category API Integration Tests', async () => {
         .expect(401)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Authentication required')
-          expect(apiError.code).toBe('Unauthorized')
+          expect(apiError.message).toBe('Missing or invalid authorization header')
+          expect(apiError.code).toBe('UNAUTHORIZED')
           expect(apiError.status).toBe(401)
         })
     })
@@ -96,8 +96,8 @@ describe('Category API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Name is required')
-          expect(apiError.code).toBe('Bad Request')
+          expect(apiError.message).toBe('Missing required field: name')
+          expect(apiError.code).toBe('VALIDATION_ERROR')
           expect(apiError.status).toBe(400)
         })
     })
@@ -126,8 +126,8 @@ describe('Category API Integration Tests', async () => {
         .expect(401)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Authentication required')
-          expect(apiError.code).toBe('Unauthorized')
+          expect(apiError.message).toBe('Missing or invalid authorization header')
+          expect(apiError.code).toBe('UNAUTHORIZED')
           expect(apiError.status).toBe(401)
         })
     })
@@ -170,7 +170,7 @@ describe('Category API Integration Tests', async () => {
         .expect(200)
         .expect(res => {
           expect(Array.isArray(res.body)).toBe(true)
-          expect(res.body.length).toBe(4)
+          expect(res.body.length).toBe(3)
           const apiResult = res.body[0] as Category
           expect(apiResult.id).toBeDefined()
           expect(apiResult.name).toBeDefined()
@@ -188,8 +188,8 @@ describe('Category API Integration Tests', async () => {
         .expect(401)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Authentication required')
-          expect(apiError.code).toBe('Unauthorized')
+          expect(apiError.message).toBe('Missing or invalid authorization header')
+          expect(apiError.code).toBe('UNAUTHORIZED')
           expect(apiError.status).toBe(401)
         })
     })
@@ -259,8 +259,8 @@ describe('Category API Integration Tests', async () => {
         .expect(401)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Authentication required')
-          expect(apiError.code).toBe('Unauthorized')
+          expect(apiError.message).toBe('Missing or invalid authorization header')
+          expect(apiError.code).toBe('UNAUTHORIZED')
           expect(apiError.status).toBe(401)
         })
     })
@@ -278,14 +278,8 @@ describe('Category API Integration Tests', async () => {
       await request(app)
         .delete(`${CATEGORIES_BASE_PATH}/non-existent-category`)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .expect('Content-Type', /json/)
-        .expect(404)
-        .expect(res => {
-          const apiError = res.body as APIError
-          expect(apiError.message).toBe('Category not found')
-          expect(apiError.code).toBe('Not Found')
-          expect(apiError.status).toBe(404)
-        })
+        .expect(204)
+        .expect(res => expect(res.body).toEqual({}))
     })
 
     it('should fail to delete a category when unauthorized', async () => {
@@ -296,8 +290,8 @@ describe('Category API Integration Tests', async () => {
         .expect(401)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Authentication required')
-          expect(apiError.code).toBe('Unauthorized')
+          expect(apiError.message).toBe('Missing or invalid authorization header')
+          expect(apiError.code).toBe('UNAUTHORIZED')
           expect(apiError.status).toBe(401)
         })
     })

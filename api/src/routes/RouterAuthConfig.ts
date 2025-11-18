@@ -21,14 +21,14 @@ export const unprotectedRoutes = new Set([
 export const routes = [
   { path: '/api/ratings', controller: () => new RatedItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/users', controller: () => new UserController().router, roles: [UserRole.ADMIN] },
-  { path: '/api/login', controller: () => new LoginController().router, roles: [UserRole.ADMIN, UserRole.USER] },
+  { path: '/api/login', controller: () => new LoginController().router },
   { path: '/api/attributes', controller: () => new AttributeController().router, roles: [UserRole.ADMIN] },
   { path: '/api/items', controller: () => new ItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/categories', controller: () => new CategoryController().router, roles: [UserRole.USER, UserRole.ADMIN] },
-  { path: '/api/health', controller: () => new HealthController().router, roles: [] },
+  { path: '/api/health', controller: () => new HealthController().router },
   { path: '/api', controller: () => (_req: Request, res: Response) => {
       res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'The requested resource was not found'))
-    }, roles: [] }
+    } }
 ]
 
 export const authenticationFilter = (req: Request, res: Response, next: NextFunction) => {
@@ -38,14 +38,12 @@ export const authenticationFilter = (req: Request, res: Response, next: NextFunc
   }
 
   const authHeader = req.headers.authorization
-  console.log('Authorization header received:', authHeader)
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null
   if (!token) {
     return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Missing or invalid authorization header'))
   }
 
   const jwtSecret = process.env.JWT_SECRET
-  console.log('JWT_SECRET used for verification:', jwtSecret)
   if (!jwtSecret) {
     console.error('JWT_SECRET environment variable is not defined')
     return res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'Internal server error'))
@@ -62,7 +60,7 @@ export const authenticationFilter = (req: Request, res: Response, next: NextFunc
     }
 
     const route = routes.find((currentRoute) => req.path.startsWith(currentRoute.path))
-    if (!route || !route.roles.some((role) => decodedUser.roles.includes(role))) {
+    if (!route || (route.roles && !route.roles.some((role) => decodedUser.roles.includes(role)))) {
       return res.status(403).json(NewApiError('FORBIDDEN', 403, 'You do not have permission to access this resource'))
     }
 

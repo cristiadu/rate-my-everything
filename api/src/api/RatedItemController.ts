@@ -57,6 +57,10 @@ export default class RatedItemController {
 
   public async create(req: Request, res: Response) {
     try {
+      const { item_id, user_id, rating } = req.body
+      if (!item_id || !user_id || rating === undefined) {
+        return res.status(400).json(NewApiError('VALIDATION_ERROR', 400, 'Missing required fields: item_id, user_id, rating'))
+      }
       const data = await this.ratedItemService.create(req.body)
       res.status(201).json(data)
     } catch (error) {
@@ -67,6 +71,10 @@ export default class RatedItemController {
 
   public async update(req: Request, res: Response) {
     try {
+      const { item_id, user_id, rating } = req.body
+      if (!item_id || !user_id || rating === undefined) {
+        return res.status(400).json(NewApiError('VALIDATION_ERROR', 400, 'Missing required fields: item_id, user_id, rating'))
+      }
       const data = await this.ratedItemService.update(parseInt(req.params.id, 10), req.body)
       if (data) {
         res.status(200).json(data)

@@ -85,6 +85,10 @@ export default class AttributeController {
 
   public async createAttribute(req: Request, res: Response) {
     try {
+      const { name, valueType } = req.body
+      if (!name || !valueType) {
+        return res.status(400).json(NewApiError('VALIDATION_ERROR', 400, 'Missing required fields: name, valueType'))
+      }
       const data = await this.attributeService.createAttribute(req.body)
       res.status(201).json(data)
     } catch (error) {
@@ -105,6 +109,10 @@ export default class AttributeController {
 
   public async updateAttribute(req: Request, res: Response) {
     try {
+      const { name, valueType } = req.body
+      if (!name || !valueType) {
+        return res.status(400).json(NewApiError('VALIDATION_ERROR', 400, 'Missing required fields: name, valueType'))
+      }
       const data = await this.attributeService.updateAttribute(parseInt(req.params.id, 10), req.body)
       if (data) {
         res.status(200).json(data)

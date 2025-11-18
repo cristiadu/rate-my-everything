@@ -57,6 +57,10 @@ export default class ItemController {
 
   public async create(req: Request, res: Response) {
     try {
+      const { name, category } = req.body
+      if (!name || !category) {
+        return res.status(400).json(NewApiError('VALIDATION_ERROR', 400, 'Missing required fields: name, category'))
+      }
       const data = await this.itemService.create(req.body)
       res.status(201).json(data)
     } catch (error) {
@@ -67,6 +71,10 @@ export default class ItemController {
 
   public async update(req: Request, res: Response) {
     try {
+      const { name, category } = req.body
+      if (!name || !category) {
+        return res.status(400).json(NewApiError('VALIDATION_ERROR', 400, 'Missing required fields: name, category'))
+      }
       const data = await this.itemService.update(parseInt(req.params.id, 10), req.body)
       if (data) {
         res.status(200).json(data)
