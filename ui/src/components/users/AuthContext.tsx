@@ -22,7 +22,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!token)
 
   useEffect(() => {
-    // Check for token on initial load
     const storedToken = localStorage.getItem('authToken')
     if (storedToken) {
       setToken(storedToken)
@@ -49,7 +48,6 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   )
 }
 
-// Create a HOC (Higher Order Component) for protected routes
 export const withAuth = <P extends object>(
   Component: React.ComponentType<P>,
   redirectPath: string = '/login'
@@ -60,7 +58,6 @@ export const withAuth = <P extends object>(
     
     // If not authenticated, redirect to login page
     if (!isAuthenticated) {
-      // Redirect to login page with the return URL in state
       return <Navigate to={redirectPath} state={{ from: location }} replace />
     }
     

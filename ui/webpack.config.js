@@ -4,13 +4,12 @@ import HtmlWebpackPlugin from 'html-webpack-plugin'
 import CopyWebpackPlugin from 'copy-webpack-plugin'
 import TsconfigPathsPlugin from 'tsconfig-paths-webpack-plugin'
 
-// Get __dirname equivalent in ESM
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = _resolve(__filename, '..')
 
 const config = {
   entry: './src/index.tsx',
-  mode: 'development', // Will be overridden by --mode flag when specified
+  mode: 'development',
   plugins: [
     new HtmlWebpackPlugin({
       template: 'public/index.html',
@@ -25,8 +24,8 @@ const config = {
     }),
   ],
   output: {
-    filename: 'bundle.js', // Output bundle file name
-    path: _resolve(__dirname, 'dist'), // Output directory
+    filename: 'bundle.js',
+    path: _resolve(__dirname, 'dist'),
   },
   module: {
     rules: [
@@ -52,9 +51,9 @@ const config = {
   },
   devServer: {
     historyApiFallback: true,
-    static: join(__dirname, 'public'), // Serve files from this directory
-    port: 3000, // Port for the development server
-    open: true, // Open the default web browser when the server starts
+    static: join(__dirname, 'public'),
+    port: 3000,
+    open: true,
     hot: true,
   }
 }

@@ -58,7 +58,7 @@ export default async function setup() {
     
     try {
       // Wait a bit for routes to be registered after DB connection
-      await new Promise(resolve => setTimeout(resolve, 3000))
+      await new Promise(resolve => setTimeout(resolve, 2000))
       
       console.log('Attempting to get auth token...')
       const loginResponse = await request(app)

@@ -6,14 +6,12 @@ import { InvalidCredentials } from '@/errors/InvalidCredentials'
 
 const TOKEN_EXPIRY = 3 * 24 * 60 * 60 // 3 days in seconds
 
-// create user service based on RatedItemService.ts in this directory
 export default class UserService extends BaseService<User> {
   constructor() {
     super(User)
   }
 
   async create(user: Omit<User, 'id'>): Promise<User> {
-    // Hash the password before saving
     const saltRounds = 10
     const hashedPassword = await bcrypt.hash(user.password, saltRounds)
     const newUser = this.repository.create({ ...user, password: hashedPassword })
@@ -25,11 +23,11 @@ export default class UserService extends BaseService<User> {
     return user || null
   }
 
-  async update(id: number, user: User): Promise<User | null> {
+  async update(id: number, user: Omit<User, 'id'>): Promise<User | null> {
     const existingUser = await this.getById(id)
     if (existingUser) {
-      this.repository.merge(user, existingUser)
-      return this.repository.save(user)
+      this.repository.merge(existingUser, user)
+      return this.repository.save(existingUser)
     }
     return null
   }
@@ -37,7 +35,7 @@ export default class UserService extends BaseService<User> {
   async delete(id: number): Promise<void> {
     const user = await this.getById(id)
     if (user) {
-      await this.repository.remove(user)
+      await this.repository.delete(user.id)
     }
   }
 

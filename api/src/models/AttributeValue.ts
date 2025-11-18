@@ -10,11 +10,11 @@ export default class AttributeValue {
     id!: number
 
   @ManyToOne(() => Item, (item) => item.attributes)
-  @JoinColumn({ name: 'item_id' }) // This line names the column as 'item_id '
+  @JoinColumn({ name: 'item_id' })
     item!: Item
 
   @ManyToOne(() => Attribute, (attribute) => attribute.values)
-  @JoinColumn({ name: 'attribute_id' }) // This line names the column as 'attribute_id'
+  @JoinColumn({ name: 'attribute_id' })
     attribute!: Attribute
 
   @Column('varchar')

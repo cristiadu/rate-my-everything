@@ -1,6 +1,8 @@
 import { Router, Request, Response } from 'express'
 import AttributeService from '@/services/AttributeService'
 import { NewApiError } from '@/models/APIError'
+import ErrorCode from '@/errors/ErrorCode'
+import Attribute from '@/models/Attribute'
 
 export default class AttributeController {
   public router = Router()
@@ -31,7 +33,7 @@ export default class AttributeController {
       res.status(200).json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -41,7 +43,7 @@ export default class AttributeController {
       res.status(200).json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -51,7 +53,7 @@ export default class AttributeController {
       res.status(200).json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -61,11 +63,11 @@ export default class AttributeController {
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Attribute not found'))
+        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
       }
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -75,11 +77,11 @@ export default class AttributeController {
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Attribute value not found'))
+        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
       }
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -87,13 +89,13 @@ export default class AttributeController {
     try {
       const { name, valueType } = req.body
       if (!name || !valueType) {
-        return res.status(400).json(NewApiError('VALIDATION_ERROR', 400, 'Missing required fields: name, valueType'))
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, valueType'))
       }
       const data = await this.attributeService.createAttribute(req.body)
       res.status(201).json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -103,25 +105,22 @@ export default class AttributeController {
       res.status(201).json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
   public async updateAttribute(req: Request, res: Response) {
     try {
-      const { name, valueType } = req.body
-      if (!name || !valueType) {
-        return res.status(400).json(NewApiError('VALIDATION_ERROR', 400, 'Missing required fields: name, valueType'))
-      }
-      const data = await this.attributeService.updateAttribute(parseInt(req.params.id, 10), req.body)
+      const attributeBody = req.body as Attribute
+      const data = await this.attributeService.updateAttribute(parseInt(req.params.id, 10), attributeBody)
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Attribute not found'))
+        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
       }
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -131,11 +130,11 @@ export default class AttributeController {
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Attribute value not found'))
+        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
       }
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -145,7 +144,7 @@ export default class AttributeController {
       res.status(204).json()
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -155,7 +154,7 @@ export default class AttributeController {
       res.status(204).json()
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 }

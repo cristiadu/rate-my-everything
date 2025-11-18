@@ -11,6 +11,7 @@ export default defineConfig({
     exclude: ['**/node_modules/**', '**/dist/**', '**/tmp/**'],
     globalSetup: ['./tests/setup.ts'],
     fileParallelism: false,
+    maxConcurrency: 1,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],

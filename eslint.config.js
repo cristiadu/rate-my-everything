@@ -3,23 +3,19 @@ import { FlatCompat } from '@eslint/eslintrc'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-// Import plugins using ES modules
 import importPlugin from 'eslint-plugin-import'
 import reactPlugin from 'eslint-plugin-react'
 import reactHooksPlugin from 'eslint-plugin-react-hooks'
 import jsxA11yPlugin from 'eslint-plugin-jsx-a11y'
 import typescriptPlugin from '@typescript-eslint/eslint-plugin'
 
-// Determine dirname in ESM
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
 
-// Create compatibility layer to use legacy plugins
 const compat = new FlatCompat({
   baseDirectory: __dirname,
   recommendedConfig: js.configs.recommended,
   plugins: {
-    // Define all plugins here so they can be used throughout the config
     import: importPlugin,
     react: reactPlugin,
     'react-hooks': reactHooksPlugin,

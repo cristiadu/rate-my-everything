@@ -3,6 +3,7 @@ import request from 'supertest'
 import { appReady } from '@/index'
 import { getAuthTokenFromFile } from '@@/testutils/common/Auth'
 import APIError from '@/models/APIError'
+import ErrorCode from '@/errors/ErrorCode'
 
 describe('404 Generic Error Integration Tests', async () => {
   const app = await appReady
@@ -14,8 +15,8 @@ describe('404 Generic Error Integration Tests', async () => {
       .expect('Content-Type', /json/)
       .expect(res => {
         const apiError = res.body as APIError
-        expect(apiError.message).toBe('The requested resource was not found')
-        expect(apiError.code).toBe('RESOURCE_NOT_FOUND')
+        expect(apiError.message).toBe('Could not find an API resource at the specified path')
+        expect(apiError.code).toBe(ErrorCode.NOT_FOUND)
         expect(apiError.status).toBe(404)
       })
   })

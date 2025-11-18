@@ -1,7 +1,6 @@
 import Item from '@/models/Item'
 import BaseService from '@/services/BaseService'
 
-// Method for CRUD of an Item, which is a model for an item.
 class ItemService extends BaseService<Item> {
   constructor() {
     super(Item)
@@ -20,7 +19,7 @@ class ItemService extends BaseService<Item> {
   }
 
   // Update an Item
-  public async update(id: number, item: Item): Promise<Item | null> {
+  public async update(id: number, item: Omit<Item, 'id'>): Promise<Item | null> {
     const updatedItem = await this.get(id)
     if (updatedItem) {
       this.repository.merge(updatedItem, item)
@@ -33,7 +32,7 @@ class ItemService extends BaseService<Item> {
   public async delete(id: number): Promise<void> {
     const item = await this.get(id)
     if (item) {
-      await this.repository.remove(item)
+      await this.repository.delete(item)
     }
   }
 

@@ -27,7 +27,6 @@ export class DatabaseHealthIndicator implements HealthIndicator {
 
 // Health check runner
 export const runHealthChecks = async (): Promise<Health> => {
-    // Get all registered health indicators
     const indicators: HealthIndicator[] = [
         new AppHealthIndicator(),
         new DatabaseHealthIndicator(),

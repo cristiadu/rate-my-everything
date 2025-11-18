@@ -1,7 +1,6 @@
 import RatedItem from '@/models/RatedItem'
 import BaseService from '@/services/BaseService'
 
-// Method for CRUD of a RatedItem, which is a model for a rated item.
 class RatedItemService extends BaseService<RatedItem> {
   constructor() {
     super(RatedItem)
@@ -20,7 +19,7 @@ class RatedItemService extends BaseService<RatedItem> {
   }
 
   // Update a RatedItem
-  public async update(id: number, ratedItem: RatedItem): Promise<RatedItem | null> {
+  public async update(id: number, ratedItem: Omit<RatedItem, 'id'>): Promise<RatedItem | null> {
     const updatedRatedItem = await this.get(id)
     if (updatedRatedItem) {
       this.repository.merge(updatedRatedItem, ratedItem)
@@ -33,7 +32,7 @@ class RatedItemService extends BaseService<RatedItem> {
   public async delete(id: number): Promise<void> {
     const ratedItem = await this.get(id)
     if (ratedItem) {
-      await this.repository.remove(ratedItem)
+      await this.repository.delete(ratedItem.id)
     }
   }
 

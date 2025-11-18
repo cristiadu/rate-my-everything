@@ -10,6 +10,7 @@ import HealthController from '@/api/HealthController'
 import { NextFunction, Request, Response } from 'express'
 import { SessionUser } from '@/models/User'
 import { NewApiError } from '@/models/APIError'
+import ErrorCode from '@/errors/ErrorCode'
 
 export const unprotectedRoutes = new Set([
   '/api/login',
@@ -27,7 +28,7 @@ export const routes = [
   { path: '/api/categories', controller: () => new CategoryController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/health', controller: () => new HealthController().router },
   { path: '/api', controller: () => (_req: Request, res: Response) => {
-      res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'The requested resource was not found'))
+      res.status(404).json(NewApiError(ErrorCode.NOT_FOUND, 404, 'Could not find an API resource at the specified path'))
     } }
 ]
 
@@ -40,35 +41,35 @@ export const authenticationFilter = (req: Request, res: Response, next: NextFunc
   const authHeader = req.headers.authorization
   const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null
   if (!token) {
-    return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Missing or invalid authorization header'))
+    return res.status(401).json(NewApiError(ErrorCode.UNAUTHORIZED  , 401, 'Missing or invalid authorization header'))
   }
 
   const jwtSecret = process.env.JWT_SECRET
   if (!jwtSecret) {
     console.error('JWT_SECRET environment variable is not defined')
-    return res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'Internal server error'))
+    return res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'Internal server error'))
   }
 
   try {
     const decodedUser = jwt.verify(token, jwtSecret) as SessionUser
     if (typeof decodedUser !== 'object' || decodedUser === null || !('id' in decodedUser) || !('roles' in decodedUser)) {
-      return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Invalid user object in JWT payload'))
+      return res.status(401).json(NewApiError(ErrorCode.UNAUTHORIZED, 401, 'Invalid user object in JWT payload'))
     }
     
     if (!Array.isArray(decodedUser.roles) || !decodedUser.roles.every(role => Object.values(UserRole).includes(role))) {
-      return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Invalid roles in user object'))
+      return res.status(401).json(NewApiError(ErrorCode.UNAUTHORIZED, 401, 'Invalid roles in user object'))
     }
 
     const route = routes.find((currentRoute) => req.path.startsWith(currentRoute.path))
     if (!route || (route.roles && !route.roles.some((role) => decodedUser.roles.includes(role)))) {
-      return res.status(403).json(NewApiError('FORBIDDEN', 403, 'You do not have permission to access this resource'))
+      return res.status(403).json(NewApiError(ErrorCode.FORBIDDEN, 403, 'You do not have permission to access this resource'))
     }
 
     res.locals.user = decodedUser
     return next()
   } catch (err) {
     console.log('JWT verification error:', err)
-    return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Invalid token'))
+    return res.status(401).json(NewApiError(ErrorCode.UNAUTHORIZED, 401, 'Invalid token'))
   }
 }
 
