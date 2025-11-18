@@ -37,3 +37,4 @@ package-lock.json
 # Dist folder
 dist/
 temp/
+tmp/

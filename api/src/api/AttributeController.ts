@@ -61,7 +61,7 @@ export default class AttributeController {
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Data not found'))
+        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Attribute not found'))
       }
     } catch (error) {
       console.error(error)
@@ -75,7 +75,7 @@ export default class AttributeController {
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Data not found'))
+        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Attribute value not found'))
       }
     } catch (error) {
       console.error(error)
@@ -109,7 +109,7 @@ export default class AttributeController {
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Data not found'))
+        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Attribute not found'))
       }
     } catch (error) {
       console.error(error)
@@ -123,7 +123,7 @@ export default class AttributeController {
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Data not found'))
+        res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'Attribute value not found'))
       }
     } catch (error) {
       console.error(error)
@@ -134,7 +134,7 @@ export default class AttributeController {
   public async deleteAttribute(req: Request, res: Response) {
     try {
       await this.attributeService.deleteAttribute(parseInt(req.params.id, 10))
-      res.status(204).send()
+      res.status(204).json()
     } catch (error) {
       console.error(error)
       res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
@@ -144,7 +144,7 @@ export default class AttributeController {
   public async deleteAttributeValue(req: Request, res: Response) {
     try {
       await this.attributeService.deleteAttributeValue(parseInt(req.params.id, 10))
-      res.status(204).send()
+      res.status(204).json()
     } catch (error) {
       console.error(error)
       res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))

@@ -1,7 +1,8 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
-import User from '@/models/User'
+import User, { SessionUser, UserTokenResponse } from '@/models/User'
 import BaseService from '@/services/BaseService'
+import { InvalidCredentials } from '@/errors/InvalidCredentials'
 
 const TOKEN_EXPIRY = 3 * 24 * 60 * 60 // 3 days in seconds
 
@@ -49,11 +50,15 @@ export default class UserService extends BaseService<User> {
     return user || null
   }
 
-  async login(username: string, password: string): Promise<{ token: string, user: User } | null> {
+  async login(username: string, password: string): Promise<UserTokenResponse> {
     const user = await this.repository.findOne({ where: { username } })
     
     if (user && await bcrypt.compare(password, user.password)) {
-      const payload = { username: user.username, id: user.id, roles: user.roles }
+      const payload: SessionUser = { 
+        username: user.username, 
+        id: user.id, 
+        roles: user.roles 
+      }
 
       const secretKey = process.env.JWT_SECRET
       if (!secretKey) {
@@ -64,9 +69,18 @@ export default class UserService extends BaseService<User> {
 
       const token = jwt.sign(payload, secretKey, options)
 
-      return { token, user }
+      const response: UserTokenResponse = {
+        token, 
+        user: {
+          id: user.id,
+          username: user.username,
+          roles: user.roles
+        }
+      }
+
+      return response
     }
 
-    return null
+    throw new InvalidCredentials("Invalid credentials provided.")
   }
 }

@@ -3,6 +3,9 @@ import dotenv from 'dotenv'
 import path from 'path'
 import request from 'supertest'
 import { appReady, DBConnection, server } from '@/index'
+import User, { UserTokenResponse } from '@/models/User'
+import UserRole from '@/models/UserRole'
+import { writeAuthTokenToFile } from '@@/testutils/common/Auth'
 
 dotenv.config({
   path: path.resolve(__dirname, '../.env.test'),
@@ -12,12 +15,7 @@ dotenv.config({
 export const TEST_USER = {
   email: 'test@example.com',
   password: 'Password123!',
-  name: 'Test User'
 }
-export let authToken: string | null = null
-
-import User from '@/models/User'
-import UserRole from '@/models/UserRole'
 
 // Export the setup function for global setup
 export default async function setup() {
@@ -44,11 +42,10 @@ export default async function setup() {
       
       try {
         const testUser = new User()
-        testUser.username = TEST_USER.name
+        testUser.username = TEST_USER.email
         testUser.email = TEST_USER.email
         testUser.password = await bcrypt.hash(TEST_USER.password, 10)
-        testUser.roles = [UserRole.ADMIN]
-        
+        testUser.roles = [UserRole.ADMIN, UserRole.USER]
         await userRepo.save(testUser)
         console.log('Test user created successfully')
       } catch (error) {
@@ -61,22 +58,24 @@ export default async function setup() {
     
     try {
       // Wait a bit for routes to be registered after DB connection
-      await new Promise(resolve => setTimeout(resolve, 1000))
+      await new Promise(resolve => setTimeout(resolve, 3000))
       
       console.log('Attempting to get auth token...')
       const loginResponse = await request(app)
         .post('/api/login')
         .send({
-          username: TEST_USER.name,
+          username: TEST_USER.email,
           password: TEST_USER.password
         })
             
-      if (loginResponse.status === 200) {
-        authToken = loginResponse.body.token
-        console.log('Authentication token obtained for tests')
+      const response = loginResponse.body as UserTokenResponse
+      console.log('Login response body:', JSON.stringify(loginResponse.body, null, 2))
+      if (loginResponse.status === 200 && response && response.token) {
+        writeAuthTokenToFile(response.token)
       } else {
-        console.error('Failed to get auth token')
-        console.error('Response body:', loginResponse.body)
+        console.error('Failed to get valid auth token')
+        console.error('Response body:', JSON.stringify(loginResponse.body, null, 2))
+        throw new Error('Could not obtain valid JWT for tests')
       }
     } catch (error) {
       console.error('Error getting auth token:', error instanceof Error ? error.message : 'Unknown error')

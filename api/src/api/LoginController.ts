@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express'
 import UserService from '@/services/UserService'
 import User from '@/models/User'
 import { NewApiError } from '@/models/APIError'
+import { InvalidCredentials } from '@/errors/InvalidCredentials'
 
 export default class LoginController {
   public router = Router()
@@ -27,25 +28,23 @@ export default class LoginController {
       // Check for missing credentials
       if (!username || !password) {
         return res.status(400)
-          .json({ error: 'Username and password are required' })
+          .json(NewApiError('MISSING_CREDENTIALS', 400, 'Username and password are required'))
       }
+
       const result = await this.userService.login(username, password)
       if (result) {
-        const { token, user } = result
-        // Remove password from user object for security
-        const safeUser = {
-          id: user.id,
-          email: user.email,
-          name: user.username,
-          roles: user.roles
-        }
         res.status(200)
-          .json({ token, user: safeUser })
+          .json(result)
       } else {
         res.status(401)
-          .json({ error: 'Invalid username or password' })
+          .json(NewApiError('INVALID_CREDENTIALS', 401, 'Invalid username or password'))
       }
     } catch (error) {
+      if (error instanceof InvalidCredentials) {
+        return res.status(401)
+          .json(NewApiError('INVALID_CREDENTIALS', 401, 'Invalid username or password'))
+      }
+
       console.error('Exception occurred:', error)
       res.status(500)
         .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
@@ -63,7 +62,7 @@ export default class LoginController {
       // Check if user already exists
       const existingUser = await this.userService.getByUsername(username)
       if (existingUser) {
-        return res.status(409)
+        return res.status(422)
           .json(NewApiError('USER_ALREADY_EXISTS', 422, 'Username already exists'))
       }
 
@@ -73,11 +72,11 @@ export default class LoginController {
         password,
         roles: roles || [],
         ratedItems: []
-      }
-      
+      } as Partial<User>
+
       // Using Omit<User, 'id'> since id is auto-generated
       const user = await this.userService.create(userObj as Omit<User, 'id'>)
-      
+
       // Never return password - destructure to omit password from response
       const userSafe = { ...user, password: undefined }
       res.status(201)

@@ -77,7 +77,7 @@ export default class CategoryController {
   public async delete(req: Request, res: Response) {
     try {
       await this.categoryService.delete(req.params.name)
-      res.status(204).json({})
+      res.status(204).json()
     } catch (error) {
       console.error(error)
       res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))

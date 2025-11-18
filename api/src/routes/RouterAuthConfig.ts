@@ -1,5 +1,4 @@
-import jwt, { JwtPayload, VerifyErrors } from 'jsonwebtoken'
-
+import jwt from 'jsonwebtoken'
 import RatedItemController from '@/api/RatedItemController'
 import UserController from '@/api/UserController'
 import AttributeController from '@/api/AttributeController'
@@ -9,7 +8,7 @@ import UserRole from '@/models/UserRole'
 import LoginController from '@/api/LoginController'
 import HealthController from '@/api/HealthController'
 import { NextFunction, Request, Response } from 'express'
-import User from '@/models/User'
+import { SessionUser } from '@/models/User'
 import { NewApiError } from '@/models/APIError'
 
 export const unprotectedRoutes = new Set([
@@ -22,11 +21,14 @@ export const unprotectedRoutes = new Set([
 export const routes = [
   { path: '/api/ratings', controller: () => new RatedItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/users', controller: () => new UserController().router, roles: [UserRole.ADMIN] },
-  { path: '/api/login', controller: () => new LoginController().router, roles: [] },
+  { path: '/api/login', controller: () => new LoginController().router, roles: [UserRole.ADMIN, UserRole.USER] },
   { path: '/api/attributes', controller: () => new AttributeController().router, roles: [UserRole.ADMIN] },
   { path: '/api/items', controller: () => new ItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/categories', controller: () => new CategoryController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/health', controller: () => new HealthController().router, roles: [] },
+  { path: '/api', controller: () => (_req: Request, res: Response) => {
+      res.status(404).json(NewApiError('RESOURCE_NOT_FOUND', 404, 'The requested resource was not found'))
+    }, roles: [] }
 ]
 
 export const authenticationFilter = (req: Request, res: Response, next: NextFunction) => {
@@ -36,45 +38,40 @@ export const authenticationFilter = (req: Request, res: Response, next: NextFunc
   }
 
   const authHeader = req.headers.authorization
-  const token = authHeader && authHeader.split(' ')[1]
-  if (authHeader == null || !authHeader.startsWith('Bearer ') || token == null) {
+  console.log('Authorization header received:', authHeader)
+  const token = authHeader && authHeader.startsWith('Bearer ') ? authHeader.split(' ')[1] : null
+  if (!token) {
     return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Missing or invalid authorization header'))
   }
 
-  // Make sure JWT_SECRET is defined
   const jwtSecret = process.env.JWT_SECRET
+  console.log('JWT_SECRET used for verification:', jwtSecret)
   if (!jwtSecret) {
     console.error('JWT_SECRET environment variable is not defined')
     return res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'Internal server error'))
   }
 
-  return jwt.verify(token, jwtSecret, undefined, (err: VerifyErrors | null, user: string | JwtPayload | undefined) => {
-    if (err) {
-      return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Invalid token'))
-    }
-
-    // User must be JwtPayload and parsed to User type
-    if (typeof user !== 'object' || !('id' in user) || !('roles' in user)) {
+  try {
+    const decodedUser = jwt.verify(token, jwtSecret) as SessionUser
+    if (typeof decodedUser !== 'object' || decodedUser === null || !('id' in decodedUser) || !('roles' in decodedUser)) {
       return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Invalid user object in JWT payload'))
     }
-
-    // Ensure user is of type User
-    if (!Array.isArray(user.roles) || !user.roles.every(role => Object.values(UserRole).includes(role))) {
+    
+    if (!Array.isArray(decodedUser.roles) || !decodedUser.roles.every(role => Object.values(UserRole).includes(role))) {
       return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Invalid roles in user object'))
     }
 
-    // Find the route that matches the request
     const route = routes.find((currentRoute) => req.path.startsWith(currentRoute.path))
-
-    // Check if the user has one of the required roles
-    if (!route || !route.roles.some((role) => user.roles.includes(role))) {
+    if (!route || !route.roles.some((role) => decodedUser.roles.includes(role))) {
       return res.status(403).json(NewApiError('FORBIDDEN', 403, 'You do not have permission to access this resource'))
     }
 
-    // Pass the user information to the next middleware by using res.locals instead of req.user
-    res.locals.user = user as User
-    return next() // pass the execution off to whatever request the client intended
-  })
+    res.locals.user = decodedUser
+    return next()
+  } catch (err) {
+    console.log('JWT verification error:', err)
+    return res.status(401).json(NewApiError('UNAUTHORIZED', 401, 'Invalid token'))
+  }
 }
 
 export const addDefaultHeaders = (_req: Request, res: Response, next: NextFunction) => {

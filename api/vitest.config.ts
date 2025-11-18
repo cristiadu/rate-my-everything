@@ -9,6 +9,8 @@ export default defineConfig({
     environment: 'node',
     include: ['**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}'],
     exclude: ['**/node_modules/**', '**/dist/**'],
+    pool: "forks",
+    maxWorkers: 1,
     globalSetup: ['./tests/setup.ts'],
     coverage: {
       provider: 'v8',

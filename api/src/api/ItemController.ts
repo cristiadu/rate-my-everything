@@ -47,7 +47,7 @@ export default class ItemController {
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('NOT_FOUND', 404, 'Data not found'))
+        res.status(404).json(NewApiError('NOT_FOUND', 404, 'Item not found'))
       }
     } catch (error) {
       console.error((error as Error).stack || error)
@@ -71,7 +71,7 @@ export default class ItemController {
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('NOT_FOUND', 404, 'Data not found'))
+        res.status(404).json(NewApiError('NOT_FOUND', 404, 'Item not found'))
       }
     } catch (error) {
       console.error((error as Error).stack || error)
@@ -82,7 +82,7 @@ export default class ItemController {
   public async delete(req: Request, res: Response) {
     try {
       await this.itemService.delete(parseInt(req.params.id, 10))
-      res.status(204).send()
+      res.status(204).json()
     } catch (error) {
       console.error((error as Error).stack || error)
       res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
