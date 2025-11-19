@@ -6,6 +6,7 @@ const config = {
   workspaces: {
     'api': {
       project: ['**/*.{ts,js}'],
+      ignoreBinaries: ["sleep"],
     },
     'ui': {
       project: ['**/*.{ts,js,tsx,jsx}'],

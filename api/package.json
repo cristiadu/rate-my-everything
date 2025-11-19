@@ -9,7 +9,7 @@
     "dev": "vite",
     "deploy": "echo \"Deploy API\"",
     "release": "echo \"Release API\"",
-    "pretest": "docker compose -f compose.yaml down -v && docker compose -f compose.yaml up -d --wait-timeout 100 && sleep 5",
+    "pretest": "docker compose -f compose.yaml down -v && docker compose -f compose.yaml up -d --wait-timeout 100 && sleep 3",
     "test": "vitest run",
     "posttest": "docker compose -f compose.yaml down -v",
     "test:watch": "vitest",
