@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express'
 import UserService from '@/services/UserService'
 import { NewApiError } from '@/models/APIError'
+import ErrorCode from '@/errors/ErrorCode'
 
 export default class UserController {
   public router = Router()
@@ -28,7 +29,7 @@ export default class UserController {
       res.status(200).json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -38,7 +39,7 @@ export default class UserController {
       res.status(200).json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -48,7 +49,7 @@ export default class UserController {
       res.status(200).json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -58,7 +59,7 @@ export default class UserController {
       res.status(201).json(data)
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
@@ -68,21 +69,21 @@ export default class UserController {
       if (data) {
         res.status(200).json(data)
       } else {
-        res.status(404).json(NewApiError('NOT_FOUND', 404, 'Data not found'))
+        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
       }
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
   public async delete(req: Request, res: Response) {
     try {
       await this.userService.delete(parseInt(req.params.id, 10))
-      res.status(204).send()
+      res.status(204).json()
     } catch (error) {
       console.error(error)
-      res.status(500).json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 }

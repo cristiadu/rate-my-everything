@@ -9,9 +9,9 @@
     "dev": "vite",
     "deploy": "echo \"Deploy API\"",
     "release": "echo \"Release API\"",
-    "pretest": "docker compose -f compose.yaml down && docker compose -f compose.yaml up -d",
+    "pretest": "docker compose -f compose.yaml down -v && docker compose -f compose.yaml up -d --wait-timeout 100 && sleep 3",
     "test": "vitest run",
-    "posttest": "docker compose -f compose.yaml down",
+    "posttest": "docker compose -f compose.yaml down -v",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint --ext .ts src/",
@@ -39,8 +39,8 @@
     "@types/node": "^24.10.1",
     "@types/pg": "^8.15.6",
     "@types/supertest": "^6.0.3",
-    "@vitest/coverage-v8": "^4.0.8",
-    "@vitest/ui": "^4.0.8",
+    "@vitest/coverage-v8": "^4.0.10",
+    "@vitest/ui": "^4.0.10",
     "dotenv": "^17.2.3",
     "pg": "^8.16.3",
     "supertest": "^7.1.4",
@@ -48,6 +48,6 @@
     "vite": "^7.2.2",
     "vite-plugin-node": "^7.0.0",
     "vite-tsconfig-paths": "^5.1.4",
-    "vitest": "^4.0.8"
+    "vitest": "^4.0.10"
   }
 }

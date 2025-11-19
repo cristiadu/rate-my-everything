@@ -12,8 +12,7 @@ import User from '@/models/User'
 import Attribute from '@/models/Attribute'
 import AttributeValue from '@/models/AttributeValue'
 import Category from '@/models/Category'
-import { routes, authenticationFilter } from '@/routes/RouterAuthConfig'
-import { NewApiError } from '@/models/APIError'
+import { routes, authenticationFilter, addDefaultHeaders } from '@/routes/RouterAuthConfig'
 import path from 'path'
 import http from 'http'
 
@@ -30,6 +29,12 @@ const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
   max: 100,
 })
+
+app.use(limiter)
+app.use(cors())
+app.use(bodyParser.json())
+app.use(addDefaultHeaders)
+app.use(authenticationFilter)
 
 const DBConnection: DataSource = new DataSource({
   name: 'default',
@@ -51,14 +56,7 @@ const DBConnection: DataSource = new DataSource({
 const appReady: Promise<typeof app> = DBConnection.initialize()
   .then(() => {
     console.log('Data Source has been initialized!')
-    app.use(limiter)
-    app.use(cors())
-    app.use(bodyParser.json())
     routes.forEach((route) => app.use(route.path, route.controller()))
-    app.use(authenticationFilter)
-    app.use('/api', (_req, res) => {
-      res.status(404).json(NewApiError('NOT_FOUND', 404, 'The requested resource was not found'))
-    })
     return app
   })
   .catch((err) => {
@@ -66,11 +64,11 @@ const appReady: Promise<typeof app> = DBConnection.initialize()
     throw err
   })
 
-appReady.then((appInstance) => {
-  const PORT = process.env.PORT || 3000
-  server = appInstance.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`)
+  appReady.then((appInstance) => {
+    const PORT = process.env.PORT || 3000
+    server = appInstance.listen(PORT, () => {
+      console.log(`Server is running on port ${PORT}`)
+    })
   })
-})
 
 export { appReady, DBConnection, server }

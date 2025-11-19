@@ -9,7 +9,6 @@ const AuthPage: React.FC = () => {
   
   const handleLoginSuccess = (token: string) => {
     login(token)
-    // In a real app, you might redirect here
   }
   
   const handleRegisterSuccess = () => {

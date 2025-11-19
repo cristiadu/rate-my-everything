@@ -18,7 +18,6 @@ export default class ApiService {
       'Content-Type': 'application/json',
     }
 
-    // Add authorization header if token exists and includeAuth is true
     if (includeAuth) {
       const token = localStorage.getItem('authToken')
       if (token) {
@@ -36,7 +35,6 @@ export default class ApiService {
 
     const response = await fetch(url, config)
 
-    // Check if response is JSON before parsing
     const contentType = response.headers.get('content-type')
     let data
 
@@ -47,7 +45,6 @@ export default class ApiService {
     }
 
     if (!response.ok) {
-      // Format error message from response if available
       const errorMessage = typeof data === 'object' && data.error
         ? data.error
         : 'An error occurred with the API request'

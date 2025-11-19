@@ -30,10 +30,8 @@ const CreateUserForm: React.FC = () => {
       })
 
       if (response.ok) {
-        // User created successfully
         setSubmitStatus({ message: 'User created successfully!', isSuccess: true })
       } else {
-        // Handle error response
         setSubmitStatus({ message: 'Failed to create user', isSuccess: false })
       }
     } catch {

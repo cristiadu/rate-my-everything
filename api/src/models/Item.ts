@@ -17,7 +17,7 @@ export default class Item {
       description!: string
 
     @ManyToOne(() => Category, (category) => category.items)
-    @JoinColumn({ name: 'category' }) // This line names the column as 'category'
+    @JoinColumn({ name: 'category' })
       category!: Category
 
     @OneToMany(() => RatedItem, (ratedItem) => ratedItem.item)

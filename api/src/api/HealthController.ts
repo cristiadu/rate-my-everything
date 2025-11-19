@@ -2,6 +2,7 @@ import { Request, Response, Router } from 'express'
 import { runHealthChecks } from '@/services/HealthIndicators'
 import { HealthStatus } from '@/models/Health'
 import { NewApiError } from '@/models/APIError'
+import ErrorCode from '@/errors/ErrorCode'
 
 export default class HealthController {
   public router = Router()
@@ -29,7 +30,7 @@ export default class HealthController {
     } catch (error) {
       console.error('Health check failed:', error)
         res.status(500)
-          .json(NewApiError('INTERNAL_ERROR', 500, 'An internal server error occurred'))
+          .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 }

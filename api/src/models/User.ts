@@ -4,6 +4,18 @@ import {
 import RatedItem from '@/models/RatedItem'
 import UserRole from '@/models/UserRole'
 
+export class UserTokenResponse {
+    token!: string
+    user!: SessionUser
+}
+
+export class SessionUser implements Omit<User, 'password' | 'ratedItems' | 'email'> {
+    id!: number
+    username!: string
+    roles!: UserRole[]
+}
+
+
 @Entity()
 export default class User {
     @PrimaryGeneratedColumn()

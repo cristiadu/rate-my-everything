@@ -36,7 +36,6 @@ const UserHeaderMenu = () => {
       }
 
       login(data.token)
-      // Reset form
       setUsername('')
       setPassword('')
     } catch (err) {

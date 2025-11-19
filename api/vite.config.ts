@@ -16,7 +16,6 @@ export default defineConfig({
     target: 'node18',
     minify: false,
     sourcemap: true,
-    // Use esbuild options to preserve decorators
     lib: {
       entry: 'src/index.ts',
       formats: ['cjs']
@@ -25,7 +24,6 @@ export default defineConfig({
       output: {
         entryFileNames: '[name].js',
       },
-      // Externalize dependencies to avoid bundling issues
       external: ['typeorm', 'pg', 'bcrypt', 'jsonwebtoken', 'express', /node:.*/],
     },
 
@@ -34,7 +32,7 @@ export default defineConfig({
     ...VitePluginNode({
       adapter: 'express',
       appPath: './src/index.ts',
-      exportName: 'app', // Not used here but required by the plugin
+      exportName: 'app',
     }),
   ],
 })

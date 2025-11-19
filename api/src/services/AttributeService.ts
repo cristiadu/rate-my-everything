@@ -4,7 +4,6 @@ import AttributeValue from '@/models/AttributeValue'
 import BaseService from '@/services/BaseService'
 import { Repository } from 'typeorm'
 
-// Method for CRUD of an Attribute and AttributeValue
 class AttributeService extends BaseService<Attribute> {
   private privateAttValueRepository: Repository<AttributeValue> | null = null
 
@@ -45,7 +44,7 @@ class AttributeService extends BaseService<Attribute> {
   }
 
   // Update an Attribute
-  public async updateAttribute(id: number, attribute: Attribute): Promise<Attribute | null> {
+  public async updateAttribute(id: number, attribute: Omit<Attribute, 'id'>): Promise<Attribute | null> {
     const updatedAttribute = await this.getAttribute(id)
     if (updatedAttribute) {
       this.repository.merge(updatedAttribute, attribute)
@@ -68,7 +67,7 @@ class AttributeService extends BaseService<Attribute> {
   public async deleteAttribute(id: number): Promise<void> {
     const attribute = await this.getAttribute(id)
     if (attribute) {
-      await this.repository.remove(attribute)
+      await this.repository.delete(attribute.id)
     }
   }
 
@@ -76,7 +75,7 @@ class AttributeService extends BaseService<Attribute> {
   public async deleteAttributeValue(id: number): Promise<void> {
     const attributeValue = await this.getAttributeValue(id)
     if (attributeValue) {
-      await this.attributeValueRepository.remove(attributeValue)
+      await this.attributeValueRepository.delete(attributeValue.id)
     }
   }
 
