@@ -22,7 +22,7 @@
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
     "bcrypt": "^6.0.0",
-    "body-parser": "^2.2.0",
+    "body-parser": "^2.2.1",
     "class-validator": "^0.14.2",
     "cors": "^2.8.5",
     "express": "^5.1.0",
