@@ -48,6 +48,6 @@
     "vite": "^7.3.2",
     "vite-plugin-node": "^7.0.0",
     "vite-tsconfig-paths": "^6.0.5",
-    "vitest": "^4.0.18"
+    "vitest": "^4.1.0"
   }
 }
