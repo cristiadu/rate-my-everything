@@ -22,32 +22,32 @@
   "dependencies": {
     "@types/bcrypt": "^6.0.0",
     "bcrypt": "^6.0.0",
-    "body-parser": "^2.2.2",
-    "class-validator": "^0.14.3",
+    "body-parser": "^2.3.0",
+    "class-validator": "^0.15.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.2.2",
+    "express-rate-limit": "^8.5.2",
     "jsonwebtoken": "^9.0.3",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^0.3.29"
+    "typeorm": "^1.0.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.2.0",
-    "@types/pg": "^8.16.0",
-    "@types/supertest": "^6.0.3",
-    "@vitest/coverage-v8": "^4.0.18",
-    "@vitest/ui": "^4.0.18",
-    "dotenv": "^17.2.3",
-    "pg": "^8.18.0",
+    "@types/node": "^26.1.0",
+    "@types/pg": "^8.20.0",
+    "@types/supertest": "^7.2.0",
+    "@vitest/coverage-v8": "^4.1.9",
+    "@vitest/ui": "^4.1.9",
+    "dotenv": "^17.4.2",
+    "pg": "^8.22.0",
     "supertest": "^7.2.2",
-    "typescript": "^5.9.3",
-    "vite": "^7.3.5",
-    "vite-plugin-node": "^7.0.0",
-    "vite-tsconfig-paths": "^6.0.5",
-    "vitest": "^4.1.0"
+    "typescript": "^6.0.3",
+    "vite": "^8.1.2",
+    "vite-plugin-node": "^8.0.0",
+    "vite-tsconfig-paths": "^6.1.1",
+    "vitest": "^4.1.9"
   }
 }
