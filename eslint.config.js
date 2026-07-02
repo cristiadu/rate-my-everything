@@ -1,4 +1,5 @@
 import js from '@eslint/js'
+import { fixupConfigRules, fixupPluginRules } from '@eslint/compat'
 import { FlatCompat } from '@eslint/eslintrc'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -11,16 +12,21 @@ import typescriptPlugin from '@typescript-eslint/eslint-plugin'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
+const importPluginCompat = fixupPluginRules(importPlugin)
+const reactPluginCompat = fixupPluginRules(reactPlugin)
+const reactHooksPluginCompat = fixupPluginRules(reactHooksPlugin)
+const jsxA11yPluginCompat = fixupPluginRules(jsxA11yPlugin)
+const typescriptPluginCompat = fixupPluginRules(typescriptPlugin)
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
   recommendedConfig: js.configs.recommended,
   plugins: {
-    import: importPlugin,
-    react: reactPlugin,
-    'react-hooks': reactHooksPlugin,
-    'jsx-a11y': jsxA11yPlugin,
-    '@typescript-eslint': typescriptPlugin,
+    import: importPluginCompat,
+    react: reactPluginCompat,
+    'react-hooks': reactHooksPluginCompat,
+    'jsx-a11y': jsxA11yPluginCompat,
+    '@typescript-eslint': typescriptPluginCompat,
   },
 })
 
@@ -46,7 +52,7 @@ export default [
     },
   },
   js.configs.recommended,
-  ...compat.extends('plugin:@typescript-eslint/recommended'),
+  ...fixupConfigRules(compat.extends('plugin:@typescript-eslint/recommended')),
   {
     files: ['**/*.{js,mjs,cjs,jsx,ts,tsx}'],
     rules: {
@@ -93,7 +99,7 @@ export default [
       },
     },
   },
-  ...compat.extends('plugin:react/recommended'),
+  ...fixupConfigRules(compat.extends('plugin:react/recommended')),
   {
     files: ['ui/**/*.{jsx,tsx}'],
     languageOptions: {
@@ -104,8 +110,8 @@ export default [
       },
     },
     plugins: {
-      import: importPlugin,
-      react: reactPlugin
+      import: importPluginCompat,
+      react: reactPluginCompat,
     },
     settings: {
       'import/resolver': {
@@ -146,7 +152,7 @@ export default [
   {
     files: ['**/*.stories.@(js|jsx|ts|tsx)'],
     plugins: {
-      import: importPlugin
+      import: importPluginCompat,
     },
     rules: {
       'import/no-extraneous-dependencies': 'off',
@@ -160,7 +166,7 @@ export default [
   {
     files: ['api/src/**/*.ts'],
     plugins: {
-      import: importPlugin
+      import: importPluginCompat,
     },
     rules: {
       'import/extensions': ['error', 'never'],

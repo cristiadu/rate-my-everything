@@ -12,14 +12,14 @@
         "upgrade-dependencies": "pnpm up --latest"
     },
     "dependencies": {
-        "@types/node": "^26.1.0",
+        "@types/node": "^26.0.1",
         "@types/react": "^19.2.17",
         "@types/react-dom": "^19.2.3",
         "react": "^19.2.7",
         "react-bulma-components": "^4.1.0",
         "react-burger-menu": "^3.1.0",
         "react-dom": "^19.2.7",
-        "react-router-dom": "^7.18.1",
+        "react-router-dom": "^7.18.0",
         "resize-observer-polyfill": "^1.5.1",
         "typescript": "^6.0.3"
     },
@@ -38,7 +38,7 @@
         "jest-environment-jsdom": "30.4.1",
         "ts-jest": "^29.4.11",
         "tsconfig-paths-webpack-plugin": "^4.2.0",
-        "webpack": "^5.108.3",
+        "webpack": "5.108.1",
         "webpack-cli": "^7.1.0",
         "webpack-dev-server": "^5.2.5"
     },

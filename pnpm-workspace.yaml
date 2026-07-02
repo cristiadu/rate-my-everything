@@ -1,3 +1,14 @@
 packages:
   - "api"
   - "ui"
+
+allowBuilds:
+  bcrypt: true
+  esbuild: true
+  unrs-resolver: true
+
+minimumReleaseAge: 4320
+
+overrides:
+  fast-uri: 3.1.2
+  serialize-javascript: 7.0.6
