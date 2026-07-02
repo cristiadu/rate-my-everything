@@ -1,3 +1,10 @@
 packages:
   - "api"
   - "ui"
+
+allowBuilds:
+  bcrypt: true
+  esbuild: true
+  unrs-resolver: true
+
+minimumReleaseAge: 4320
