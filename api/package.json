@@ -26,28 +26,28 @@
     "class-validator": "^0.15.1",
     "cors": "^2.8.6",
     "express": "^5.2.1",
-    "express-rate-limit": "^8.5.2",
+    "express-rate-limit": "^8.6.2",
     "jsonwebtoken": "^9.0.3",
     "reflect-metadata": "^0.2.2",
-    "typeorm": "^1.0.0"
+    "typeorm": "^1.1.0"
   },
   "devDependencies": {
     "@types/body-parser": "^1.19.6",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.6",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^26.0.1",
-    "@types/pg": "^8.20.0",
-    "@types/supertest": "^7.2.0",
-    "@vitest/coverage-v8": "^4.1.9",
-    "@vitest/ui": "^4.1.9",
+    "@types/node": "^26.1.2",
+    "@types/pg": "^8.20.4",
+    "@types/supertest": "^7.2.1",
+    "@vitest/coverage-v8": "^4.1.10",
+    "@vitest/ui": "^4.1.10",
     "dotenv": "^17.4.2",
     "pg": "^8.22.0",
     "supertest": "^7.2.2",
-    "typescript": "^6.0.3",
-    "vite": "^8.1.0",
+    "typescript": "^7.0.2",
+    "vite": "^8.2.0",
     "vite-plugin-node": "^8.0.0",
     "vite-tsconfig-paths": "^6.1.1",
-    "vitest": "^4.1.9"
+    "vitest": "^4.1.10"
   }
 }
