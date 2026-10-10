@@ -2,7 +2,9 @@ import React, { useState } from 'react'
 import {
   Heading, Level, Form, Button,
 } from 'react-bulma-components'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/components/users/AuthContext'
+import UserRole from '@/components/users/UserRole'
 import ApiConfig from '@/config/ApiConfig'
 
 const UserHeaderMenu = () => {
@@ -11,7 +13,7 @@ const UserHeaderMenu = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const { isAuthenticated, login, logout } = useAuth()
+  const { isAuthenticated, user, hasRole, login, logout } = useAuth()
 
   const handleLogin = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -54,7 +56,7 @@ const UserHeaderMenu = () => {
             size={6}
             subtitle
           >
-            {isAuthenticated ? 'Welcome!' : 'User Section'}
+            {isAuthenticated ? `Welcome, ${user?.username}!` : 'User Section'}
           </Heading>
         </Level.Item>
       </Level.Side>
@@ -125,6 +127,10 @@ const UserHeaderMenu = () => {
       ) : (
         <Level.Side align="right">
           <Level.Item>
+            <Link className="button is-small is-info mr-2" to="/account">My Account</Link>
+            {hasRole(UserRole.ADMIN) && (
+              <Link className="button is-small is-warning mr-2" to="/admin">Admin</Link>
+            )}
             <Button size="small" color="danger" onClick={logout}>Log Out</Button>
           </Level.Item>
         </Level.Side>

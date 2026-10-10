@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { Columns, Hero, Navbar } from 'react-bulma-components'
 import ResizeObserver from 'resize-observer-polyfill'
+import { BrowserRouter as Router } from 'react-router-dom'
 import Header from '@/components/layout/Header'
 import Footer from '@/components/layout/Footer'
 import MainContent from '@/components/layout/MainContent'
@@ -28,26 +29,28 @@ const App = () => {
   }, [])
 
   return (
-    <AuthProvider>
-      <Navbar className="is-fixed-top">
-        <div ref={navbarRef} style={{ width: '100%' }}>
-          <Header />
-        </div>
-      </Navbar>
-      <Hero size="fullheight" style={{ paddingTop: `${navbarHeight}px` }}>
-        <Hero.Body className="is-flex is-align-items-flex-start">
-          <Columns.Column size={2} overlay style={{ marginTop: `${navbarHeight}px` }}>
-            <FilterMenu />
-          </Columns.Column>
-          <Columns.Column size={10}>
-            <MainContent />
-          </Columns.Column>
-        </Hero.Body>
-        <Hero.Footer renderAs="footer">
-          <Footer />
-        </Hero.Footer>
-      </Hero>
-    </AuthProvider>
+    <Router>
+      <AuthProvider>
+        <Navbar className="is-fixed-top">
+          <div ref={navbarRef} style={{ width: '100%' }}>
+            <Header />
+          </div>
+        </Navbar>
+        <Hero size="fullheight" style={{ paddingTop: `${navbarHeight}px` }}>
+          <Hero.Body className="is-flex is-align-items-flex-start">
+            <Columns.Column size={2} overlay style={{ marginTop: `${navbarHeight}px` }}>
+              <FilterMenu />
+            </Columns.Column>
+            <Columns.Column size={10}>
+              <MainContent />
+            </Columns.Column>
+          </Hero.Body>
+          <Hero.Footer renderAs="footer">
+            <Footer />
+          </Hero.Footer>
+        </Hero>
+      </AuthProvider>
+    </Router>
   )
 }
 export default App
