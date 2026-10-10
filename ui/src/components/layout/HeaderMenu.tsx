@@ -22,7 +22,7 @@ const HeaderMenu = () => {
         <Navbar.Burger onClick={() => setActive(!isActive)} />
       </Navbar.Brand>
       <Navbar.Menu>
-        <Navbar.Container>
+        <Navbar.Container align="left">
           <Navbar.Item href="#" hoverable>
             <Navbar.Link>
               First
@@ -44,12 +44,12 @@ const HeaderMenu = () => {
             Second
           </Navbar.Item>
           {isAuthenticated && (
-            <Navbar.Item href="/categories">
+            <Navbar.Item renderAs="a" href="/categories">
               Categories
             </Navbar.Item>
           )}
           {isAdmin && (
-            <Navbar.Item href="/attributes">
+            <Navbar.Item renderAs="a" href="/attributes">
               Attributes
             </Navbar.Item>
           )}
