@@ -5,3 +5,16 @@ export interface RankingItem {
     item_img_url: string;
     rating: number;
 }
+
+export enum UserRole {
+    ADMIN = 'admin',
+    MODERATOR = 'moderator',
+    USER = 'user',
+}
+
+export interface AdminUser {
+    id: number;
+    username: string;
+    email: string;
+    roles: UserRole[];
+}
