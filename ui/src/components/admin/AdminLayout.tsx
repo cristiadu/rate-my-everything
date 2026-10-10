@@ -15,7 +15,7 @@ const AdminLayout: React.FC = () => (
       <Menu>
         <Menu.List title="Administration">
           {adminLinks.map(({ to, label, end }) => (
-            <li key={to}>
+            <li key={to} style={{ listStyle: 'none' }}>
               <NavLink to={to} end={end} className={({ isActive }) => (isActive ? 'is-active' : '')}>
                 {label}
               </NavLink>
