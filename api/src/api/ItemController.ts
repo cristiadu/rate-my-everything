@@ -1,8 +1,9 @@
 import { Request, Response, Router } from 'express'
 import ItemService from '@/services/ItemService'
+import { ItemInput } from '@/models/Item'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import Item from '@/models/Item'
+import { InvalidItemAttributes } from '@/errors/InvalidItemAttributes'
 
 export default class ItemController {
   public router = Router()
@@ -59,13 +60,16 @@ export default class ItemController {
 
   public async create(req: Request, res: Response) {
     try {
-      const { name, category } = req.body
-      if (!name || !category) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, category'))
+      const itemInput = req.body as ItemInput
+      if (!itemInput.name || itemInput.categoryId === undefined) {
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, categoryId'))
       }
-      const data = await this.itemService.create(req.body)
+      const data = await this.itemService.create(itemInput)
       res.status(201).json(data)
     } catch (error) {
+      if (error instanceof InvalidItemAttributes) {
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, error.message))
+      }
       console.error((error as Error).stack || error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
@@ -73,14 +77,16 @@ export default class ItemController {
 
   public async update(req: Request, res: Response) {
     try {
-      const itemBody = req.body as Item
-      const data = await this.itemService.update(parseInt(req.params.id, 10), itemBody)
+      const data = await this.itemService.update(parseInt(req.params.id, 10), req.body as ItemInput)
       if (data) {
         res.status(200).json(data)
       } else {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Item not found'))
       }
     } catch (error) {
+      if (error instanceof InvalidItemAttributes) {
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, error.message))
+      }
       console.error((error as Error).stack || error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
