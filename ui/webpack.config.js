@@ -26,6 +26,8 @@ const config = {
   output: {
     filename: 'bundle.js',
     path: _resolve(__dirname, 'dist'),
+    // Absolute so nested routes such as /interests/1/edit load the bundle on a full page load
+    publicPath: '/',
   },
   module: {
     rules: [

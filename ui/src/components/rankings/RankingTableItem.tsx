@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'react-router-dom'
 import { Image } from 'react-bulma-components'
-import { RankingItem } from '@/components/types'
+import type { RankingItem } from '@/components/types'
 
 interface RankingTableItemProps {
     ranking: RankingItem;

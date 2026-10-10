@@ -15,7 +15,7 @@ const HeaderMenu = () => {
           <img
             alt="Icon"
             height="28"
-            src="./favicon.ico"
+            src="/favicon.ico"
             width="28"
           />
         </Navbar.Item>
