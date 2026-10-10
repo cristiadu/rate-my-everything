@@ -1,9 +1,12 @@
 import React from 'react'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import {
+  BrowserRouter as Router, Navigate, Routes, Route,
+} from 'react-router-dom'
 import { Content } from 'react-bulma-components'
 import Index from '@/components/index/Index'
 import OverallRankings from '@/components/rankings/OverallRankings'
-import CreateUserForm from '@/components/users/CreateUserForm'
+import RequireAdmin from '@/components/admin/RequireAdmin'
+import UserManagement from '@/components/admin/users/UserManagement'
 import HealthCheck from '@/components/health/HealthCheck'
 
 import { RankingItem } from '../types'
@@ -40,7 +43,8 @@ const MainContent = () => (
   <Content id="content" key="content">
     <Router>
       <Routes>
-        <Route path="/user/create" element={<CreateUserForm />} />
+        <Route path="/admin/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
+        <Route path="/user/create" element={<Navigate to="/admin/users" replace />} />
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/health" element={<HealthCheck />} />

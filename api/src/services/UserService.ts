@@ -5,6 +5,8 @@ import BaseService from '@/services/BaseService'
 import { InvalidCredentials } from '@/errors/InvalidCredentials'
 
 const TOKEN_EXPIRY = 3 * 24 * 60 * 60 // 3 days in seconds
+/** bcrypt cost factor (2^10 hashing rounds) used for every stored password. */
+const SALT_ROUNDS = 10
 
 export default class UserService extends BaseService<User> {
   constructor() {
@@ -12,8 +14,7 @@ export default class UserService extends BaseService<User> {
   }
 
   async create(user: Omit<User, 'id'>): Promise<User> {
-    const saltRounds = 10
-    const hashedPassword = await bcrypt.hash(user.password, saltRounds)
+    const hashedPassword = await bcrypt.hash(user.password, SALT_ROUNDS)
     const newUser = this.repository.create({ ...user, password: hashedPassword })
     return this.repository.save(newUser)
   }
@@ -23,10 +24,15 @@ export default class UserService extends BaseService<User> {
     return user || null
   }
 
-  async update(id: number, user: Omit<User, 'id'>): Promise<User | null> {
+  async update(id: number, user: Partial<Omit<User, 'id'>>): Promise<User | null> {
     const existingUser = await this.getById(id)
     if (existingUser) {
-      this.repository.merge(existingUser, user)
+      // Keep the current password unless a new one is sent, and never store it in plain text
+      const { password, ...changes } = user
+      this.repository.merge(existingUser, changes)
+      if (password) {
+        existingUser.password = await bcrypt.hash(password, SALT_ROUNDS)
+      }
       return this.repository.save(existingUser)
     }
     return null
