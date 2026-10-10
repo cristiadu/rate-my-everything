@@ -1,20 +1,27 @@
 import React from 'react'
-import { Navigate, useLocation } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { useAuth } from '@/components/users/AuthContext'
-import NotAuthorized from '@/components/users/NotAuthorized'
+import AccessMessage from '@/components/users/AccessMessage'
 import type { RequireAuthProps } from '@/components/types'
 
-/** Route guard: sends signed-out users to /login and shows NotAuthorized when the user lacks the required role. */
+/** Route guard: asks signed-out visitors to log in with the header form, and blocks users without the required role. */
 const RequireAuth: React.FC<RequireAuthProps> = ({ children, roles }) => {
   const { isAuthenticated, hasRole } = useAuth()
-  const location = useLocation()
 
   if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />
+    return (
+      <AccessMessage title="Log in required">
+        Log in with the form at the top of the page to see this page.
+      </AccessMessage>
+    )
   }
 
   if (roles && !hasRole(...roles)) {
-    return <NotAuthorized />
+    return (
+      <AccessMessage title="Not authorized">
+        You do not have permission to view this page. <Link to="/">Go back home</Link>.
+      </AccessMessage>
+    )
   }
 
   return <>{children}</>

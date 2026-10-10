@@ -1,26 +1,18 @@
 import React, { useState } from 'react'
-import { type Location, Navigate, useLocation } from 'react-router-dom'
 import LoginForm from '@/components/users/LoginForm'
 import RegisterForm from '@/components/users/RegisterForm'
 import { useAuth } from '@/components/users/AuthContext'
 
 const AuthPage: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
-  const { isAuthenticated, login } = useAuth()
-  const location = useLocation()
-
+  const { login } = useAuth()
+  
   const handleLoginSuccess = (token: string) => {
     login(token)
   }
-
+  
   const handleRegisterSuccess = () => {
     setActiveTab('login')
-  }
-
-  // Send the user back to the page that required a login, or to their own area.
-  if (isAuthenticated) {
-    const from = (location.state as { from?: Location } | null)?.from
-    return <Navigate to={from?.pathname ?? '/account'} replace />
   }
 
   return (

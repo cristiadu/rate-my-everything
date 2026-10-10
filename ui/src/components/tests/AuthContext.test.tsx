@@ -52,7 +52,7 @@ describe('AuthProvider', () => {
     renderAppAt('/account')
 
     // THEN
-    expect(screen.getByRole('heading', { name: 'Login' })).toBeInTheDocument()
+    expect(screen.getByText('Log in required')).toBeInTheDocument()
     expect(localStorage.getItem('authToken')).toBeNull()
   })
 })

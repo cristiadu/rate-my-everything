@@ -21,6 +21,12 @@ export interface JwtClaims extends SessionUser {
     exp?: number;
 }
 
+/** Props for AccessMessage: a heading and the explanation shown under it. */
+export interface AccessMessageProps {
+    title: string;
+    children: React.ReactNode;
+}
+
 /** Props for the RequireAuth route guard; `roles` lists the roles allowed in, any one of them is enough. */
 export interface RequireAuthProps {
     children: React.ReactNode;

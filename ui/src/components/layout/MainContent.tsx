@@ -5,7 +5,6 @@ import Index from '@/components/index/Index'
 import OverallRankings from '@/components/rankings/OverallRankings'
 import CreateUserForm from '@/components/users/CreateUserForm'
 import HealthCheck from '@/components/health/HealthCheck'
-import AuthPage from '@/components/users/AuthPage'
 import RequireAuth from '@/components/users/RequireAuth'
 import AdminLayout from '@/components/admin/AdminLayout'
 import AdminDashboard from '@/components/admin/AdminDashboard'
@@ -46,7 +45,6 @@ const MainContent = () => (
   <Content id="content" key="content">
     <Routes>
       <Route path="/user/create" element={<CreateUserForm />} />
-      <Route path="/login" element={<AuthPage />} />
       <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
       <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
       <Route path="/health" element={<HealthCheck />} />

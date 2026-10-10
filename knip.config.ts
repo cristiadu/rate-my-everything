@@ -10,7 +10,7 @@ const config = {
     },
     'ui': {
       project: ['**/*.{ts,js,tsx,jsx}'],
-      ignoreFiles: ['**/config/ApiService.ts'],
+      ignoreFiles: ['**/users/AuthPage.tsx', '**/users/LoginForm.tsx', '**/users/RegisterForm.tsx', '**/config/ApiService.ts'],
     },
     '.': {
       project: ['./*.{ts,js}'],

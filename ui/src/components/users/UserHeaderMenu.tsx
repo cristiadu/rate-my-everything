@@ -73,11 +73,11 @@ const UserHeaderMenu = () => {
               <Form.Field.Body>
                 <Form.Field>
                   <Form.Control>
-                    <Form.Input
+                    <input
+                      className="input is-small"
                       placeholder="Username"
-                      size="small"
                       value={username}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUsername(e.target.value)}
+                      onChange={(e) => setUsername(e.target.value)}
                     />
                   </Form.Control>
                 </Form.Field>
@@ -94,12 +94,12 @@ const UserHeaderMenu = () => {
               <Form.Field.Body>
                 <Form.Field>
                   <Form.Control>
-                    <Form.Input
+                    <input
+                      className="input is-small"
                       placeholder="Password"
                       type="password"
-                      size="small"
                       value={password}
-                      onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
+                      onChange={(e) => setPassword(e.target.value)}
                     />
                   </Form.Control>
                 </Form.Field>
