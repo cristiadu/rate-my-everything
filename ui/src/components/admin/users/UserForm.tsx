@@ -1,13 +1,9 @@
 import React, { useState } from 'react'
-import { AdminUser, UserRole } from '@/components/types'
+import {
+  AdminUser, MIN_PASSWORD_LENGTH, UserFormValues, UserRole,
+} from '@/components/types'
 
-export interface UserFormValues {
-  username: string;
-  email: string;
-  password: string;
-  roles: UserRole[];
-}
-
+/** Props for the admin user form; pass a user to edit it, or none to create one. */
 interface UserFormProps {
   user?: AdminUser;
   isSaving: boolean;
@@ -15,6 +11,7 @@ interface UserFormProps {
   onCancel: () => void;
 }
 
+/** Form for creating or editing a user's details, password and roles. */
 const UserForm: React.FC<UserFormProps> = ({
   user, isSaving, onSubmit, onCancel,
 }) => {
@@ -26,10 +23,12 @@ const UserForm: React.FC<UserFormProps> = ({
     roles: user?.roles ?? [UserRole.USER],
   })
 
+  /** Copies a text input's value into the form state by its name. */
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setValues({ ...values, [e.target.name]: e.target.value })
   }
 
+  /** Adds the role if it is missing, or removes it if present. */
   const toggleRole = (role: UserRole) => {
     setValues({
       ...values,
@@ -39,6 +38,7 @@ const UserForm: React.FC<UserFormProps> = ({
     })
   }
 
+  /** Hands the form values to the parent instead of submitting the page. */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     onSubmit(values)
@@ -88,7 +88,7 @@ const UserForm: React.FC<UserFormProps> = ({
             value={values.password}
             onChange={handleInputChange}
             required={!isEditing}
-            minLength={6}
+            minLength={MIN_PASSWORD_LENGTH}
           />
         </div>
       </div>

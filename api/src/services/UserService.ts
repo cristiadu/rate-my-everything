@@ -5,6 +5,7 @@ import BaseService from '@/services/BaseService'
 import { InvalidCredentials } from '@/errors/InvalidCredentials'
 
 const TOKEN_EXPIRY = 3 * 24 * 60 * 60 // 3 days in seconds
+/** bcrypt cost factor (2^10 hashing rounds) used for every stored password. */
 const SALT_ROUNDS = 10
 
 export default class UserService extends BaseService<User> {

@@ -4,7 +4,7 @@ import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import User from '@/models/User'
 
-// Never expose password hashes through the API
+/** Removes the password hash so it is never sent in an API response. */
 const withoutPassword = (user: User) => ({ ...user, password: undefined })
 
 export default class UserController {

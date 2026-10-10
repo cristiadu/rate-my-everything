@@ -1,18 +1,20 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import { AdminUser } from '@/components/types'
-import UserForm, { UserFormValues } from '@/components/admin/users/UserForm'
+import {
+  AdminUser, StatusMessage, UserEditorState, UserFormValues,
+} from '@/components/types'
+import UserForm from '@/components/admin/users/UserForm'
 
-type EditorState = { mode: 'create' } | { mode: 'edit', user: AdminUser } | null
-
+/** Admin screen to list, create, edit and delete users. */
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
-  const [editor, setEditor] = useState<EditorState>(null)
-  const [status, setStatus] = useState<{ message: string, isSuccess: boolean } | null>(null)
+  const [editor, setEditor] = useState<UserEditorState>(null)
+  const [status, setStatus] = useState<StatusMessage>(null)
 
+  /** Fetches the current user list from the API. */
   const loadUsers = useCallback(async () => {
     setIsLoading(true)
     try {
@@ -28,6 +30,7 @@ const UserManagement: React.FC = () => {
     loadUsers()
   }, [loadUsers])
 
+  /** Creates or updates the user in the open form, then reloads the list. */
   const handleSave = async (values: UserFormValues) => {
     if (!editor) return
     setIsSaving(true)
@@ -35,7 +38,7 @@ const UserManagement: React.FC = () => {
 
     // Only send a password when one was typed, so editing keeps the current one
     const { password, ...rest } = values
-    const body: Record<string, unknown> = password ? { ...rest, password } : rest
+    const body: Partial<UserFormValues> = password ? values : rest
 
     try {
       if (editor.mode === 'create') {
@@ -54,6 +57,7 @@ const UserManagement: React.FC = () => {
     }
   }
 
+  /** Deletes the user after the admin confirms, then reloads the list. */
   const handleDelete = async (user: AdminUser) => {
     if (!window.confirm(`Delete user ${user.username}? This cannot be undone.`)) return
     setStatus(null)
