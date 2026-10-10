@@ -1,8 +1,12 @@
 import React, { useState } from 'react'
 import { Navbar } from 'react-bulma-components'
+import { Link } from 'react-router-dom'
+import { useAuth } from '@/components/users/AuthContext'
+import UserRole from '@/components/users/UserRole'
 
 const HeaderMenu = () => {
   const [isActive, setActive] = useState(false)
+  const { isAuthenticated, hasRole } = useAuth()
 
   return (
     <Navbar active={isActive} color="danger">
@@ -18,7 +22,7 @@ const HeaderMenu = () => {
         <Navbar.Burger onClick={() => setActive(!isActive)} />
       </Navbar.Brand>
       <Navbar.Menu>
-        <Navbar.Container>
+        <Navbar.Container align="left">
           <Navbar.Item href="#" hoverable>
             <Navbar.Link>
               First
@@ -39,6 +43,18 @@ const HeaderMenu = () => {
           <Navbar.Item href="#">
             Second
           </Navbar.Item>
+          {isAuthenticated && (
+            <Link className="navbar-item" to="/account">My Account</Link>
+          )}
+          {hasRole(UserRole.ADMIN) && (
+            <div className="navbar-item has-dropdown is-hoverable">
+              <Link className="navbar-link" to="/admin">Admin</Link>
+              <div className="navbar-dropdown">
+                <Link className="navbar-item" to="/admin">Dashboard</Link>
+                <Link className="navbar-item" to="/admin/users">Users</Link>
+              </div>
+            </div>
+          )}
         </Navbar.Container>
         <Navbar.Container align="right">
           <Navbar.Item href="#">

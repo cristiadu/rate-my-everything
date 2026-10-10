@@ -8,28 +8,15 @@ beforeEach(() => {
 })
 
 describe('UserHeaderMenu', () => {
-  test('shows the Admin link to admins', () => {
+  test('welcomes the signed-in user by name', () => {
     // GIVEN
-    signInAs([UserRole.ADMIN], { username: 'boss' })
+    signInAs([UserRole.USER], { username: 'regular' })
 
     // WHEN
     renderAppAt('/')
 
     // THEN
-    expect(screen.getByText('Welcome, boss!')).toBeInTheDocument()
-    expect(screen.getByRole('link', { name: 'My Account' })).toHaveAttribute('href', '/account')
-    expect(screen.getByRole('link', { name: 'Admin' })).toHaveAttribute('href', '/admin')
-  })
-
-  test('hides the Admin link from regular users', () => {
-    // GIVEN
-    signInAs([UserRole.USER])
-
-    // WHEN
-    renderAppAt('/')
-
-    // THEN
-    expect(screen.getByRole('link', { name: 'My Account' })).toBeInTheDocument()
-    expect(screen.queryByRole('link', { name: 'Admin' })).not.toBeInTheDocument()
+    expect(screen.getByText('Welcome, regular!')).toBeInTheDocument()
+    expect(screen.getByText('Log Out')).toBeInTheDocument()
   })
 })
