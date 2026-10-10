@@ -5,7 +5,7 @@ import Category from '@/models/Category'
 import Attribute from '@/models/Attribute'
 import APIError from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import { getAuthTokenFromFile } from '@@/testutils/common/Auth'
+import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { cleanupAllCategories } from '@@/testutils/common/DataCleanup'
 import { Endpoints } from '@@/testutils/common/constants'
 
@@ -436,6 +436,37 @@ describe('Category API Integration Tests', async () => {
           const apiError = res.body as APIError
           expect(apiError.message).toBe('Unknown attribute ids: 999999')
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+        })
+    })
+  })
+
+  describe('Category permissions for the user role', () => {
+    let userToken: string
+
+    beforeAll(async () => {
+      userToken = await getUserRoleAuthToken(app)
+    })
+
+    it('should let users list categories', async () => {
+      await request(app)
+        .get(Endpoints.CATEGORIES_BASE_PATH)
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(200)
+    })
+
+    it.each([
+      ['POST', () => request(app).post(Endpoints.CATEGORIES_BASE_PATH).send({ name: 'User-Category' })],
+      ['PUT', () => request(app).put(`${Endpoints.CATEGORIES_BASE_PATH}/any-category`).send({ description: 'Nope' })],
+      ['DELETE', () => request(app).delete(`${Endpoints.CATEGORIES_BASE_PATH}/any-category`)],
+    ])('should forbid users from %s on categories', async (_method, buildRequest) => {
+      await buildRequest()
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect('Content-Type', /json/)
+        .expect(403)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.code).toBe(ErrorCode.FORBIDDEN)
+          expect(apiError.status).toBe(403)
         })
     })
   })

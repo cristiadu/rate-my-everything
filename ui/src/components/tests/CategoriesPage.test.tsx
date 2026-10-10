@@ -29,17 +29,14 @@ test('lists categories with their attributes', async () => {
   expect(screen.getByText('Author')).toBeInTheDocument()
 })
 
-test('does not offer attribute selection or load attributes for non-admins', async () => {
+test('lets non-admins browse without editing', async () => {
   renderAsUser(<CategoriesPage />, ['user'])
 
   await screen.findByText('Books')
   expect(mockedApi.get).not.toHaveBeenCalledWith('/attributes')
-  expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
-
-  fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Games' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Create category' }))
-
-  await waitFor(() => expect(mockedApi.post).toHaveBeenCalledWith('/categories', { name: 'Games', description: '' }))
+  expect(screen.queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
+  expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
 })
 
 test('lets admins attach attributes when editing a category', async () => {
@@ -62,7 +59,7 @@ test('lets admins attach attributes when editing a category', async () => {
 
 test('deletes a category by name after confirmation', async () => {
   jest.spyOn(window, 'confirm').mockReturnValue(true)
-  renderAsUser(<CategoriesPage />, ['user'])
+  renderAsUser(<CategoriesPage />, ['admin'])
 
   await screen.findByText('Books')
   fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
@@ -72,7 +69,7 @@ test('deletes a category by name after confirmation', async () => {
 
 test('shows the API error message when saving fails', async () => {
   mockedApi.post.mockRejectedValue(new Error('Unknown attribute ids: 99'))
-  renderAsUser(<CategoriesPage />, ['user'])
+  renderAsUser(<CategoriesPage />, ['admin'])
 
   await screen.findByText('Books')
   fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Games' } })

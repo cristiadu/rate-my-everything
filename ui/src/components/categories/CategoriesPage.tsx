@@ -40,7 +40,7 @@ const CategoriesPage: React.FC = () => {
   }, [loadCategories])
 
   useEffect(() => {
-    // Listing attributes is admin-only in the API, so only admins can pick them here
+    // Only admins can change categories or list attributes, so other users just browse
     if (!isAdmin) {
       return
     }
@@ -69,10 +69,7 @@ const CategoriesPage: React.FC = () => {
     setIsSaving(true)
     setError('')
 
-    const body: Record<string, unknown> = { name: formFields.name, description: formFields.description }
-    if (isAdmin) {
-      body.attributeIds = formFields.attributeIds
-    }
+    const body = { ...formFields }
 
     try {
       if (editingName === null) {
@@ -124,63 +121,63 @@ const CategoriesPage: React.FC = () => {
         </Message>
       )}
 
-      <Box>
-        <form onSubmit={handleSubmit}>
-          <h3 className="title is-5">{editingName === null ? 'New category' : `Edit ${editingName}`}</h3>
-          <div className="field">
-            <label className="label" htmlFor="category-name">Name</label>
-            <div className="control">
-              <input
-                className="input"
-                id="category-name"
-                name="name"
-                value={formFields.name}
-                onChange={(e) => setFormFields({ ...formFields, name: e.target.value })}
-                required
-              />
+      {isAdmin && (
+        <Box>
+          <form onSubmit={handleSubmit}>
+            <h3 className="title is-5">{editingName === null ? 'New category' : `Edit ${editingName}`}</h3>
+            <div className="field">
+              <label className="label" htmlFor="category-name">Name</label>
+              <div className="control">
+                <input
+                  className="input"
+                  id="category-name"
+                  name="name"
+                  value={formFields.name}
+                  onChange={(e) => setFormFields({ ...formFields, name: e.target.value })}
+                  required
+                />
+              </div>
             </div>
-          </div>
-          <div className="field">
-            <label className="label" htmlFor="category-description">Description</label>
-            <div className="control">
-              <textarea
-                className="textarea"
-                id="category-description"
-                name="description"
-                value={formFields.description}
-                onChange={(e) => setFormFields({ ...formFields, description: e.target.value })}
-              />
+            <div className="field">
+              <label className="label" htmlFor="category-description">Description</label>
+              <div className="control">
+                <textarea
+                  className="textarea"
+                  id="category-description"
+                  name="description"
+                  value={formFields.description}
+                  onChange={(e) => setFormFields({ ...formFields, description: e.target.value })}
+                />
+              </div>
             </div>
-          </div>
-          {isAdmin && (
             <fieldset className="field">
-              <legend className="label">Attributes</legend>
-              {attributes.length === 0 ? (
-                <p className="is-size-7">No attributes yet. Create them on the <a href="/attributes">attributes page</a>.</p>
-              ) : attributes.map((attribute) => (
-                <div className="control" key={attribute.id}>
-                  <label className="checkbox">
-                    <input
-                      type="checkbox"
-                      checked={formFields.attributeIds.includes(attribute.id)}
-                      onChange={() => toggleAttribute(attribute.id)}
-                    />
-                    {` ${attribute.name} (${attribute.valueType})`}
-                  </label>
-                </div>
-              ))}
-            </fieldset>
-          )}
-          <div className="buttons">
-            <button type="submit" className={`button is-primary${isSaving ? ' is-loading' : ''}`} disabled={isSaving}>
-              {editingName === null ? 'Create category' : 'Save category'}
-            </button>
-            {editingName !== null && (
-              <button type="button" className="button" onClick={resetForm}>Cancel</button>
-            )}
-          </div>
-        </form>
-      </Box>
+                <legend className="label">Attributes</legend>
+                {attributes.length === 0 ? (
+                  <p className="is-size-7">No attributes yet. Create them on the <a href="/attributes">attributes page</a>.</p>
+                ) : attributes.map((attribute) => (
+                  <div className="control" key={attribute.id}>
+                    <label className="checkbox">
+                      <input
+                        type="checkbox"
+                        checked={formFields.attributeIds.includes(attribute.id)}
+                        onChange={() => toggleAttribute(attribute.id)}
+                      />
+                      {` ${attribute.name} (${attribute.valueType})`}
+                    </label>
+                  </div>
+                ))}
+              </fieldset>
+            <div className="buttons">
+              <button type="submit" className={`button is-primary${isSaving ? ' is-loading' : ''}`} disabled={isSaving}>
+                {editingName === null ? 'Create category' : 'Save category'}
+              </button>
+              {editingName !== null && (
+                <button type="button" className="button" onClick={resetForm}>Cancel</button>
+              )}
+            </div>
+          </form>
+        </Box>
+      )}
 
       <Table striped hoverable size="fullwidth">
         <thead>
@@ -188,12 +185,12 @@ const CategoriesPage: React.FC = () => {
             <th>Name</th>
             <th>Description</th>
             <th>Attributes</th>
-            <th aria-label="Actions" />
+            {isAdmin && <th aria-label="Actions" />}
           </tr>
         </thead>
         <tbody>
           {categories.length === 0 ? (
-            <tr><td colSpan={4}>No categories yet.</td></tr>
+            <tr><td colSpan={isAdmin ? 4 : 3}>No categories yet.</td></tr>
           ) : categories.map((category) => (
             <tr key={category.id}>
               <td>{category.name}</td>
@@ -205,12 +202,14 @@ const CategoriesPage: React.FC = () => {
                   ))}
                 </Tag.Group>
               </td>
-              <td>
-                <div className="buttons is-right">
-                  <button type="button" className="button is-small" onClick={() => handleEdit(category)}>Edit</button>
-                  <button type="button" className="button is-small is-danger" onClick={() => handleDelete(category)}>Delete</button>
-                </div>
-              </td>
+              {isAdmin && (
+                <td>
+                  <div className="buttons is-right">
+                    <button type="button" className="button is-small" onClick={() => handleEdit(category)}>Edit</button>
+                    <button type="button" className="button is-small is-danger" onClick={() => handleDelete(category)}>Delete</button>
+                  </div>
+                </td>
+              )}
             </tr>
           ))}
         </tbody>
