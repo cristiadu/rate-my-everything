@@ -5,3 +5,16 @@ export interface RankingItem {
     item_img_url: string;
     rating: number;
 }
+
+export interface Attribute {
+    id: number;
+    name: string;
+    valueType: string;
+}
+
+export interface Category {
+    id: number;
+    name: string;
+    description?: string | null;
+    attributes: Attribute[];
+}

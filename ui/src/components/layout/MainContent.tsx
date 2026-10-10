@@ -5,6 +5,9 @@ import Index from '@/components/index/Index'
 import OverallRankings from '@/components/rankings/OverallRankings'
 import CreateUserForm from '@/components/users/CreateUserForm'
 import HealthCheck from '@/components/health/HealthCheck'
+import CategoriesPage from '@/components/categories/CategoriesPage'
+import AttributesPage from '@/components/categories/AttributesPage'
+import { withAuth } from '@/components/users/AuthContext'
 
 import { RankingItem } from '../types'
 
@@ -36,6 +39,9 @@ const rankings: RankingItem[] = [
   // Add more example data as needed
 ]
 
+const ProtectedCategoriesPage = withAuth(CategoriesPage)
+const ProtectedAttributesPage = withAuth(AttributesPage)
+
 const MainContent = () => (
   <Content id="content" key="content">
     <Router>
@@ -43,6 +49,8 @@ const MainContent = () => (
         <Route path="/user/create" element={<CreateUserForm />} />
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
+        <Route path="/categories" element={<ProtectedCategoriesPage />} />
+        <Route path="/attributes" element={<ProtectedAttributesPage />} />
         <Route path="/health" element={<HealthCheck />} />
         <Route path="/*" element={<Index />} />
         {/* Add other routes as needed */}

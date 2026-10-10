@@ -1,8 +1,12 @@
 import React, { useState } from 'react'
 import { Navbar } from 'react-bulma-components'
+import { useAuth } from '@/components/users/AuthContext'
+import { useIsAdmin } from '@/components/users/sessionRoles'
 
 const HeaderMenu = () => {
   const [isActive, setActive] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const isAdmin = useIsAdmin()
 
   return (
     <Navbar active={isActive} color="danger">
@@ -39,6 +43,16 @@ const HeaderMenu = () => {
           <Navbar.Item href="#">
             Second
           </Navbar.Item>
+          {isAuthenticated && (
+            <Navbar.Item href="/categories">
+              Categories
+            </Navbar.Item>
+          )}
+          {isAdmin && (
+            <Navbar.Item href="/attributes">
+              Attributes
+            </Navbar.Item>
+          )}
         </Navbar.Container>
         <Navbar.Container align="right">
           <Navbar.Item href="#">

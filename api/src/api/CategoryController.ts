@@ -4,6 +4,10 @@ import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import { isEmpty } from 'class-validator'
 import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
+import { UnknownAttributes } from '@/errors/UnknownAttributes'
+
+const isValidAttributeIds = (attributeIds: unknown): boolean => attributeIds === undefined
+  || (Array.isArray(attributeIds) && attributeIds.every((id) => Number.isInteger(id)))
 
 export default class CategoryController {
   public router = Router()
@@ -57,9 +61,16 @@ export default class CategoryController {
       if (!name) {
         return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required field: name'))
       }
+      if (!isValidAttributeIds(req.body.attributeIds)) {
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'attributeIds must be an array of integers'))
+      }
       const data = await this.categoryService.create(req.body)
       res.status(201).json(data)
     } catch (error) {
+      if (error instanceof UnknownAttributes) {
+        return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
+      }
+
       console.error(error)
       res.status(500)
         .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
@@ -76,6 +87,10 @@ export default class CategoryController {
         req.body.name = name
       }
 
+      if (!isValidAttributeIds(req.body.attributeIds)) {
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'attributeIds must be an array of integers'))
+      }
+
       const data = await this.categoryService.update(name, req.body)
       if (data) {
         res.status(200).json(data)
@@ -85,6 +100,9 @@ export default class CategoryController {
     } catch (error) {
       if (error instanceof ResourceAlreadyExists) {
         return res.status(422).json(NewApiError(ErrorCode.RESOURCE_ALREADY_EXISTS, 422, error.message))
+      }
+      if (error instanceof UnknownAttributes) {
+        return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
       
       console.error(error)

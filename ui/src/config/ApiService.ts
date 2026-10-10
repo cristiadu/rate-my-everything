@@ -45,8 +45,8 @@ export default class ApiService {
     }
 
     if (!response.ok) {
-      const errorMessage = typeof data === 'object' && data.error
-        ? data.error
+      const errorMessage = typeof data === 'object' && (data.message || data.error)
+        ? data.message || data.error
         : 'An error occurred with the API request'
 
       throw new Error(errorMessage)
