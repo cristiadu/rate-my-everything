@@ -1,19 +1,17 @@
 import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
 import { UnknownAttributes } from '@/errors/UnknownAttributes'
 import Attribute from '@/models/Attribute'
-import Category from '@/models/Category'
+import Category, { CategoryInput } from '@/models/Category'
 import BaseService from '@/services/BaseService'
 import { DBConnection } from '@/index'
 import { In, Not } from 'typeorm'
-
-export type CategoryInput = Partial<Omit<Category, 'id' | 'attributes'>> & { attributeIds?: number[] }
 
 class CategoryService extends BaseService<Category> {
   constructor() {
     super(Category)
   }
 
-  // Resolve attribute ids into Attribute entities, failing on any id that does not exist
+  /** Loads the attributes with the given ids; throws UnknownAttributes when any id does not exist. */
   private async resolveAttributes(attributeIds: number[]): Promise<Attribute[]> {
     const uniqueIds = [...new Set(attributeIds)]
     if (uniqueIds.length === 0) {

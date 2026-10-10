@@ -19,9 +19,10 @@ export const unprotectedRoutes = new Set([
   // Add more unprotected routes as needed
 ])
 
+/** HTTP methods that only read data and so are checked against a route's `roles`. */
 const readMethods = new Set(['GET', 'HEAD', 'OPTIONS'])
 
-// roles: who may call the route; writeRoles (optional): who may call its non-read methods
+/** API routes; `roles` may call the route, and optional `writeRoles` may call its non-read methods. */
 export const routes = [
   { path: '/api/ratings', controller: () => new RatedItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/users', controller: () => new UserController().router, roles: [UserRole.ADMIN] },

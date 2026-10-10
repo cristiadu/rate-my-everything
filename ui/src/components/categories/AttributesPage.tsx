@@ -2,17 +2,20 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Box, Message, Table } from 'react-bulma-components'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import type { Attribute } from '@/components/types'
+import { AttributeValueType, type Attribute, type AttributeForm } from '@/components/types'
 import { useIsAdmin } from '@/components/users/sessionRoles'
 
-const VALUE_TYPES = ['string', 'number', 'boolean', 'date']
+/** Value types offered in the form, in display order. */
+const VALUE_TYPES: string[] = Object.values(AttributeValueType)
 
-const emptyForm = { name: '', valueType: VALUE_TYPES[0] }
+/** Form values for a new attribute. */
+const emptyForm: AttributeForm = { name: '', valueType: AttributeValueType.STRING }
 
+/** Admin screen to list, create, edit and delete attributes. */
 const AttributesPage: React.FC = () => {
   const isAdmin = useIsAdmin()
   const [attributes, setAttributes] = useState<Attribute[]>([])
-  const [formFields, setFormFields] = useState(emptyForm)
+  const [formFields, setFormFields] = useState<AttributeForm>(emptyForm)
   const [editingId, setEditingId] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [isSaving, setIsSaving] = useState(false)

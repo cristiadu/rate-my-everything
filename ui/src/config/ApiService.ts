@@ -2,7 +2,7 @@ import ApiConfig from './ApiConfig'
 
 interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  body?: Record<string, unknown>;
+  body?: object;
   includeAuth?: boolean;
 }
 
@@ -59,11 +59,11 @@ export default class ApiService {
     return this.request<T>(endpoint, { method: 'GET', includeAuth })
   }
 
-  static post<T>(endpoint: string, body: Record<string, unknown>, includeAuth = true): Promise<T> {
+  static post<T>(endpoint: string, body: object, includeAuth = true): Promise<T> {
     return this.request<T>(endpoint, { method: 'POST', body, includeAuth })
   }
 
-  static put<T>(endpoint: string, body: Record<string, unknown>, includeAuth = true): Promise<T> {
+  static put<T>(endpoint: string, body: object, includeAuth = true): Promise<T> {
     return this.request<T>(endpoint, { method: 'PUT', body, includeAuth })
   }
 

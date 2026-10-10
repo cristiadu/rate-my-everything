@@ -22,7 +22,7 @@ export const getAuthTokenFromFile = (): Promise<string> => {
     })
   })
 }
-// Registers a fresh user with only the "user" role and returns its token
+/** Registers a fresh user with only the "user" role and returns its token. */
 export const getUserRoleAuthToken = async (app: Express): Promise<string> => {
   const username = `plain-user-${Date.now()}`
   const password = 'Password123!'

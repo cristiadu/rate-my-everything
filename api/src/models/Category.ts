@@ -4,6 +4,9 @@ import {
 import Attribute from '@/models/Attribute'
 import Item from '@/models/Item'
 
+/** Fields accepted when creating or updating a category, with linked attributes given by id. */
+export type CategoryInput = Partial<Pick<Category, 'name' | 'description'>> & { attributeIds?: number[] }
+
 @Entity()
 export default class Category {
     @PrimaryGeneratedColumn()

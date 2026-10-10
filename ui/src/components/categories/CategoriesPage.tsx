@@ -4,19 +4,16 @@ import {
 } from 'react-bulma-components'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import type { Attribute, Category } from '@/components/types'
+import type { Attribute, Category, CategoryForm } from '@/components/types'
 import { useIsAdmin } from '@/components/users/sessionRoles'
 
-interface CategoryForm {
-  name: string;
-  description: string;
-  attributeIds: number[];
-}
-
+/** Form values for a new category. */
 const emptyForm: CategoryForm = { name: '', description: '', attributeIds: [] }
 
+/** API path for one category, which the API addresses by name. */
 const categoryPath = (name: string) => `${ApiConfig.ENDPOINTS.CATEGORIES}/${encodeURIComponent(name)}`
 
+/** Lists categories for every user; admins can also create, edit and delete them and link attributes. */
 const CategoriesPage: React.FC = () => {
   const isAdmin = useIsAdmin()
   const [categories, setCategories] = useState<Category[]>([])
@@ -39,15 +36,20 @@ const CategoriesPage: React.FC = () => {
     loadCategories()
   }, [loadCategories])
 
+  const loadAttributes = useCallback(async () => {
+    try {
+      setAttributes(await ApiService.get<Attribute[]>(ApiConfig.ENDPOINTS.ATTRIBUTES))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load attributes')
+    }
+  }, [])
+
   useEffect(() => {
     // Only admins can change categories or list attributes, so other users just browse
-    if (!isAdmin) {
-      return
+    if (isAdmin) {
+      loadAttributes()
     }
-    ApiService.get<Attribute[]>(ApiConfig.ENDPOINTS.ATTRIBUTES)
-      .then(setAttributes)
-      .catch((err) => setError(err instanceof Error ? err.message : 'Failed to load attributes'))
-  }, [isAdmin])
+  }, [isAdmin, loadAttributes])
 
   const resetForm = () => {
     setFormFields(emptyForm)
