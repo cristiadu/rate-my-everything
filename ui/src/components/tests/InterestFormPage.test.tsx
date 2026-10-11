@@ -34,7 +34,7 @@ const sentWrites = (fetchMock: jest.MockedFunction<typeof fetch>) => fetchMock.m
   .filter(([, init]) => init?.method !== 'GET')
   .map(([url, init]) => [init?.method, String(url).replace(API_URL, ''), JSON.parse(String(init?.body ?? 'null'))])
 
-/** Renders the form routes at the given path, with a stand-in for the rankings page it returns to. */
+/** Renders the form routes at the given path, with stand-ins for the pages it returns to. */
 const renderFormAt = (path: string) => render(
   <AuthProvider>
     <MemoryRouter initialEntries={[path]}>
@@ -42,6 +42,7 @@ const renderFormAt = (path: string) => render(
         <Route path="/interests/new" element={<InterestFormPage />} />
         <Route path="/interests/:itemId/edit" element={<InterestFormPage />} />
         <Route path="/rankings" element={<p>My rankings page</p>} />
+        <Route path="/change-requests" element={<p>My change requests page</p>} />
       </Routes>
     </MemoryRouter>
   </AuthProvider>,
@@ -100,8 +101,9 @@ describe('InterestFormPage', () => {
     expect(screen.queryByText('Movies details')).not.toBeInTheDocument()
   })
 
-  test('edits an interest and my existing rating of it', async () => {
-    // GIVEN the edit form for Dune, filled from the API
+  test('lets moderators edit an interest and their existing rating of it', async () => {
+    // GIVEN a moderator on the edit form for Dune, filled from the API
+    loginAs([UserRole.USER, UserRole.MODERATOR])
     renderFormAt('/interests/100/edit')
     expect(await screen.findByDisplayValue('412')).toBeInTheDocument()
     expect(screen.getByLabelText('My rating (0 to 10)')).toHaveValue(9.5)
@@ -123,6 +125,49 @@ describe('InterestFormPage', () => {
       }],
       ['PUT', '/ratings/900', { rating: 9, notes: 'Reread every year' }],
     ])
+  })
+
+  test('sends a user\'s edit of an interest for approval and updates their rating', async () => {
+    // GIVEN a user without a moderation role on the edit form for Dune
+    renderFormAt('/interests/100/edit')
+    await screen.findByDisplayValue('412')
+
+    // WHEN the page count and rating change and are saved
+    fireEvent.change(screen.getByLabelText('Pages'), { target: { value: '420' } })
+    fireEvent.change(screen.getByLabelText('My rating (0 to 10)'), { target: { value: '9' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
+
+    // THEN the item edit becomes a change request, my rating is updated, and I land on my change requests
+    expect(await screen.findByText('My change requests page')).toBeInTheDocument()
+    expect(sentWrites(fetchMock)).toEqual([
+      ['POST', '/change-requests', {
+        targetType: 'item',
+        action: 'update',
+        targetId: 100,
+        changes: {
+          name: 'Dune',
+          description: 'Desert planet epic',
+          imageUrl: 'https://example.com/dune.png',
+          categoryId: 10,
+          attributeValues: [{ attributeId: 2, value: '420' }],
+        },
+      }],
+      ['PUT', '/ratings/900', { rating: 9, notes: 'Reread every year' }],
+    ])
+  })
+
+  test('only updates a user\'s rating when the interest itself did not change', async () => {
+    // GIVEN a user without a moderation role on the edit form for Dune
+    renderFormAt('/interests/100/edit')
+    await screen.findByDisplayValue('412')
+
+    // WHEN only the rating changes and is saved
+    fireEvent.change(screen.getByLabelText('My rating (0 to 10)'), { target: { value: '8' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
+
+    // THEN no change request is sent
+    expect(await screen.findByText('My rankings page')).toBeInTheDocument()
+    expect(sentWrites(fetchMock)).toEqual([['PUT', '/ratings/900', { rating: 8, notes: 'Reread every year' }]])
   })
 
   test('removes the interest from my list by deleting my rating', async () => {

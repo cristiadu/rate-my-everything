@@ -3,24 +3,34 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Box, Message } from 'react-bulma-components'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import type {
-  Category, InterestForm, Item, RatedItem,
+import {
+  type Category, type ChangeRequest, ChangeRequestAction, ChangeRequestTarget, type InterestForm, type Item, type RatedItem,
 } from '@/components/types'
+import { useAuth } from '@/components/users/AuthContext'
+import { canModerate } from '@/components/admin/RequireAdmin'
 import AttributeField from '@/components/interests/AttributeField'
 import {
-  MAX_RATING, MIN_RATING, emptyInterestForm, toInterestForm, toItemInput, toRatingInput,
+  MAX_RATING, MIN_RATING, emptyInterestForm, hasItemChanges, toInterestForm, toItemInput, toRatingInput,
 } from '@/components/interests/interestForm'
 
 /** Page the form returns to after saving or removing an interest. */
 const MY_RANKINGS_PATH = '/rankings'
 
-/** Screen to add an interest, or edit one and the signed-in user's rating of it, with its category's attributes. */
+/** Page users go to after their edit of a shared interest is sent for approval. */
+const MY_CHANGE_REQUESTS_PATH = '/change-requests'
+
+/**
+ * Screen to add an interest, or edit one and the signed-in user's rating of it, with its category's attributes.
+ * Edits to an existing interest by users without a moderation role are sent to the moderators as a change request.
+ */
 const InterestFormPage: React.FC = () => {
   const { itemId } = useParams()
   const navigate = useNavigate()
+  const { token } = useAuth()
   const editingItemId = itemId === undefined ? null : Number(itemId)
   const [categories, setCategories] = useState<Category[]>([])
   const [formFields, setFormFields] = useState<InterestForm>(emptyInterestForm)
+  const [loadedForm, setLoadedForm] = useState<InterestForm>(emptyInterestForm)
   const [ratingId, setRatingId] = useState<number | null>(null)
   const [error, setError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -37,7 +47,9 @@ const InterestFormPage: React.FC = () => {
       const item = await ApiService.get<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${editingItemId}`)
       const myRatings = await ApiService.get<RatedItem[]>(`${ApiConfig.ENDPOINTS.RATINGS}/mine`)
       const myRating = myRatings.find((ratedItem) => ratedItem.item.id === editingItemId)
-      setFormFields(toInterestForm(item, myRating))
+      const itemForm = toInterestForm(item, myRating)
+      setFormFields(itemForm)
+      setLoadedForm(itemForm)
       setRatingId(myRating?.id ?? null)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load the interest')
@@ -63,17 +75,25 @@ const InterestFormPage: React.FC = () => {
     setError('')
     try {
       const itemInput = toItemInput(formFields, selectedCategory)
-      const item = editingItemId === null
-        ? await ApiService.post<Item>(ApiConfig.ENDPOINTS.ITEMS, itemInput)
-        : await ApiService.put<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${editingItemId}`, itemInput)
+      const isProposingChange = editingItemId !== null && !canModerate(token) && hasItemChanges(formFields, loadedForm, selectedCategory)
+      let savedItemId = editingItemId
+      if (editingItemId === null) {
+        savedItemId = (await ApiService.post<Item>(ApiConfig.ENDPOINTS.ITEMS, itemInput)).id
+      } else if (isProposingChange) {
+        await ApiService.post<ChangeRequest>(ApiConfig.ENDPOINTS.CHANGE_REQUESTS, {
+          targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.UPDATE, targetId: editingItemId, changes: itemInput,
+        })
+      } else if (canModerate(token)) {
+        await ApiService.put<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${editingItemId}`, itemInput)
+      }
 
       const ratingInput = toRatingInput(formFields)
       if (ratingId === null) {
-        await ApiService.post<RatedItem>(ApiConfig.ENDPOINTS.RATINGS, { item_id: item.id, ...ratingInput })
+        await ApiService.post<RatedItem>(ApiConfig.ENDPOINTS.RATINGS, { item_id: savedItemId, ...ratingInput })
       } else {
         await ApiService.put<RatedItem>(`${ApiConfig.ENDPOINTS.RATINGS}/${ratingId}`, ratingInput)
       }
-      navigate(MY_RANKINGS_PATH)
+      navigate(isProposingChange ? MY_CHANGE_REQUESTS_PATH : MY_RANKINGS_PATH)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save the interest')
     } finally {

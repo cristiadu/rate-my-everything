@@ -20,6 +20,9 @@ export enum UserRole {
     USER = 'user',
 }
 
+/** Roles that may review change requests and change shared interests directly; mirrors the API's MODERATION_ROLES. */
+export const MODERATION_ROLES = [UserRole.ADMIN, UserRole.MODERATOR]
+
 /** A user as returned by the admin users API, without a password. */
 export interface AdminUser {
     id: number;
@@ -152,3 +155,65 @@ export type RatingInput = {
     rating: number;
     notes: string;
 }
+
+/** Kind of shared data a change request proposes to change; mirrors the API's ChangeRequestTarget enum. */
+export enum ChangeRequestTarget {
+    ITEM = 'item',
+    CATEGORY = 'category',
+}
+
+/** What a change request proposes to do with its target; mirrors the API's ChangeRequestAction enum. */
+export enum ChangeRequestAction {
+    CREATE = 'create',
+    UPDATE = 'update',
+    DELETE = 'delete',
+}
+
+/** Where a change request is in moderation; mirrors the API's ChangeRequestStatus enum. */
+export enum ChangeRequestStatus {
+    PENDING = 'pending',
+    APPROVED = 'approved',
+    REJECTED = 'rejected',
+}
+
+/** The user who submitted or reviewed a change request. */
+export interface ChangeRequestUser {
+    id: number;
+    username: string;
+}
+
+/** Fields a change request proposes, in the shape the items or categories API accepts. */
+export type ChangeRequestChanges = Partial<ItemInput> | Partial<CategoryFormValues>
+
+/** A user's proposed change to an interest or category, applied once a moderator approves it. */
+export interface ChangeRequest {
+    id: number;
+    targetType: ChangeRequestTarget;
+    action: ChangeRequestAction;
+    targetId: number | null;
+    targetName: string | null;
+    changes: ChangeRequestChanges | null;
+    status: ChangeRequestStatus;
+    requestedBy: ChangeRequestUser;
+    reviewedBy: ChangeRequestUser | null;
+    reviewNote: string | null;
+    createdAt: string;
+    reviewedAt: string | null;
+}
+
+/** Body sent to the change requests API. */
+export type ChangeRequestInput = {
+    targetType: ChangeRequestTarget;
+    action: ChangeRequestAction;
+    targetId?: number;
+    changes?: ItemInput | CategoryFormValues;
+}
+
+/** Categories and attributes used to show change requests with names instead of ids. */
+export type ChangeRequestLookups = {
+    categories: Category[];
+    attributes: Attribute[];
+}
+
+/** A moderator's decision on a pending change request. */
+export type ReviewDecision = ChangeRequestStatus.APPROVED | ChangeRequestStatus.REJECTED

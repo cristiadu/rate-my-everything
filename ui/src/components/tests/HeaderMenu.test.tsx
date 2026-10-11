@@ -37,8 +37,22 @@ describe('HeaderMenu', () => {
     // WHEN the menu renders
     renderMenu()
 
-    // THEN the admin links are hidden
+    // THEN the admin and moderation links are hidden
     expect(screen.getByText('My Account')).toBeInTheDocument()
+    expect(screen.queryByText('Admin')).not.toBeInTheDocument()
+    expect(screen.queryByText('Moderation')).not.toBeInTheDocument()
+  })
+
+  test('shows the moderation link to moderators who are not admins', () => {
+    // GIVEN a moderator is logged in
+    loginAs([UserRole.USER, UserRole.MODERATOR])
+
+    // WHEN the menu renders
+    renderMenu()
+
+    // THEN moderation and their own requests are linked, but not the admin area
+    expect(screen.getByText('Moderation').closest('a')).toHaveAttribute('href', '/moderation')
+    expect(screen.getByText('My change requests').closest('a')).toHaveAttribute('href', '/change-requests')
     expect(screen.queryByText('Admin')).not.toBeInTheDocument()
   })
 
