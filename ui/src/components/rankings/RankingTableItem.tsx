@@ -14,7 +14,7 @@ const RankingTableItem: React.FC<RankingTableItemProps> = ({ ranking, canEdit })
     <td>
       {ranking.item_img_url && <Image size={64} alt={ranking.item_name} src={ranking.item_img_url} />}
     </td>
-    <td><strong>{ranking.item_name}</strong></td>
+    <td><Link to={`/interests/${ranking.item_id}`}><strong>{ranking.item_name}</strong></Link></td>
     <td>{ranking.category}</td>
     <td>{ranking.rating.toFixed(1)}</td>
     {canEdit && (

@@ -152,3 +152,20 @@ export type RatingInput = {
     rating: number;
     notes: string;
 }
+
+/** Longest comment body the comments API accepts, in characters. */
+export const MAX_COMMENT_LENGTH = 2000
+
+/** Author of a comment; the API only returns their id and username. */
+export type CommentAuthor = {
+    id: number;
+    username: string;
+}
+
+/** One message in the discussion thread of an interest. */
+export interface Comment {
+    id: number;
+    body: string;
+    createdAt: string;
+    user: CommentAuthor;
+}

@@ -38,6 +38,7 @@ describe('OverallRankings', () => {
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings/mine'])
     expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.5Edit', 'AlienMovies7.0Edit'])
     expect(screen.getAllByRole('link', { name: 'Edit' })[0]).toHaveAttribute('href', '/interests/100/edit')
+    expect(screen.getByRole('link', { name: 'Dune' })).toHaveAttribute('href', '/interests/100')
     expect(screen.getByRole('link', { name: 'Add interest' })).toHaveAttribute('href', '/interests/new')
   })
 
