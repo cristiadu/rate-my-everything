@@ -17,6 +17,7 @@ const RankingTableItem: React.FC<RankingTableItemProps> = ({ ranking, canEdit })
     <td><strong>{ranking.item_name}</strong></td>
     <td>{ranking.category}</td>
     <td>{ranking.rating.toFixed(1)}</td>
+    <td>{ranking.rating_count}</td>
     {canEdit && (
       <td>
         <Link className="button is-small" to={`/interests/${ranking.item_id}/edit`}>Edit</Link>

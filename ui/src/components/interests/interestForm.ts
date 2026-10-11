@@ -1,5 +1,5 @@
 import type {
-  Category, InterestForm, Item, ItemInput, RatedItem, RatingInput,
+  Category, InterestForm, Item, ItemInput, RatingInput,
 } from '@/components/types'
 
 /** Lowest rating a user can give, inclusive. */
@@ -19,14 +19,14 @@ export const emptyInterestForm: InterestForm = {
   attributeValues: {},
 }
 
-/** Fills the form from an existing item and, when the user rated it, their rating. */
-export const toInterestForm = (item: Item, ratedItem?: RatedItem): InterestForm => ({
+/** Fills the form from an existing item, leaving the rating fields empty for a new rating. */
+export const toInterestForm = (item: Item): InterestForm => ({
   name: item.name,
   description: item.description,
   imageUrl: item.imageUrl ?? '',
   categoryId: item.category ? String(item.category.id) : '',
-  rating: ratedItem ? String(ratedItem.rating) : '',
-  notes: ratedItem?.notes ?? '',
+  rating: '',
+  notes: '',
   attributeValues: Object.fromEntries(item.attributes.map((attributeValue) => [attributeValue.attribute.id, attributeValue.value])),
 })
 

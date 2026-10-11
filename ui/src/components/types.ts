@@ -4,7 +4,10 @@ export interface RankingItem {
     item_name: string;
     item_id: number;
     item_img_url?: string | null;
+    /** Grade shown for the item: the personal grade on my rankings, the collective grade on all rankings. */
     rating: number;
+    /** How many ratings the grade was worked out from. */
+    rating_count: number;
 }
 
 /** Which ratings a rankings page shows: the signed-in user's own, or everyone's averaged per item. */
@@ -119,11 +122,15 @@ export interface Item {
     attributes: AttributeValue[];
 }
 
-/** One user's rating of an item, returned with the item and its category. */
+/** One time a user rated an item, returned with the item and its category; a user can rate an item many times. */
 export interface RatedItem {
     id: number;
     rating: number;
     notes?: string | null;
+    /** Id of the user who gave the rating. */
+    userId: number;
+    /** When the rating was given, as an ISO 8601 timestamp. */
+    ratedAt: string;
     item: Omit<Item, 'attributes'>;
 }
 

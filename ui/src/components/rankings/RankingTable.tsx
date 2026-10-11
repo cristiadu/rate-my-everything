@@ -16,7 +16,8 @@ const RankingTable: React.FC<RankingTableProps> = ({ rankings, canEdit }) => (
         <th>Image</th>
         <th>Name</th>
         <th>Category</th>
-        <th>Rating</th>
+        <th>{canEdit ? 'My grade' : 'Grade'}</th>
+        <th>Ratings</th>
         {canEdit && <th aria-label="Actions" />}
       </tr>
     </thead>
