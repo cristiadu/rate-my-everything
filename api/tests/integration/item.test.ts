@@ -7,7 +7,7 @@ import Category from '@/models/Category'
 import Attribute from '@/models/Attribute'
 import AttributeValueType from '@/models/AttributeValueType'
 import ErrorCode from '@/errors/ErrorCode'
-import { getAuthTokenFromFile } from '@@/testutils/common/Auth'
+import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { cleanupAllItems, cleanupAllCategories } from '@@/testutils/common/DataCleanup'
 import { Endpoints } from '@@/testutils/common/constants'
 
@@ -275,6 +275,31 @@ describe('Item API Integration Tests', async () => {
           expect(apiError.message).toBe('Item not found')
           expect(apiError.code).toBe(ErrorCode.RESOURCE_NOT_FOUND)
           expect(apiError.status).toBe(404)
+        })
+    })
+  })
+
+  describe('Item permissions for the user role', () => {
+    let userToken: string
+
+    beforeAll(async () => {
+      userToken = await getUserRoleAuthToken(app)
+    })
+
+    it.each([
+      ['PUT', () => request(app).put(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`).send({ description: 'Nope' })],
+      ['DELETE', () => request(app).delete(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`)],
+    ])('should forbid users from %s on an item and point them to change requests', async (_method, buildRequest) => {
+      // GIVEN a user-role token (beforeAll)
+      // WHEN changing a shared item directly
+      // THEN it is forbidden
+      await buildRequest()
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(403)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.code).toBe(ErrorCode.FORBIDDEN)
+          expect(apiError.message).toBe('Only moderators can change interests directly; send a change request instead')
         })
     })
   })

@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { canAccessRoute } from '@/helpers/RouteHelper'
+import { canAccessRoute, canModerate } from '@/helpers/RouteHelper'
 import { RouteConfig } from '@/models/RouteConfig'
 import UserRole from '@/models/UserRole'
 
@@ -47,5 +47,20 @@ describe('canAccessRoute', () => {
 
     // THEN access is granted
     expect(allowed).toBe(true)
+  })
+})
+
+describe('canModerate', () => {
+  it.each([
+    [[UserRole.ADMIN], true],
+    [[UserRole.USER, UserRole.MODERATOR], true],
+    [[UserRole.USER], false],
+  ])('returns whether %j may moderate', (roles, expected) => {
+    // GIVEN a user with these roles
+    // WHEN checking whether they may moderate
+    const allowed = canModerate(roles)
+
+    // THEN only admins and moderators may
+    expect(allowed).toBe(expected)
   })
 })

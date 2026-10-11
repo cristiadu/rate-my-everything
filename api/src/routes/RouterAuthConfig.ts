@@ -4,9 +4,11 @@ import UserController from '@/api/UserController'
 import AttributeController from '@/api/AttributeController'
 import ItemController from '@/api/ItemController'
 import CategoryController from '@/api/CategoryController'
-import UserRole from '@/models/UserRole'
+import UserRole, { MODERATION_ROLES } from '@/models/UserRole'
 import LoginController from '@/api/LoginController'
 import HealthController from '@/api/HealthController'
+import ChangeRequestController from '@/api/ChangeRequestController'
+import ModerationController from '@/api/ModerationController'
 import { NextFunction, Request, Response } from 'express'
 import { SessionUser } from '@/models/User'
 import { NewApiError } from '@/models/APIError'
@@ -26,7 +28,12 @@ export const routes: RouteConfig[] = [
   { path: '/api/ratings', controller: () => new RatedItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/users', controller: () => new UserController().router, roles: [UserRole.ADMIN] },
   { path: '/api/login', controller: () => new LoginController().router },
-  { path: '/api/attributes', controller: () => new AttributeController().router, roles: [UserRole.ADMIN] },
+  {
+    path: '/api/attributes',
+    controller: () => new AttributeController().router,
+    roles: [UserRole.USER, UserRole.ADMIN],
+    writeRoles: [UserRole.ADMIN],
+  },
   { path: '/api/items', controller: () => new ItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   {
     path: '/api/categories',
@@ -34,6 +41,12 @@ export const routes: RouteConfig[] = [
     roles: [UserRole.USER, UserRole.ADMIN],
     writeRoles: [UserRole.ADMIN],
   },
+  {
+    path: '/api/change-requests',
+    controller: () => new ChangeRequestController().router,
+    roles: [UserRole.USER, ...MODERATION_ROLES],
+  },
+  { path: '/api/moderation', controller: () => new ModerationController().router, roles: MODERATION_ROLES },
   { path: '/api/health', controller: () => new HealthController().router },
   { path: '/api', controller: () => (_req: Request, res: Response) => {
       res.status(404).json(NewApiError(ErrorCode.NOT_FOUND, 404, 'Could not find an API resource at the specified path'))
