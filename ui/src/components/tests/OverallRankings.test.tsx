@@ -6,7 +6,9 @@ import { AuthProvider } from '@/components/users/AuthContext'
 import { RankingScope, UserRole } from '@/components/types'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
-import { alienRating, duneRating } from '@/components/tests/common/Interests'
+import {
+  alienRating, duneRating, duneRerating, otherUserDuneRating,
+} from '@/components/tests/common/Interests'
 
 /** Renders the rankings page for the given scope inside the auth provider and a router. */
 const renderRankings = (scope: RankingScope) => render(
@@ -26,31 +28,34 @@ describe('OverallRankings', () => {
     fetchMock = mockFetch()
   })
 
-  test('shows my ratings with links to edit them', async () => {
-    // GIVEN the API returns my ratings
-    fetchMock.mockResolvedValue(jsonResponse([alienRating, duneRating]))
+  test('shows the items I rated with both grades and links to edit them', async () => {
+    // GIVEN the API returns everyone's ratings, where I rated Dune twice
+    fetchMock.mockResolvedValue(jsonResponse([alienRating, duneRating, duneRerating, otherUserDuneRating]))
 
     // WHEN my rankings load
     renderRankings(RankingScope.MINE)
 
-    // THEN they come from my ratings, best first, each with an edit link
+    // THEN only Dune shows, with my grade, everyone's grade, its rating count and an edit link
     const rows = await screen.findAllByRole('row')
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings/mine'])
-    expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.5Edit', 'AlienMovies7.0Edit'])
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings'])
+    expect(screen.getAllByRole('columnheader').map((header) => header.textContent))
+      .toEqual(['Image', 'Name', 'Category', 'My grade', 'Everyone\'s grade', 'Ratings', ''])
+    expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.07.53Edit'])
     expect(screen.getAllByRole('link', { name: 'Edit' })[0]).toHaveAttribute('href', '/interests/100/edit')
     expect(screen.getByRole('link', { name: 'Dune' })).toHaveAttribute('href', '/interests/100')
     expect(screen.getByRole('link', { name: 'Add interest' })).toHaveAttribute('href', '/interests/new')
   })
 
-  test('shows everyone\'s average ratings without edit links', async () => {
-    // GIVEN the API returns two users' ratings of Dune
-    fetchMock.mockResolvedValue(jsonResponse([duneRating, { ...duneRating, id: 902, rating: 6.5 }]))
+  test('shows every rated item with both grades and without edit links', async () => {
+    // GIVEN the API returns everyone's ratings, where I did not rate Alien
+    fetchMock.mockResolvedValue(jsonResponse([alienRating, duneRating, duneRerating, otherUserDuneRating]))
 
     // WHEN the overall rankings load
     renderRankings(RankingScope.ALL)
 
-    // THEN Dune shows once with its average rating
-    expect(await screen.findByText('8.0')).toBeInTheDocument()
+    // THEN items are ordered by everyone's grade, and Alien has no grade of mine
+    const rows = await screen.findAllByRole('row')
+    expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.07.53', 'AlienMovies-7.01'])
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings'])
     expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
   })
