@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import request from 'supertest'
 import { appReady } from '@/index'
 import APIError from '@/models/APIError'
@@ -24,6 +24,7 @@ describe('Change request and moderation API Integration Tests', async () => {
   let pagesAttribute: Attribute
   let testCategory: Category
   let testItem: Item
+  let proposedCategoryName: string
 
   /** Submits a change request as the given user. */
   const submit = (token: string, body: object) => request(app)
@@ -64,6 +65,14 @@ describe('Change request and moderation API Integration Tests', async () => {
     testItem = itemRes.body
   })
 
+  afterAll(async () => {
+    // Remove what this file created so tests that expect an empty catalog still pass after it
+    await request(app).delete(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`).set('Authorization', `Bearer ${adminToken}`).expect(204)
+    for (const name of [testCategory.name, proposedCategoryName]) {
+      await request(app).delete(`${Endpoints.CATEGORIES_BASE_PATH}/${name}`).set('Authorization', `Bearer ${adminToken}`).expect(204)
+    }
+  })
+
   describe(`POST ${Endpoints.CHANGE_REQUESTS_BASE_PATH}`, () => {
     it('saves a pending interest change without applying it', async () => {
       // GIVEN a user proposing a new description for an interest
@@ -95,9 +104,15 @@ describe('Change request and moderation API Integration Tests', async () => {
 
     it.each([
       [{ targetType: 'rating', action: ChangeRequestAction.UPDATE, targetId: 1 }, 'targetType must be one of: item, category'],
-      [{ targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.CREATE, changes: { name: 'X' } }, 'action for item must be one of: update'],
+      [
+        { targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.CREATE, changes: { name: 'X' } },
+        'action for item must be one of: update',
+      ],
       [{ targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.UPDATE, changes: {} }, 'targetId must be an integer'],
-      [{ targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.CREATE, changes: {} }, 'Missing required field: changes.name'],
+      [
+        { targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.CREATE, changes: {} },
+        'Missing required field: changes.name',
+      ],
       [{ targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.UPDATE, targetId: 1 }, 'changes must be an object'],
     ])('rejects a malformed request %#', async (body, message) => {
       // GIVEN a malformed change request
@@ -218,6 +233,7 @@ describe('Change request and moderation API Integration Tests', async () => {
     it('creates a proposed category with its attributes', async () => {
       // GIVEN a pending new category linked to Pages
       const name = `Proposed-${Date.now()}`
+      proposedCategoryName = name
       const submitted = await submit(userToken, {
         targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.CREATE, changes: { name, attributeIds: [pagesAttribute.id] },
       }).expect(201)
@@ -242,7 +258,10 @@ describe('Change request and moderation API Integration Tests', async () => {
         .send({ name })
         .expect(201)
       const submitted = await submit(userToken, {
-        targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.UPDATE, targetId: categoryRes.body.id, changes: { description: 'New' },
+        targetType: ChangeRequestTarget.CATEGORY,
+        action: ChangeRequestAction.UPDATE,
+        targetId: categoryRes.body.id,
+        changes: { description: 'New' },
       }).expect(201)
       await request(app).delete(`${Endpoints.CATEGORIES_BASE_PATH}/${name}`).set('Authorization', `Bearer ${adminToken}`).expect(204)
 
