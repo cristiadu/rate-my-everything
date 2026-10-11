@@ -7,6 +7,7 @@ import type {
   Category, InterestForm, Item, RatedItem,
 } from '@/components/types'
 import AttributeField from '@/components/interests/AttributeField'
+import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
 import { useAuth } from '@/components/users/AuthContext'
 import { getUserIdFromToken } from '@/components/admin/RequireAdmin'
 import RatingHistory from '@/components/interests/RatingHistory'
@@ -161,6 +162,21 @@ const InterestFormPage: React.FC = () => {
                 required
               />
             </div>
+            <SimilarRecordsWarning<Item>
+              endpoint={`${ApiConfig.ENDPOINTS.ITEMS}/similar`}
+              name={formFields.name}
+              isEnabled={editingItemId === null}
+              filters={formFields.categoryId ? { categoryId: formFields.categoryId } : {}}
+              label="Similar interests"
+              message="Similar interests already exist. Rate one of them instead of adding a duplicate:"
+              renderRecord={(item) => (
+                <>
+                  <Link to={`/interests/${item.id}/edit`}>{item.name}</Link>
+                  {item.category && ` (${item.category.name})`}
+                </>
+              )}
+            />
+
           </div>
           <div className="field">
             <label className="label" htmlFor="interest-description">Description</label>

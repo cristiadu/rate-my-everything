@@ -162,3 +162,9 @@ export type RatingInput = {
     rating: number;
     notes: string;
 }
+
+/** Records the API found for one similar-name query, kept with that query so stale answers can be ignored. */
+export type SimilarRecordsLookup<T> = {
+    query: string;
+    records: T[];
+}
