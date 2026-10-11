@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import request from 'supertest'
 import { appReady } from '@/index'
 import APIError from '@/models/APIError'
@@ -35,6 +35,10 @@ describe('RatedItem API Integration Tests', async () => {
       .send({ name: `RatedItem-${Date.now()}`, description: 'For rated item tests', categoryId: testCategory.id })
       .expect(201)
     testItem = itemRes.body
+  })
+
+  afterAll(async () => {
+    await cleanupAllRatedItems(app)
   })
 
   beforeEach(() => {
@@ -218,6 +222,46 @@ describe('RatedItem API Integration Tests', async () => {
           expect(apiError.code).toBe(ErrorCode.RESOURCE_NOT_FOUND)
           expect(apiError.status).toBe(404)
         })
+    })
+  })
+
+  describe(`GET ${Endpoints.RATINGS_BASE_PATH}/item/:item_id`, () => {
+    it('should list every rating of the item, keeping each time a user rated it', async () => {
+      // GIVEN another user rated the test item twice
+      const otherUserToken = await getUserRoleAuthToken(app)
+      for (const rating of [6, 8]) {
+        await request(app)
+          .post(Endpoints.RATINGS_BASE_PATH)
+          .set('Authorization', `Bearer ${otherUserToken}`)
+          .send({ item_id: testItem.id, rating })
+          .expect(201)
+      }
+
+      // WHEN the item's ratings are listed
+      const res = await request(app)
+        .get(`${Endpoints.RATINGS_BASE_PATH}/item/${testItem.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+
+      // THEN the admin's rating and both of the other user's ratings come back, each with its rater and date
+      const ratedItems = (res.body as RatedItem[]).sort((a, b) => a.id - b.id)
+      expect(ratedItems.map((ratedItem) => ratedItem.rating)).toEqual([5, 6, 8])
+      expect(ratedItems[0].userId).toBe(testRatedItem.userId)
+      expect(ratedItems[1].userId).not.toBe(testRatedItem.userId)
+      expect(ratedItems[2].userId).toBe(ratedItems[1].userId)
+      expect(Number.isNaN(Date.parse(String(ratedItems[2].ratedAt)))).toBe(false)
+    })
+
+    it('should return no ratings for an item nobody rated', async () => {
+      // GIVEN an item id nobody rated
+      // WHEN its ratings are listed
+      // THEN the list is empty
+      await request(app)
+        .get(`${Endpoints.RATINGS_BASE_PATH}/item/999999`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(200)
+        .expect(res => { expect(res.body).toEqual([]) })
     })
   })
 
