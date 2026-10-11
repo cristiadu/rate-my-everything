@@ -76,3 +76,9 @@ export type AttributeFormValues = {
 
 /** Which attribute form the admin screen shows: none, a new attribute, or an existing attribute being edited. */
 export type AttributeEditorState = { mode: 'create' } | { mode: 'edit', attribute: Attribute } | null
+
+/** A value that survives JSON.stringify unchanged. */
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
+
+/** A JSON object sent as an API request body. */
+export type JsonObject = { [key: string]: JsonValue }

@@ -3,13 +3,7 @@ import AttributeService from '@/services/AttributeService'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import Attribute from '@/models/Attribute'
-import AttributeValueType from '@/models/AttributeValueType'
-
-/** Message returned when a request names a value type outside AttributeValueType. */
-const INVALID_VALUE_TYPE_MESSAGE = `valueType must be one of: ${Object.values(AttributeValueType).join(', ')}`
-
-/** Whether the value is one of the AttributeValueType values. */
-const isAttributeValueType = (valueType: Attribute['valueType']) => Object.values(AttributeValueType).includes(valueType)
+import { INVALID_VALUE_TYPE_MESSAGE, isAttributeValueType } from '@/helpers/AttributeHelper'
 
 export default class AttributeController {
   public router = Router()

@@ -5,11 +5,7 @@ import ErrorCode from '@/errors/ErrorCode'
 import { isEmpty } from 'class-validator'
 import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
 import { UnknownAttributes } from '@/errors/UnknownAttributes'
-import { CategoryInput } from '@/models/Category'
-
-/** Checks that attributeIds from a request body is either absent or an array of integers. */
-const isValidAttributeIds = (attributeIds: CategoryInput['attributeIds']): boolean => attributeIds === undefined
-  || (Array.isArray(attributeIds) && attributeIds.every((id) => Number.isInteger(id)))
+import { isValidAttributeIds } from '@/helpers/CategoryHelper'
 
 export default class CategoryController {
   public router = Router()

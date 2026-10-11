@@ -1,8 +1,9 @@
 import ApiConfig from './ApiConfig'
+import type { JsonObject } from '@/components/types'
 
 interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  body?: object;
+  body?: JsonObject;
   includeAuth?: boolean;
 }
 
@@ -63,11 +64,11 @@ export default class ApiService {
     return this.request<T>(endpoint, { method: 'GET', includeAuth })
   }
 
-  static post<T>(endpoint: string, body: object, includeAuth = true): Promise<T> {
+  static post<T>(endpoint: string, body: JsonObject, includeAuth = true): Promise<T> {
     return this.request<T>(endpoint, { method: 'POST', body, includeAuth })
   }
 
-  static put<T>(endpoint: string, body: object, includeAuth = true): Promise<T> {
+  static put<T>(endpoint: string, body: JsonObject, includeAuth = true): Promise<T> {
     return this.request<T>(endpoint, { method: 'PUT', body, includeAuth })
   }
 
