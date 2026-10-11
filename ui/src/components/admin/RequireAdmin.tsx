@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAuth } from '@/components/users/AuthContext'
-import { TokenPayload, UserRole } from '@/components/types'
+import { type TokenPayload, UserRole } from '@/components/types'
 
 /** Reads the user claims from the JWT payload; the API still enforces them on every request. */
 const readTokenPayload = (token: string | null): Partial<TokenPayload> => {
