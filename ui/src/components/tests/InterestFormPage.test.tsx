@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  fireEvent, render, screen, waitFor,
+  fireEvent, render, screen, waitFor, within,
 } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import InterestFormPage from '@/components/interests/InterestFormPage'
@@ -12,6 +12,9 @@ import {
   booksCategory, duneItem, duneRating, moviesCategory,
 } from '@/components/tests/common/Interests'
 
+/** Longer than the form waits after typing before looking for similar names, in milliseconds. */
+const LOOKUP_WAIT_MS = 400
+
 /** API base URL the UI calls. */
 const API_URL = 'http://localhost:3000/api'
 
@@ -22,6 +25,7 @@ const responses: Record<string, object> = {
   'GET /ratings/mine': [duneRating],
   'POST /items': { ...duneItem, id: 101 },
   'PUT /items/100': duneItem,
+  'GET /items?categoryId=10&similarTo=dune': [duneItem],
 }
 
 /** Answers a mocked request from the responses table, or with an empty object. */
@@ -84,6 +88,34 @@ describe('InterestFormPage', () => {
       }],
       ['POST', '/ratings', { item_id: 101, rating: 8.5, notes: 'Great frame story' }],
     ])
+  })
+
+  test('points to existing interests with a similar name instead of adding a duplicate', async () => {
+    // GIVEN the new-interest form with Books chosen, where Dune already exists
+    renderFormAt('/interests/new')
+    await screen.findByRole('option', { name: 'Books' })
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '10' } })
+
+    // WHEN "dune" is typed as the name
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'dune' } })
+
+    // THEN Dune is suggested with a link to rate it instead
+    const warning = await screen.findByRole('status', { name: 'Similar interests' })
+    expect(within(warning).getByRole('link', { name: 'Dune' })).toHaveAttribute('href', '/interests/100/edit')
+    expect(warning).toHaveTextContent('Dune (Books)')
+  })
+
+  test('does not look for duplicates while editing an interest', async () => {
+    // GIVEN the edit form for Dune, filled from the API
+    renderFormAt('/interests/100/edit')
+    await screen.findByDisplayValue('412')
+
+    // WHEN the name is changed and the lookup delay passes
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'dune' } })
+    await new Promise((resolve) => { setTimeout(resolve, LOOKUP_WAIT_MS) })
+
+    // THEN no similar-name lookup is sent
+    expect(fetchMock.mock.calls.map(([url]) => String(url)).filter((url) => url.includes('similarTo'))).toEqual([])
   })
 
   test('only shows the attributes of the chosen category', async () => {

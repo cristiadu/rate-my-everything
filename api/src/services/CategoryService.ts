@@ -3,6 +3,7 @@ import Category, { CategoryInput } from '@/models/Category'
 import AttributeService from '@/services/AttributeService'
 import BaseService from '@/services/BaseService'
 import { Not } from 'typeorm'
+import { findSimilarByName } from '@/helpers/SimilarityHelper'
 
 class CategoryService extends BaseService<Category> {
   private attributeService = new AttributeService()
@@ -63,6 +64,11 @@ class CategoryService extends BaseService<Category> {
   // get all Categories
   public async getAll(): Promise<Category[]> {
     return this.repository.find({ relations: { attributes: true }, order: { id: 'ASC' } })
+  }
+
+  /** Get the Categories whose name is likely a duplicate of the given name, most similar first. */
+  public async getSimilar(name: string): Promise<Category[]> {
+    return findSimilarByName(await this.getAll(), name)
   }
 }
 

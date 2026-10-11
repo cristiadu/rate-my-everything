@@ -25,8 +25,20 @@ export default class ItemController {
     // Add more routes as needed
   }
 
+  /**
+   * Lists all items, or with ?similarTo=name only those whose name is likely a duplicate of it,
+   * narrowed to one category by ?categoryId=id; 400 when categoryId is not an integer.
+   */
   public async getAll(req: Request, res: Response) {
     try {
+      const { similarTo, categoryId } = req.query
+      if (typeof similarTo === 'string') {
+        const categoryIdNumber = categoryId === undefined ? undefined : Number(categoryId)
+        if (categoryIdNumber !== undefined && !Number.isInteger(categoryIdNumber)) {
+          return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'categoryId must be an integer'))
+        }
+        return res.status(200).json(await this.itemService.getSimilar(similarTo, categoryIdNumber))
+      }
       const data = await this.itemService.getAll()
       res.status(200).json(data)
     } catch (error) {

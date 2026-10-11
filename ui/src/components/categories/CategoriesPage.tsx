@@ -7,6 +7,7 @@ import {
 import { getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
 import MultiSelectDropdown from '@/components/common/MultiSelectDropdown'
+import useSimilarRecords from '@/components/common/useSimilarRecords'
 
 /** Form values for a new category. */
 const emptyForm: CategoryFormValues = { name: '', description: '', attributeIds: [] }
@@ -25,6 +26,8 @@ const CategoriesPage: React.FC = () => {
   const [editingName, setEditingName] = useState<string | null>(null)
   const [status, setStatus] = useState<StatusMessage>(null)
   const [isSaving, setIsSaving] = useState(false)
+  // Only new categories are checked for duplicates
+  const similarCategories = useSimilarRecords<Category>(ApiConfig.ENDPOINTS.CATEGORIES, formFields.name, isAdmin && editingName === null)
 
   /** Fetches the category list from the API. */
   const loadCategories = useCallback(async () => {
@@ -139,6 +142,18 @@ const CategoriesPage: React.FC = () => {
                   required
                 />
               </div>
+              {similarCategories.length > 0 && (
+                <div className="notification is-warning is-light mt-2" role="status" aria-label="Similar categories">
+                  <p>Similar categories already exist. Edit one of them instead of adding a duplicate:</p>
+                  <div className="buttons mt-2">
+                    {similarCategories.map((category) => (
+                      <button key={category.id} className="button is-small" type="button" onClick={() => handleEdit(category)}>
+                        {`Edit ${category.name}`}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
             <div className="field">
               <label className="label" htmlFor="category-description">Description</label>

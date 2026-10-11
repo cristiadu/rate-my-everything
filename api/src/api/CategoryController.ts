@@ -25,9 +25,13 @@ export default class CategoryController {
     // Add more routes as needed
   }
 
+  /** Lists all categories, or with ?similarTo=name only those whose name is likely a duplicate of it. */
   public async getAll(req: Request, res: Response) {
     try {
-      const data = await this.categoryService.getAll()
+      const { similarTo } = req.query
+      const data = typeof similarTo === 'string'
+        ? await this.categoryService.getSimilar(similarTo)
+        : await this.categoryService.getAll()
       res.status(200)
         .json(data)
     } catch (error) {

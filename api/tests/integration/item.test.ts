@@ -299,4 +299,95 @@ describe('Item API Integration Tests', async () => {
         .expect(res => { expect(res.body).toEqual({}) })
     })
   })
+
+  describe(`GET ${Endpoints.ITEMS_BASE_PATH}?similarTo=name`, () => {
+    let otherCategory: Category
+    let ringsItem: Item
+
+    beforeAll(async () => {
+      const otherCategoryRes = await request(app)
+        .post(Endpoints.CATEGORIES_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ name: `OtherItemCat-${Date.now()}` })
+        .expect(201)
+      otherCategory = otherCategoryRes.body
+
+      const itemsToCreate = [
+        { name: 'The Lord of the Rings', categoryId: testCategory.id },
+        { name: 'Dune', categoryId: testCategory.id },
+        { name: 'Lord of the Rings', categoryId: otherCategory.id },
+      ]
+      const createdItems: Item[] = []
+      for (const item of itemsToCreate) {
+        const itemRes = await request(app)
+          .post(Endpoints.ITEMS_BASE_PATH)
+          .set('Authorization', `Bearer ${testAuthToken}`)
+          .send({ ...item, description: 'Item for duplicate detection tests' })
+          .expect(201)
+        createdItems.push(itemRes.body)
+      }
+      ringsItem = createdItems[0]
+    })
+
+    it('should return only the items in the category whose name is likely a duplicate', async () => {
+      // GIVEN "The Lord of the Rings" and "Dune" in the test category and "Lord of the Rings" in another one (beforeAll)
+      // WHEN items similar to a misspelled name are requested for the test category
+      // THEN only the matching item of that category is returned
+      await request(app)
+        .get(Endpoints.ITEMS_BASE_PATH)
+        .query({ similarTo: 'lord of the ring', categoryId: testCategory.id })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .expect(res => {
+          const items = res.body as Item[]
+          expect(items.map((item) => [item.id, item.name, item.category.id]))
+            .toEqual([[ringsItem.id, 'The Lord of the Rings', testCategory.id]])
+        })
+    })
+
+    it('should search every category when no categoryId is sent', async () => {
+      // GIVEN the items created in beforeAll
+      // WHEN items similar to a name are requested without a category
+      // THEN the matching items of both categories are returned
+      await request(app)
+        .get(Endpoints.ITEMS_BASE_PATH)
+        .query({ similarTo: 'Lord of the Rings' })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(200)
+        .expect(res => {
+          const items = res.body as Item[]
+          expect(items.map((item) => item.category.id).sort()).toEqual([testCategory.id, otherCategory.id].sort())
+        })
+    })
+
+    it('should return an empty list when no item name is similar', async () => {
+      // GIVEN the items created in beforeAll
+      // WHEN items similar to an unrelated name are requested
+      // THEN none are returned
+      await request(app)
+        .get(Endpoints.ITEMS_BASE_PATH)
+        .query({ similarTo: 'Hyperion' })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(200)
+        .expect(res => { expect(res.body).toEqual([]) })
+    })
+
+    it('should reject a categoryId that is not an integer', async () => {
+      // GIVEN the items created in beforeAll
+      // WHEN the category is not a number
+      // THEN the request fails validation
+      await request(app)
+        .get(Endpoints.ITEMS_BASE_PATH)
+        .query({ similarTo: 'Dune', categoryId: 'books' })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(400)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe('categoryId must be an integer')
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+        })
+    })
+  })
 })
