@@ -9,7 +9,7 @@ export default class AttributeValue {
   @PrimaryGeneratedColumn()
     id!: number
 
-  @ManyToOne(() => Item, (item) => item.attributes)
+  @ManyToOne(() => Item, (item) => item.attributes, { onDelete: 'CASCADE', orphanedRowAction: 'delete' })
   @JoinColumn({ name: 'item_id' })
     item!: Item
 

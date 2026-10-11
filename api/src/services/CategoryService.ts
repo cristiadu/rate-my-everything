@@ -20,6 +20,11 @@ class CategoryService extends BaseService<Category> {
     return this.repository.save(newCategory)
   }
 
+  /** Reads a category by id with its attributes. */
+  public async getById(id: number): Promise<Category | null> {
+    return this.repository.findOne({ where: { id }, relations: { attributes: true } })
+  }
+
   // Read a Category by name
   public async get(nameToSearch: string): Promise<Category | null> {
     return await this.repository.findOne({ where: { name: nameToSearch }, relations: { attributes: true } })

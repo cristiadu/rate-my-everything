@@ -11,36 +11,8 @@ import HealthCheck from '@/components/health/HealthCheck'
 import UserAccount from '@/components/account/UserAccount'
 import CategoriesPage from '@/components/categories/CategoriesPage'
 import AttributeManagement from '@/components/admin/attributes/AttributeManagement'
-
-import type { RankingItem } from '../types'
-
-// populate with example data
-const rankings: RankingItem[] = [
-  {
-    category: 'Electronics',
-    item_name: 'iPhone 12',
-    item_id: 1,
-    rating: 4.5,
-    item_img_url: 
-      'https://store.storeimages.cdn-apple.com/4982/as-images.apple.com/is/iphone-12-blue-select-2020?' + 
-      'wid=940&hei=1112&fmt=png-alpha&qlt=80&.v=1604343704000',
-  },
-  {
-    category: 'Books',
-    item_name: 'Harry Potter and the Philosopher\'s Stone',
-    item_id: 2,
-    rating: 4.7,
-    item_img_url: 'https://images-na.ssl-images-amazon.com/images/I/51UoqRAxwEL._SX331_BO1,204,203,200_.jpg',
-  },
-  {
-    category: 'Movies',
-    item_name: 'The Shawshank Redemption',
-    item_id: 3,
-    rating: 4.9,
-    item_img_url: 'https://upload.wikimedia.org/wikipedia/en/8/81/ShawshankRedemptionMoviePoster.jpg',
-  },
-  // Add more example data as needed
-]
+import InterestFormPage from '@/components/interests/InterestFormPage'
+import { RankingScope } from '@/components/types'
 
 const MainContent = () => (
   <Content id="content" key="content">
@@ -51,8 +23,10 @@ const MainContent = () => (
         <Route path="/admin/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
         <Route path="/admin/attributes" element={<RequireAdmin><AttributeManagement /></RequireAdmin>} />
         <Route path="/user/create" element={<RequireAdmin><CreateUserForm /></RequireAdmin>} />
-        <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
-        <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
+        <Route path="/rankings" element={<RequireLogin><OverallRankings scope={RankingScope.MINE} /></RequireLogin>} />
+        <Route path="/all_rankings" element={<RequireLogin><OverallRankings scope={RankingScope.ALL} /></RequireLogin>} />
+        <Route path="/interests/new" element={<RequireLogin><InterestFormPage /></RequireLogin>} />
+        <Route path="/interests/:itemId/edit" element={<RequireLogin><InterestFormPage /></RequireLogin>} />
         <Route path="/categories" element={<RequireLogin><CategoriesPage /></RequireLogin>} />
         <Route path="/health" element={<HealthCheck />} />
         <Route path="/*" element={<Index />} />

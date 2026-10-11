@@ -6,7 +6,7 @@ import ErrorCode from '@/errors/ErrorCode'
 import Category from '@/models/Category'
 import Item from '@/models/Item'
 import RatedItem from '@/models/RatedItem'
-import { getAuthTokenFromFile } from '@@/testutils/common/Auth'
+import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { cleanupAllRatedItems, cleanupAllItems, cleanupAllCategories } from '@@/testutils/common/DataCleanup'
 import { Endpoints } from '@@/testutils/common/constants'
 
@@ -32,7 +32,7 @@ describe('RatedItem API Integration Tests', async () => {
     const itemRes = await request(app)
       .post(Endpoints.ITEMS_BASE_PATH)
       .set('Authorization', `Bearer ${testAuthToken}`)
-      .send({ name: `RatedItem-${Date.now()}`, description: 'For rated item tests', category: testCategory.id })
+      .send({ name: `RatedItem-${Date.now()}`, description: 'For rated item tests', categoryId: testCategory.id })
       .expect(201)
     testItem = itemRes.body
   })
@@ -48,13 +48,12 @@ describe('RatedItem API Integration Tests', async () => {
   })
 
   describe(`POST ${Endpoints.RATINGS_BASE_PATH}`, () => {
-    it('should create a new rated item', async () => {
+    it('should create a new rated item for the signed-in user', async () => {
       const newRatedItem = {
         item_id: testItem.id,
         rating: 5.00,
-        user_id: 1,
         notes: 'Excellent!'
-      } as Partial<RatedItem>
+      }
 
       await request(app)
         .post(`${Endpoints.RATINGS_BASE_PATH}`)
@@ -65,10 +64,10 @@ describe('RatedItem API Integration Tests', async () => {
         .expect(res => {
           const ratedItem = res.body as RatedItem
           expect(ratedItem.id).toBeDefined()
-          //expect(ratedItem.item).toBeDefined()
-          expect(ratedItem.notes).toBe(newRatedItem.notes)
-          expect(ratedItem.rating).toBe(newRatedItem.rating)
-          //expect(ratedItem.user.username).toBe(TEST_USER.email)
+          expect(ratedItem.item.name).toBe(testItem.name)
+          expect(ratedItem.item.category.name).toBe(testCategory.name)
+          expect(ratedItem.notes).toBe('Excellent!')
+          expect(ratedItem.rating).toBe(5)
           testRatedItem = ratedItem
         })
 
@@ -86,7 +85,7 @@ describe('RatedItem API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Missing required fields: item_id, user_id, rating')
+          expect(apiError.message).toBe('Missing required fields: item_id, rating')
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
           expect(apiError.status).toBe(400)
         })
@@ -110,10 +109,8 @@ describe('RatedItem API Integration Tests', async () => {
           const updatedRatedItem = res.body as RatedItem
           expect(updatedRatedItem.notes).toBe(updatedComment)
           expect(updatedRatedItem.id).toBe(testRatedItem.id)
-          //expect(updatedRatedItem.user.username).toBe(TEST_USER.email)
-          expect(updatedRatedItem.rating).toBe(testRatedItem.rating.toFixed(2))
-          //expect(updatedRatedItem.item.id).toBe(testRatedItem.item.id)
-          //expect(updatedRatedItem.item.name).toBe(testRatedItem.item.name)
+          expect(updatedRatedItem.rating).toBe(5)
+          expect(updatedRatedItem.item.id).toBe(testItem.id)
           testRatedItem = updatedRatedItem
         })
 
@@ -156,20 +153,36 @@ describe('RatedItem API Integration Tests', async () => {
             if (item.id === testRatedItem.id) {
               expect(item.notes).toBe(testRatedItem.notes)
               expect(item.id).toBe(testRatedItem.id)
-              //expect(item.user.username).toBe(TEST_USER.email)
-              expect(item.rating).toBe(testRatedItem.rating)
-              //expect(item.item.id).toBe(testRatedItem.item.id)
-              //expect(item.item.name).toBe(testRatedItem.item.name)
+              expect(item.rating).toBe(5)
+              expect(item.item.name).toBe(testItem.name)
             } else {
               expect(item.notes).toBeDefined()
               expect(item.id).toBeDefined()
-              //expect(item.user.username).toBeDefined()
               expect(item.rating).toBeDefined()
-              //expect(item.item.id).toBeDefined()
-              //expect(item.item.name).toBeDefined()
             }
           }
         })
+    })
+  })
+
+  describe(`GET ${Endpoints.RATINGS_BASE_PATH}/mine`, () => {
+    it('should list only the ratings of the signed-in user', async () => {
+      // GIVEN the admin test user rated the test item and another user rated nothing
+      const otherUserToken = await getUserRoleAuthToken(app)
+
+      // WHEN each user lists their own ratings
+      const adminRes = await request(app)
+        .get(`${Endpoints.RATINGS_BASE_PATH}/mine`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(200)
+      const otherUserRes = await request(app)
+        .get(`${Endpoints.RATINGS_BASE_PATH}/mine`)
+        .set('Authorization', `Bearer ${otherUserToken}`)
+        .expect(200)
+
+      // THEN only the admin sees the test rating
+      expect((adminRes.body as RatedItem[]).map((rating) => rating.id)).toEqual([testRatedItem.id])
+      expect(otherUserRes.body).toEqual([])
     })
   })
 
@@ -188,10 +201,8 @@ describe('RatedItem API Integration Tests', async () => {
           const ratedItem = res.body as RatedItem
           expect(ratedItem.notes).toBe(testRatedItem.notes)
           expect(ratedItem.id).toBe(testRatedItem.id)
-          //expect(ratedItem.user.username).toBe(TEST_USER.email)
-          expect(ratedItem.rating).toBe(testRatedItem.rating)
-          //expect(ratedItem.item.id).toBe(testRatedItem.item.id)
-          //expect(ratedItem.item.name).toBe(testRatedItem.item.name)
+          expect(ratedItem.rating).toBe(5)
+          expect(ratedItem.item.name).toBe(testItem.name)
         })
     })
 

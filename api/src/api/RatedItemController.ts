@@ -3,6 +3,7 @@ import RatedItemService from '@/services/RatedItemService'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import RatedItem from '@/models/RatedItem'
+import { SessionUser } from '@/models/User'
 
 export default class RatedItemController {
   public router = Router()
@@ -16,6 +17,7 @@ export default class RatedItemController {
   public initializeRoutes() {
     this.router.get('/', (req, res) => this.getAll(req, res))
     this.router.get('/user/:user_id', (req, res) => this.getAllByUserId(req, res))
+    this.router.get('/mine', (req, res) => this.getMine(req, res))
     this.router.get('/:id', (req, res) => this.getById(req, res))
     this.router.post('/', (req, res) => this.create(req, res))
     this.router.put('/:id', (req, res) => this.update(req, res))
@@ -43,6 +45,18 @@ export default class RatedItemController {
     }
   }
 
+  /** Lists the signed-in user's ratings, each with its item and category. */
+  public async getMine(_req: Request, res: Response) {
+    try {
+      const sessionUser = res.locals.user as SessionUser
+      const data = await this.ratedItemService.getAllByUserId(sessionUser.id)
+      res.status(200).json(data)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+    }
+  }
+
   public async getById(req: Request, res: Response) {
     try {
       const data = await this.ratedItemService.get(parseInt(req.params.id, 10))
@@ -57,13 +71,15 @@ export default class RatedItemController {
     }
   }
 
+  /** Creates a rating of an item for the signed-in user; 400 when item_id or a numeric rating is missing. */
   public async create(req: Request, res: Response) {
     try {
-      const { item_id, user_id, rating } = req.body
-      if (!item_id || !user_id || !rating) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: item_id, user_id, rating'))
+      const { item_id, rating, notes } = req.body
+      if (!item_id || typeof rating !== 'number') {
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: item_id, rating'))
       }
-      const data = await this.ratedItemService.create(req.body)
+      const sessionUser = res.locals.user as SessionUser
+      const data = await this.ratedItemService.create(item_id, sessionUser.id, rating, notes)
       res.status(201).json(data)
     } catch (error) {
       console.error(error)

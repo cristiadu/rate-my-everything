@@ -4,6 +4,7 @@ import {
 import { Min, Max } from 'class-validator'
 import User from '@/models/User'
 import Item from '@/models/Item'
+import { decimalToNumber } from '@/helpers/DecimalHelper'
 
 @Entity()
 export default class RatedItem {
@@ -14,7 +15,7 @@ export default class RatedItem {
   @JoinColumn({ name: 'item_id' }) // This line names the column as 'item_id '
     item!: Item
 
-  @Column({ type: 'decimal', precision: 4, scale: 2 })
+  @Column({ type: 'decimal', precision: 4, scale: 2, transformer: decimalToNumber })
   @Min(0.0)
   @Max(10.0)
     rating!: number

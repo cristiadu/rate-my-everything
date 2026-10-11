@@ -1,8 +1,10 @@
 import { Request, Response, Router } from 'express'
 import ItemService from '@/services/ItemService'
+import { ItemInput } from '@/models/Item'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import Item from '@/models/Item'
+import { UnknownAttributes } from '@/errors/UnknownAttributes'
+import { UnknownCategory } from '@/errors/UnknownCategory'
 
 export default class ItemController {
   public router = Router()
@@ -57,30 +59,37 @@ export default class ItemController {
     }
   }
 
+  /** Creates an item with its attribute values; 400 when name or categoryId is missing, 422 for an unknown category or attribute. */
   public async create(req: Request, res: Response) {
     try {
-      const { name, category } = req.body
-      if (!name || !category) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, category'))
+      const itemInput = req.body as ItemInput
+      if (!itemInput.name || itemInput.categoryId === undefined) {
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, categoryId'))
       }
-      const data = await this.itemService.create(req.body)
+      const data = await this.itemService.create(itemInput)
       res.status(201).json(data)
     } catch (error) {
+      if (error instanceof UnknownAttributes || error instanceof UnknownCategory) {
+        return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
+      }
       console.error((error as Error).stack || error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 
+  /** Updates the fields sent for an item; 404 when it does not exist, 422 for an unknown category or attribute. */
   public async update(req: Request, res: Response) {
     try {
-      const itemBody = req.body as Item
-      const data = await this.itemService.update(parseInt(req.params.id, 10), itemBody)
+      const data = await this.itemService.update(parseInt(req.params.id, 10), req.body as ItemInput)
       if (data) {
         res.status(200).json(data)
       } else {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Item not found'))
       }
     } catch (error) {
+      if (error instanceof UnknownAttributes || error instanceof UnknownCategory) {
+        return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
+      }
       console.error((error as Error).stack || error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }

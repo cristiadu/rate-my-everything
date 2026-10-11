@@ -49,6 +49,16 @@ const HeaderMenu = () => {
             </Navbar.Item>
           )}
           {isAuthenticated && (
+            <>
+              <Navbar.Item renderAs="a" href="/rankings">
+                My interests
+              </Navbar.Item>
+              <Navbar.Item renderAs="a" href="/all_rankings">
+                All rankings
+              </Navbar.Item>
+            </>
+          )}
+          {isAuthenticated && (
             <Navbar.Item renderAs="a" href="/categories">
               Categories
             </Navbar.Item>
