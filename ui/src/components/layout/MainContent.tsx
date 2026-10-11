@@ -5,9 +5,11 @@ import {
 import { Content } from 'react-bulma-components'
 import Index from '@/components/index/Index'
 import OverallRankings from '@/components/rankings/OverallRankings'
-import RequireAdmin from '@/components/admin/RequireAdmin'
+import RequireAdmin, { RequireLogin } from '@/components/admin/RequireAdmin'
+import AdminDashboard from '@/components/admin/AdminDashboard'
 import UserManagement from '@/components/admin/users/UserManagement'
 import HealthCheck from '@/components/health/HealthCheck'
+import UserAccount from '@/components/account/UserAccount'
 
 import { RankingItem } from '../types'
 
@@ -43,6 +45,8 @@ const MainContent = () => (
   <Content id="content" key="content">
     <Router>
       <Routes>
+        <Route path="/account" element={<RequireLogin><UserAccount /></RequireLogin>} />
+        <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
         <Route path="/admin/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
         <Route path="/user/create" element={<Navigate to="/admin/users" replace />} />
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
