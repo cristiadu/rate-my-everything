@@ -3,6 +3,7 @@ import AttributeService from '@/services/AttributeService'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import Attribute from '@/models/Attribute'
+import { INVALID_VALUE_TYPE_MESSAGE, isAttributeValueType } from '@/helpers/AttributeHelper'
 
 export default class AttributeController {
   public router = Router()
@@ -91,6 +92,9 @@ export default class AttributeController {
       if (!name || !valueType) {
         return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, valueType'))
       }
+      if (!isAttributeValueType(valueType)) {
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, INVALID_VALUE_TYPE_MESSAGE))
+      }
       const data = await this.attributeService.createAttribute(req.body)
       res.status(201).json(data)
     } catch (error) {
@@ -112,6 +116,9 @@ export default class AttributeController {
   public async updateAttribute(req: Request, res: Response) {
     try {
       const attributeBody = req.body as Attribute
+      if (attributeBody.valueType !== undefined && !isAttributeValueType(attributeBody.valueType)) {
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, INVALID_VALUE_TYPE_MESSAGE))
+      }
       const data = await this.attributeService.updateAttribute(parseInt(req.params.id, 10), attributeBody)
       if (data) {
         res.status(200).json(data)

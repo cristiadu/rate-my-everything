@@ -1,26 +1,32 @@
 import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
-import Category from '@/models/Category'
+import Category, { CategoryInput } from '@/models/Category'
+import AttributeService from '@/services/AttributeService'
 import BaseService from '@/services/BaseService'
 import { Not } from 'typeorm'
 
 class CategoryService extends BaseService<Category> {
+  private attributeService = new AttributeService()
+
   constructor() {
     super(Category)
   }
 
   // Create a new Category
-  public async create(category: Category): Promise<Category> {
+  public async create({ attributeIds, ...category }: CategoryInput): Promise<Category> {
     const newCategory = this.repository.create(category)
+    if (attributeIds) {
+      newCategory.attributes = await this.attributeService.fetchAttributesByID(attributeIds)
+    }
     return this.repository.save(newCategory)
   }
 
   // Read a Category by name
   public async get(nameToSearch: string): Promise<Category | null> {
-    return await this.repository.findOne({ where: { name: nameToSearch } })
+    return await this.repository.findOne({ where: { name: nameToSearch }, relations: { attributes: true } })
   }
 
   // Update a Category
-  public async update(name: string, category: Omit<Category, 'id'>): Promise<Category | null> {
+  public async update(name: string, { attributeIds, ...category }: CategoryInput): Promise<Category | null> {
     const existingCategory = await this.get(name)
     if (!existingCategory || !existingCategory.id) {
       return null
@@ -34,6 +40,9 @@ class CategoryService extends BaseService<Category> {
     }
 
     this.repository.merge(existingCategory, category)
+    if (attributeIds) {
+      existingCategory.attributes = await this.attributeService.fetchAttributesByID(attributeIds)
+    }
     return this.repository.save(existingCategory)
   }
 
@@ -48,7 +57,7 @@ class CategoryService extends BaseService<Category> {
 
   // get all Categories
   public async getAll(): Promise<Category[]> {
-    return this.repository.find()
+    return this.repository.find({ relations: { attributes: true }, order: { id: 'ASC' } })
   }
 }
 

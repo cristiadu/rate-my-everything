@@ -1,3 +1,5 @@
+import request from 'supertest'
+import type { Express } from 'express'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
@@ -19,4 +21,19 @@ export const getAuthTokenFromFile = (): Promise<string> => {
       resolve(data.trim())
     })
   })
+}
+/** Registers a fresh user with only the "user" role and returns its token. */
+export const getUserRoleAuthToken = async (app: Express): Promise<string> => {
+  const username = `plain-user-${Date.now()}`
+  const password = 'Password123!'
+  await request(app)
+    .post('/api/login/register')
+    .send({ username, email: `${username}@example.com`, password, roles: ['user'] })
+    .expect(201)
+
+  const loginRes = await request(app)
+    .post('/api/login')
+    .send({ username, password })
+    .expect(200)
+  return loginRes.body.token
 }

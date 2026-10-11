@@ -11,6 +11,8 @@ import { NextFunction, Request, Response } from 'express'
 import { SessionUser } from '@/models/User'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
+import { RouteConfig } from '@/models/RouteConfig'
+import { canAccessRoute } from '@/helpers/RouteHelper'
 
 export const unprotectedRoutes = new Set([
   '/api/login',
@@ -19,13 +21,19 @@ export const unprotectedRoutes = new Set([
   // Add more unprotected routes as needed
 ])
 
-export const routes = [
+/** API routes and the roles that may call them. */
+export const routes: RouteConfig[] = [
   { path: '/api/ratings', controller: () => new RatedItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/users', controller: () => new UserController().router, roles: [UserRole.ADMIN] },
   { path: '/api/login', controller: () => new LoginController().router },
   { path: '/api/attributes', controller: () => new AttributeController().router, roles: [UserRole.ADMIN] },
   { path: '/api/items', controller: () => new ItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
-  { path: '/api/categories', controller: () => new CategoryController().router, roles: [UserRole.USER, UserRole.ADMIN] },
+  {
+    path: '/api/categories',
+    controller: () => new CategoryController().router,
+    roles: [UserRole.USER, UserRole.ADMIN],
+    writeRoles: [UserRole.ADMIN],
+  },
   { path: '/api/health', controller: () => new HealthController().router },
   { path: '/api', controller: () => (_req: Request, res: Response) => {
       res.status(404).json(NewApiError(ErrorCode.NOT_FOUND, 404, 'Could not find an API resource at the specified path'))
@@ -61,7 +69,7 @@ export const authenticationFilter = (req: Request, res: Response, next: NextFunc
     }
 
     const route = routes.find((currentRoute) => req.path.startsWith(currentRoute.path))
-    if (!route || (route.roles && !route.roles.some((role) => decodedUser.roles.includes(role)))) {
+    if (!route || !canAccessRoute(route, req.method, decodedUser.roles)) {
       return res.status(403).json(NewApiError(ErrorCode.FORBIDDEN, 403, 'You do not have permission to access this resource'))
     }
 

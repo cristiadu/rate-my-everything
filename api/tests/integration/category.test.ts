@@ -1,10 +1,12 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import request from 'supertest'
 import { appReady } from '@/index'
 import Category from '@/models/Category'
+import AttributeValueType from '@/models/AttributeValueType'
+import Attribute from '@/models/Attribute'
 import APIError from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import { getAuthTokenFromFile } from '@@/testutils/common/Auth'
+import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { cleanupAllCategories } from '@@/testutils/common/DataCleanup'
 import { Endpoints } from '@@/testutils/common/constants'
 
@@ -332,6 +334,164 @@ describe('Category API Integration Tests', async () => {
           expect(apiError.message).toBe('Missing or invalid authorization header')
           expect(apiError.code).toBe(ErrorCode.UNAUTHORIZED)
           expect(apiError.status).toBe(401)
+        })
+    })
+  })
+
+  describe('Category attributes', () => {
+    let linkedAttribute: Attribute
+    let linkedCategory: Category
+
+    beforeAll(async () => {
+      const attributeRes = await request(app)
+        .post(Endpoints.ATTRIBUTES_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ name: `Linked-Attribute-${Date.now()}`, valueType: AttributeValueType.STRING })
+        .expect(201)
+      linkedAttribute = attributeRes.body as Attribute
+    })
+
+    afterAll(async () => {
+      if (linkedCategory) {
+        await request(app)
+          .delete(`${Endpoints.CATEGORIES_BASE_PATH}/${linkedCategory.name}`)
+          .set('Authorization', `Bearer ${testAuthToken}`)
+          .expect(204)
+      }
+      await request(app)
+        .delete(`${Endpoints.ATTRIBUTES_BASE_PATH}/${linkedAttribute.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(204)
+    })
+
+    it('should create a category linked to attributes', async () => {
+      // GIVEN an existing attribute (beforeAll)
+      // WHEN creating a category that references it
+      // THEN the category comes back with that attribute linked
+      await request(app)
+        .post(Endpoints.CATEGORIES_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ name: `Linked-Category-${Date.now()}`, attributeIds: [linkedAttribute.id] })
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .expect(res => {
+          linkedCategory = res.body as Category
+          expect(linkedCategory.attributes.map(attr => attr.id)).toEqual([linkedAttribute.id])
+        })
+    })
+
+    it('should return linked attributes when getting a category', async () => {
+      // GIVEN the linked category
+      // WHEN getting it by name
+      // THEN its attributes are included
+      await request(app)
+        .get(`${Endpoints.CATEGORIES_BASE_PATH}/${linkedCategory.name}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(200)
+        .expect(res => {
+          const apiResult = res.body as Category
+          expect(apiResult.attributes.map(attr => attr.name)).toEqual([linkedAttribute.name])
+        })
+    })
+
+    it('should keep linked attributes when attributeIds is omitted on update', async () => {
+      // GIVEN the linked category
+      // WHEN updating it without attributeIds
+      // THEN its attributes stay linked
+      await request(app)
+        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${linkedCategory.name}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ description: 'Still linked' })
+        .expect(200)
+        .expect(res => {
+          const apiResult = res.body as Category
+          expect(apiResult.attributes.map(attr => attr.id)).toEqual([linkedAttribute.id])
+        })
+    })
+
+    it('should unlink attributes when updating with an empty list', async () => {
+      // GIVEN the linked category
+      // WHEN updating it with an empty attributeIds list
+      await request(app)
+        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${linkedCategory.name}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ attributeIds: [] })
+        .expect(200)
+
+      // THEN it has no attributes
+      await request(app)
+        .get(`${Endpoints.CATEGORIES_BASE_PATH}/${linkedCategory.name}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(200)
+        .expect(res => expect((res.body as Category).attributes).toEqual([]))
+    })
+
+    it('should reject attributeIds that are not integers', async () => {
+      // GIVEN the linked category
+      // WHEN updating it with non-integer attributeIds
+      // THEN the request is rejected as invalid
+      await request(app)
+        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${linkedCategory.name}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ attributeIds: ['abc'] })
+        .expect(400)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe('attributeIds must be an array of integers')
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+        })
+    })
+
+    it('should reject attribute ids that do not exist', async () => {
+      // GIVEN no attribute with id 999999
+      // WHEN creating a category that references it
+      // THEN the request is rejected naming the unknown id
+      await request(app)
+        .post(Endpoints.CATEGORIES_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ name: `Unknown-Attr-Category-${Date.now()}`, attributeIds: [999999] })
+        .expect(422)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe('Unknown attribute ids: 999999')
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+        })
+    })
+  })
+
+  describe('Category permissions for the user role', () => {
+    let userToken: string
+
+    beforeAll(async () => {
+      userToken = await getUserRoleAuthToken(app)
+    })
+
+    it('should let users list categories', async () => {
+      // GIVEN a user-role token (beforeAll)
+      // WHEN listing categories
+      // THEN the request succeeds
+      await request(app)
+        .get(Endpoints.CATEGORIES_BASE_PATH)
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(200)
+    })
+
+    it.each([
+      ['POST', () => request(app).post(Endpoints.CATEGORIES_BASE_PATH).send({ name: 'User-Category' })],
+      ['PUT', () => request(app).put(`${Endpoints.CATEGORIES_BASE_PATH}/any-category`).send({ description: 'Nope' })],
+      ['DELETE', () => request(app).delete(`${Endpoints.CATEGORIES_BASE_PATH}/any-category`)],
+    ])('should forbid users from %s on categories', async (_method, buildRequest) => {
+      // GIVEN a user-role token (beforeAll)
+      // WHEN calling a write endpoint
+      // THEN it is forbidden
+      await buildRequest()
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect('Content-Type', /json/)
+        .expect(403)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.code).toBe(ErrorCode.FORBIDDEN)
+          expect(apiError.status).toBe(403)
         })
     })
   })

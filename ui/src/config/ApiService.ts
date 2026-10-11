@@ -1,8 +1,9 @@
 import ApiConfig from './ApiConfig'
+import type { JsonObject } from '@/components/types'
 
 interface ApiOptions {
   method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  body?: Record<string, unknown>;
+  body?: JsonObject;
   includeAuth?: boolean;
 }
 
@@ -49,8 +50,8 @@ export default class ApiService {
     }
 
     if (!response.ok) {
-      const errorMessage = typeof data === 'object' && data.error
-        ? data.error
+      const errorMessage = typeof data === 'object' && (data.message || data.error)
+        ? data.message || data.error
         : 'An error occurred with the API request'
 
       throw new Error(errorMessage)
@@ -63,11 +64,11 @@ export default class ApiService {
     return this.request<T>(endpoint, { method: 'GET', includeAuth })
   }
 
-  static post<T>(endpoint: string, body: Record<string, unknown>, includeAuth = true): Promise<T> {
+  static post<T>(endpoint: string, body: JsonObject, includeAuth = true): Promise<T> {
     return this.request<T>(endpoint, { method: 'POST', body, includeAuth })
   }
 
-  static put<T>(endpoint: string, body: Record<string, unknown>, includeAuth = true): Promise<T> {
+  static put<T>(endpoint: string, body: JsonObject, includeAuth = true): Promise<T> {
     return this.request<T>(endpoint, { method: 'PUT', body, includeAuth })
   }
 

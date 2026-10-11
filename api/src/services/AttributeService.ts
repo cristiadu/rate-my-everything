@@ -2,7 +2,8 @@ import { DBConnection } from '@/index'
 import Attribute from '@/models/Attribute'
 import AttributeValue from '@/models/AttributeValue'
 import BaseService from '@/services/BaseService'
-import { Repository } from 'typeorm'
+import { UnknownAttributes } from '@/errors/UnknownAttributes'
+import { In, Repository } from 'typeorm'
 
 class AttributeService extends BaseService<Attribute> {
   private privateAttValueRepository: Repository<AttributeValue> | null = null
@@ -35,6 +36,21 @@ class AttributeService extends BaseService<Attribute> {
   public async getAttribute(id: number): Promise<Attribute | null> {
     const attribute = await this.repository.findOne({ where: { id } })
     return attribute
+  }
+
+  /** Loads the attributes with the given ids; throws UnknownAttributes when any id does not exist. */
+  public async fetchAttributesByID(attributeIds: number[]): Promise<Attribute[]> {
+    const uniqueIds = [...new Set(attributeIds)]
+    if (uniqueIds.length === 0) {
+      return []
+    }
+
+    const attributes = await this.repository.findBy({ id: In(uniqueIds) })
+    if (attributes.length !== uniqueIds.length) {
+      const foundIds = new Set(attributes.map((attribute) => attribute.id))
+      throw new UnknownAttributes(uniqueIds.filter((id) => !foundIds.has(id)))
+    }
+    return attributes
   }
 
   // Read an AttributeValue by id

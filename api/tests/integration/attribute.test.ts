@@ -3,6 +3,7 @@ import request from 'supertest'
 import { appReady } from '@/index'
 import APIError from '@/models/APIError'
 import Attribute from '@/models/Attribute'
+import AttributeValueType from '@/models/AttributeValueType'
 import Category from '@/models/Category'
 import ErrorCode from '@/errors/ErrorCode'
 import { getAuthTokenFromFile } from '@@/testutils/common/Auth'
@@ -40,7 +41,7 @@ describe('Attribute API Integration Tests', async () => {
       const newAttribute = {
         name: `Test-Attribute-${Date.now()}`,
         description: 'Attribute for integration test',
-        valueType: 'string',
+        valueType: AttributeValueType.STRING,
         values: ['Value1', 'Value2'],
         categoryId: testCategory.id
       }
@@ -80,6 +81,23 @@ describe('Attribute API Integration Tests', async () => {
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
           expect(apiError.status).toBe(400)
         })
+    })
+
+    it('should fail to create an attribute with an unknown value type', async () => {
+      // GIVEN an attribute whose value type is not an AttributeValueType
+      const invalidAttribute = { name: `Invalid-Type-${Date.now()}`, valueType: 'colour' }
+
+      // WHEN creating it
+      const res = await request(app)
+        .post(Endpoints.ATTRIBUTES_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send(invalidAttribute)
+
+      // THEN it is rejected with the allowed value types
+      const apiError = res.body as APIError
+      expect(res.status).toBe(400)
+      expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+      expect(apiError.message).toBe(`valueType must be one of: ${Object.values(AttributeValueType).join(', ')}`)
     })
   })
 
@@ -182,6 +200,27 @@ describe('Attribute API Integration Tests', async () => {
           //expect(categoriesNames).toContain(testCategory.name)
           //expect(apiResult.values).toEqual(updatedValues)
         })
+    })
+
+    it('should fail to update an attribute to an unknown value type', async () => {
+      // GIVEN an existing attribute
+      if (!testAttribute) {
+        throw new Error('testAttribute not initialized')
+      }
+
+      // WHEN changing its value type to one outside AttributeValueType
+      const res = await request(app)
+        .put(`${Endpoints.ATTRIBUTES_BASE_PATH}/${testAttribute.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ valueType: 'colour' })
+
+      // THEN it is rejected and the attribute keeps its value type
+      expect(res.status).toBe(400)
+      expect((res.body as APIError).code).toBe(ErrorCode.VALIDATION_ERROR)
+      const current = await request(app)
+        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/${testAttribute.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+      expect((current.body as Attribute).valueType).toBe(testAttribute.valueType)
     })
 
     it('should fail to update a non-existent attribute', async () => {

@@ -15,7 +15,7 @@ const HeaderMenu = () => {
           <img
             alt="Icon"
             height="28"
-            src="./favicon.ico"
+            src="/favicon.ico"
             width="28"
           />
         </Navbar.Item>
@@ -48,6 +48,11 @@ const HeaderMenu = () => {
               My Account
             </Navbar.Item>
           )}
+          {isAuthenticated && (
+            <Navbar.Item renderAs="a" href="/categories">
+              Categories
+            </Navbar.Item>
+          )}
           {getRolesFromToken(token).includes(UserRole.ADMIN) && (
             <Navbar.Item hoverable>
               <Navbar.Link renderAs="a" href="/admin">
@@ -59,6 +64,9 @@ const HeaderMenu = () => {
                 </Navbar.Item>
                 <Navbar.Item renderAs="a" href="/admin/users">
                   Users
+                </Navbar.Item>
+                <Navbar.Item renderAs="a" href="/admin/attributes">
+                  Attributes
                 </Navbar.Item>
               </Navbar.Dropdown>
             </Navbar.Item>

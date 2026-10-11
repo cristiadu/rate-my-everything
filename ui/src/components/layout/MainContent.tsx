@@ -9,6 +9,8 @@ import UserManagement from '@/components/admin/users/UserManagement'
 import CreateUserForm from '@/components/users/CreateUserForm'
 import HealthCheck from '@/components/health/HealthCheck'
 import UserAccount from '@/components/account/UserAccount'
+import CategoriesPage from '@/components/categories/CategoriesPage'
+import AttributeManagement from '@/components/admin/attributes/AttributeManagement'
 
 import type { RankingItem } from '../types'
 
@@ -47,9 +49,11 @@ const MainContent = () => (
         <Route path="/account" element={<RequireLogin><UserAccount /></RequireLogin>} />
         <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
         <Route path="/admin/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
+        <Route path="/admin/attributes" element={<RequireAdmin><AttributeManagement /></RequireAdmin>} />
         <Route path="/user/create" element={<RequireAdmin><CreateUserForm /></RequireAdmin>} />
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
+        <Route path="/categories" element={<RequireLogin><CategoriesPage /></RequireLogin>} />
         <Route path="/health" element={<HealthCheck />} />
         <Route path="/*" element={<Index />} />
         {/* Add other routes as needed */}

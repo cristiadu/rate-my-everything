@@ -32,6 +32,8 @@ const createConfig = (_env, argv) => {
     ],
     output: {
       filename: 'bundle.js',
+      // Absolute so nested routes like /admin/users load /bundle.js instead of /admin/bundle.js
+      publicPath: '/',
       path: _resolve(__dirname, 'dist'),
     },
     module: {

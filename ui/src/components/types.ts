@@ -38,8 +38,59 @@ export type UserEditorState = { mode: 'create' } | { mode: 'edit', user: AdminUs
 /** Outcome message shown after an admin action. */
 export type StatusMessage = { message: string, isSuccess: boolean } | null
 
+/** Kinds of value an attribute holds; mirrors the API's AttributeValueType enum. */
+export enum AttributeValueType {
+    STRING = 'string',
+    NUMBER = 'number',
+    BOOLEAN = 'boolean',
+    DATE = 'date',
+}
+
+/** An attribute that categories can use to describe their items. */
+export interface Attribute {
+    id: number;
+    name: string;
+    valueType: AttributeValueType;
+}
+
+/** A category with the attributes linked to it. */
+export interface Category {
+    id: number;
+    name: string;
+    description?: string | null;
+    attributes: Attribute[];
+}
+
+/** Values edited in the category form. */
+export type CategoryFormValues = {
+    name: string;
+    description: string;
+    attributeIds: number[];
+}
+
+/** Values edited in the attribute form. */
+export type AttributeFormValues = {
+    name: string;
+    valueType: AttributeValueType;
+}
+
+/** Which attribute form the admin screen shows: none, a new attribute, or an existing attribute being edited. */
+export type AttributeEditorState = { mode: 'create' } | { mode: 'edit', attribute: Attribute } | null
+
+/** A value that survives JSON.stringify unchanged. */
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
+
+/** A JSON object sent as an API request body. */
+export type JsonObject = { [key: string]: JsonValue }
+
 /** User claims the API puts in its JWT payload. */
 export interface TokenPayload {
     username: string;
     roles: UserRole[];
+}
+
+/** One choice in a multiselect dropdown. */
+export type SelectOption = {
+    value: number;
+    label: string;
 }
