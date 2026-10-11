@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import {
+import type {
   Attribute, AttributeEditorState, AttributeFormValues, StatusMessage,
 } from '@/components/types'
 import AttributeForm from '@/components/admin/attributes/AttributeForm'

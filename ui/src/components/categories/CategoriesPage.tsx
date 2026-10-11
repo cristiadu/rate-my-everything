@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
 import {
-  Attribute, Category, CategoryFormValues, StatusMessage, UserRole,
+  type Attribute, type Category, type CategoryFormValues, type StatusMessage, UserRole,
 } from '@/components/types'
 import { getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'

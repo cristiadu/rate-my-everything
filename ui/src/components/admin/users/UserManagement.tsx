@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import {
+import type {
   AdminUser, StatusMessage, UserEditorState, UserFormValues,
 } from '@/components/types'
 import UserForm from '@/components/admin/users/UserForm'
