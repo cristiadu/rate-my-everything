@@ -152,3 +152,22 @@ export type RatingInput = {
     rating: number;
     notes: string;
 }
+
+/** External services interests can be imported from; mirrors the API's ImportSource enum. */
+export enum ImportSource {
+    LASTFM = 'lastfm',
+    YOUTUBE = 'youtube',
+}
+
+/** How each import source is named, and what its search box asks for. */
+export const IMPORT_SOURCES: Record<ImportSource, { label: string, queryLabel: string }> = {
+    [ImportSource.LASTFM]: { label: 'Last.fm top albums', queryLabel: 'Last.fm username' },
+    [ImportSource.YOUTUBE]: { label: 'YouTube playlist', queryLabel: 'Playlist URL or id' },
+}
+
+/** An interest found on an external service, not saved yet. */
+export interface ImportedItem {
+    name: string;
+    description: string;
+    imageUrl?: string | null;
+}

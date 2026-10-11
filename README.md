@@ -29,6 +29,23 @@ This is a monorepo with two main apps:
 
 - Both UI and API require environment variables. See below for details.
 - API requires `JWT_SECRET` for authentication (e.g., `JWT_SECRET=my-dev-secret`).
+- Importing interests from external services needs one API key per service. Without a key the API still starts, and imports from that service answer `503 SERVICE_UNAVAILABLE`.
+
+| Variable | Default | Used for |
+| --- | --- | --- |
+| `LASTFM_API_KEY` | none | Importing a Last.fm user's 50 most played albums. Create a key at https://www.last.fm/api/account/create. |
+| `YOUTUBE_API_KEY` | none | Importing the first 50 videos of a public YouTube playlist. Create a key for the YouTube Data API v3 in the Google Cloud console. |
+
+## Importing interests
+
+Signed-in users open **Import interests** in the top menu, pick a source, and search:
+
+| Source | What they type | What becomes an item |
+| --- | --- | --- |
+| Last.fm top albums | A Last.fm username, e.g. `rj` | Each album, described as "Album by Radiohead, played 312 times on Last.fm", with its cover |
+| YouTube playlist | A playlist URL or id, e.g. `https://www.youtube.com/playlist?list=PL...` | Each available video, described as "Video by Rick Astley on YouTube", with its thumbnail; deleted and private videos are skipped |
+
+`GET /api/imports/:source?query=...` returns the found items without saving them. The UI then creates the selected ones in the chosen category through `POST /api/items`, and links each new item to its rating form.
 
 ## UI (Frontend)
 
