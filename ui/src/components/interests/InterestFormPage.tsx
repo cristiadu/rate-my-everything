@@ -7,7 +7,7 @@ import type {
   Category, InterestForm, Item, RatedItem,
 } from '@/components/types'
 import AttributeField from '@/components/interests/AttributeField'
-import useSimilarRecords from '@/components/common/useSimilarRecords'
+import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
 import {
   MAX_RATING, MIN_RATING, emptyInterestForm, toInterestForm, toItemInput, toRatingInput,
 } from '@/components/interests/interestForm'
@@ -27,13 +27,6 @@ const InterestFormPage: React.FC = () => {
   const [isSaving, setIsSaving] = useState(false)
 
   const selectedCategory = categories.find((category) => String(category.id) === formFields.categoryId)
-  // Only new interests are checked for duplicates, narrowed to the chosen category once there is one
-  const similarItems = useSimilarRecords<Item>(
-    ApiConfig.ENDPOINTS.ITEMS,
-    formFields.name,
-    editingItemId === null,
-    formFields.categoryId ? { categoryId: formFields.categoryId } : {},
-  )
 
   const loadForm = useCallback(async () => {
     try {
@@ -142,19 +135,21 @@ const InterestFormPage: React.FC = () => {
                 required
               />
             </div>
-            {similarItems.length > 0 && (
-              <div className="notification is-warning is-light mt-2" role="status" aria-label="Similar interests">
-                <p>Similar interests already exist. Rate one of them instead of adding a duplicate:</p>
-                <ul>
-                  {similarItems.map((item) => (
-                    <li key={item.id}>
-                      <Link to={`/interests/${item.id}/edit`}>{item.name}</Link>
-                      {item.category && ` (${item.category.name})`}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            <SimilarRecordsWarning<Item>
+              endpoint={`${ApiConfig.ENDPOINTS.ITEMS}/similar`}
+              name={formFields.name}
+              isEnabled={editingItemId === null}
+              filters={formFields.categoryId ? { categoryId: formFields.categoryId } : {}}
+              label="Similar interests"
+              message="Similar interests already exist. Rate one of them instead of adding a duplicate:"
+              renderRecord={(item) => (
+                <>
+                  <Link to={`/interests/${item.id}/edit`}>{item.name}</Link>
+                  {item.category && ` (${item.category.name})`}
+                </>
+              )}
+            />
+
           </div>
           <div className="field">
             <label className="label" htmlFor="interest-description">Description</label>

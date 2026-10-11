@@ -2,8 +2,8 @@ import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
 import Category, { CategoryInput } from '@/models/Category'
 import AttributeService from '@/services/AttributeService'
 import BaseService from '@/services/BaseService'
-import { Not } from 'typeorm'
-import { findSimilarByName } from '@/helpers/SimilarityHelper'
+import { In, Not } from 'typeorm'
+import { findSimilarIds, orderByIds } from '@/helpers/SimilarityHelper'
 
 class CategoryService extends BaseService<Category> {
   private attributeService = new AttributeService()
@@ -68,7 +68,8 @@ class CategoryService extends BaseService<Category> {
 
   /** Get the Categories whose name is likely a duplicate of the given name, most similar first. */
   public async getSimilar(name: string): Promise<Category[]> {
-    return findSimilarByName(await this.getAll(), name)
+    const ids = await findSimilarIds(this.repository.createQueryBuilder('category'), name)
+    return orderByIds(await this.repository.find({ where: { id: In(ids) }, relations: { attributes: true } }), ids)
   }
 }
 

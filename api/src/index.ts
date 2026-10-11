@@ -13,6 +13,7 @@ import Attribute from '@/models/Attribute'
 import AttributeValue from '@/models/AttributeValue'
 import Category from '@/models/Category'
 import { routes, authenticationFilter, addDefaultHeaders } from '@/routes/RouterAuthConfig'
+import { enableSimilarityExtensions } from '@/helpers/SimilarityHelper'
 import path from 'path'
 import http from 'http'
 
@@ -54,7 +55,8 @@ const DBConnection: DataSource = new DataSource({
 })
 
 const appReady: Promise<typeof app> = DBConnection.initialize()
-  .then(() => {
+  .then(async () => {
+    await enableSimilarityExtensions(DBConnection)
     console.log('Data Source has been initialized!')
     routes.forEach((route) => app.use(route.path, route.controller()))
     return app

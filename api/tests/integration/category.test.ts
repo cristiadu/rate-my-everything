@@ -496,7 +496,7 @@ describe('Category API Integration Tests', async () => {
     })
   })
 
-  describe(`GET ${Endpoints.CATEGORIES_BASE_PATH}?similarTo=name`, () => {
+  describe(`GET ${Endpoints.CATEGORIES_BASE_PATH}/similar`, () => {
     beforeAll(async () => {
       await cleanupAllCategories(app)
       for (const name of ['Board Games', 'Podcasts']) {
@@ -511,16 +511,16 @@ describe('Category API Integration Tests', async () => {
     it('should return the categories whose name is likely a duplicate', async () => {
       // GIVEN the categories Board Games and Podcasts (beforeAll)
       // WHEN categories similar to "boardgame" are requested
-      // THEN only Board Games is returned
+      // THEN only Board Games is returned, with its attributes
       await request(app)
-        .get(Endpoints.CATEGORIES_BASE_PATH)
-        .query({ similarTo: 'boardgame' })
+        .get(`${Endpoints.CATEGORIES_BASE_PATH}/similar`)
+        .query({ name: 'boardgame' })
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
           const categories = res.body as Category[]
-          expect(categories.map((category) => category.name)).toEqual(['Board Games'])
+          expect(categories.map((category) => [category.name, category.attributes])).toEqual([['Board Games', []]])
         })
     })
 
@@ -529,11 +529,27 @@ describe('Category API Integration Tests', async () => {
       // WHEN categories similar to an unrelated name are requested
       // THEN none are returned
       await request(app)
-        .get(Endpoints.CATEGORIES_BASE_PATH)
-        .query({ similarTo: 'Movies' })
+        .get(`${Endpoints.CATEGORIES_BASE_PATH}/similar`)
+        .query({ name: 'Movies' })
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(200)
         .expect(res => { expect(res.body).toEqual([]) })
+    })
+
+    it('should reject a missing name', async () => {
+      // GIVEN the categories Board Games and Podcasts (beforeAll)
+      // WHEN similar categories are requested without a name
+      // THEN the request fails validation
+      await request(app)
+        .get(`${Endpoints.CATEGORIES_BASE_PATH}/similar`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(400)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe('Invalid value for name: it must be a non-empty text')
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+        })
     })
   })
 })

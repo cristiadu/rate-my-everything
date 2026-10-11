@@ -117,7 +117,7 @@ describe('CategoriesPage', () => {
     fireEvent.click(within(warning).getByRole('button', { name: 'Edit Books' }))
 
     // THEN the lookup asked for names like "book" and Books is loaded for editing
-    expect(fetchMock.mock.calls.map(([url]) => url)).toContain('http://localhost:3000/api/categories?similarTo=book')
+    expect(fetchMock.mock.calls.map(([url]) => url)).toContain('http://localhost:3000/api/categories/similar?name=book')
     expect(screen.getByRole('form', { name: 'Edit category' })).toBeInTheDocument()
     expect(screen.getByLabelText('Name')).toHaveValue('Books')
   })

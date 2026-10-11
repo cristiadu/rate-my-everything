@@ -6,6 +6,7 @@ import { isEmpty } from 'class-validator'
 import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
 import { UnknownAttributes } from '@/errors/UnknownAttributes'
 import { isValidAttributeIds } from '@/helpers/CategoryHelper'
+import { isValidSimilarName } from '@/helpers/SimilarityHelper'
 
 export default class CategoryController {
   public router = Router()
@@ -18,6 +19,7 @@ export default class CategoryController {
 
   public initializeRoutes() {
     this.router.get('/', (req, res) => this.getAll(req, res))
+    this.router.get('/similar', (req, res) => this.getSimilar(req, res))
     this.router.get('/:name', (req, res) => this.getByName(req, res))
     this.router.post('/', (req, res) => this.create(req, res))
     this.router.put('/:name', (req, res) => this.update(req, res))
@@ -25,19 +27,30 @@ export default class CategoryController {
     // Add more routes as needed
   }
 
-  /** Lists all categories, or with ?similarTo=name only those whose name is likely a duplicate of it. */
   public async getAll(req: Request, res: Response) {
     try {
-      const { similarTo } = req.query
-      const data = typeof similarTo === 'string'
-        ? await this.categoryService.getSimilar(similarTo)
-        : await this.categoryService.getAll()
+      const data = await this.categoryService.getAll()
       res.status(200)
         .json(data)
     } catch (error) {
       console.error(error)
       res.status(500)
         .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+    }
+  }
+
+  /** Lists the categories whose name is likely a duplicate of ?name=, most similar first; 400 when name is empty. */
+  public async getSimilar(req: Request, res: Response) {
+    const { name } = req.query
+    if (!isValidSimilarName(name)) {
+      return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Invalid value for name: it must be a non-empty text'))
+    }
+
+    try {
+      res.status(200).json(await this.categoryService.getSimilar(name))
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
 

@@ -25,7 +25,7 @@ const responses: Record<string, object> = {
   'GET /ratings/mine': [duneRating],
   'POST /items': { ...duneItem, id: 101 },
   'PUT /items/100': duneItem,
-  'GET /items?categoryId=10&similarTo=dune': [duneItem],
+  'GET /items/similar?categoryId=10&name=dune': [duneItem],
 }
 
 /** Answers a mocked request from the responses table, or with an empty object. */
@@ -115,7 +115,7 @@ describe('InterestFormPage', () => {
     await new Promise((resolve) => { setTimeout(resolve, LOOKUP_WAIT_MS) })
 
     // THEN no similar-name lookup is sent
-    expect(fetchMock.mock.calls.map(([url]) => String(url)).filter((url) => url.includes('similarTo'))).toEqual([])
+    expect(fetchMock.mock.calls.map(([url]) => String(url)).filter((url) => url.includes('/similar'))).toEqual([])
   })
 
   test('only shows the attributes of the chosen category', async () => {
