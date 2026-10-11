@@ -45,6 +45,11 @@ class RatedItemService extends BaseService<RatedItem> {
     return this.repository.find({ relations: RATING_RELATIONS })
   }
 
+  /** Get every user's ratings of one item. */
+  public async getAllByItemId(itemId: number): Promise<RatedItem[]> {
+    return this.repository.find({ where: { item: { id: itemId } }, relations: RATING_RELATIONS })
+  }
+
   /** Get all RatedItems by user_id. */
   public async getAllByUserId(userId: number): Promise<RatedItem[]> {
     return this.repository.find({ where: { user: { id: userId } }, relations: RATING_RELATIONS })
