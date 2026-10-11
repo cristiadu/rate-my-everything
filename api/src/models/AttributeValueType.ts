@@ -1,4 +1,4 @@
-/** Kinds of value an attribute holds; the UI's AttributeValueType enum mirrors it. */
+/** Kinds of value an attribute holds. */
 enum AttributeValueType {
     STRING = 'string',
     NUMBER = 'number',

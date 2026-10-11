@@ -2,8 +2,8 @@ import {
   Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn,
 } from 'typeorm'
 import AttributeValue from '@/models/AttributeValue'
-import Category from '@/models/Category'
 import AttributeValueType from '@/models/AttributeValueType'
+import Category from '@/models/Category'
 
 @Entity()
 export default class Attribute {

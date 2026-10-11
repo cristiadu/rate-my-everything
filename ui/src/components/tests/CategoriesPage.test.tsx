@@ -1,87 +1,106 @@
 import React from 'react'
-import { fireEvent, screen, waitFor } from '@testing-library/react'
-import ApiService from '@/config/ApiService'
+import {
+  fireEvent, render, screen, waitFor, within,
+} from '@testing-library/react'
 import CategoriesPage from '@/components/categories/CategoriesPage'
+import { AuthProvider } from '@/components/users/AuthContext'
 import { UserRole } from '@/components/types'
-import { renderAsUser } from '@/components/tests/common/auth'
-import { testAttributes, testCategories } from '@/components/tests/common/categoryFixtures'
+import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
+import { loginAs } from '@/components/tests/common/Auth'
+import { testAttributes, testCategories } from '@/components/tests/common/Categories'
 
-jest.mock('@/config/ApiService')
-const mockedApi = ApiService as jest.Mocked<typeof ApiService>
+/** Renders the categories page inside the auth provider. */
+const renderPage = () => render(
+  <AuthProvider>
+    <CategoriesPage />
+  </AuthProvider>,
+)
 
-beforeEach(() => {
-  jest.resetAllMocks()
-  localStorage.clear()
-  mockedApi.get.mockImplementation(async (endpoint: string) => (endpoint === '/attributes' ? testAttributes : testCategories))
-})
+describe('CategoriesPage', () => {
+  let fetchMock: jest.MockedFunction<typeof fetch>
 
-test('lists categories with their attributes', async () => {
-  // GIVEN a signed-in user
-  // WHEN the page loads
-  renderAsUser(<CategoriesPage />, [UserRole.USER])
+  beforeEach(() => {
+    localStorage.clear()
+    fetchMock = mockFetch()
+    fetchMock.mockImplementation(async (url) => jsonResponse(String(url).endsWith('/attributes') ? testAttributes : testCategories))
+  })
 
-  // THEN each category shows its description and attributes
-  expect(await screen.findByText('Books')).toBeInTheDocument()
-  expect(screen.getByText('Things to read')).toBeInTheDocument()
-  expect(screen.getByText('Author')).toBeInTheDocument()
-})
+  test('lists categories with their attributes', async () => {
+    // GIVEN a logged-in user
+    loginAs([UserRole.USER])
 
-test('lets non-admins browse without editing', async () => {
-  // GIVEN a signed-in user without the admin role
-  // WHEN the page loads
-  renderAsUser(<CategoriesPage />, [UserRole.USER])
-  await screen.findByText('Books')
+    // WHEN the page loads
+    renderPage()
 
-  // THEN no attributes are fetched and no editing controls are shown
-  expect(mockedApi.get).not.toHaveBeenCalledWith('/attributes')
-  expect(screen.queryByRole('textbox', { name: 'Name' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
-  expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
-})
+    // THEN each category shows its description and attributes
+    expect(await screen.findByText('Books')).toBeInTheDocument()
+    expect(screen.getByText('Things to read')).toBeInTheDocument()
+    expect(screen.getByText('Author')).toBeInTheDocument()
+  })
 
-test('lets admins attach attributes when editing a category', async () => {
-  // GIVEN an admin editing Books, which is linked to Author
-  renderAsUser(<CategoriesPage />, [UserRole.ADMIN, UserRole.USER])
-  await screen.findByText('Books')
-  fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
-  const pagesCheckbox = await screen.findByRole('checkbox', { name: /Pages/ })
-  expect(screen.getByRole('checkbox', { name: /Author/ })).toBeChecked()
+  test('lets non-admins browse without editing', async () => {
+    // GIVEN a logged-in user without the admin role
+    loginAs([UserRole.USER])
 
-  // WHEN ticking Pages and saving
-  fireEvent.click(pagesCheckbox)
-  fireEvent.click(screen.getByRole('button', { name: 'Save category' }))
+    // WHEN the page loads
+    renderPage()
+    await screen.findByText('Books')
 
-  // THEN both attribute ids are sent for Books
-  await waitFor(() => expect(mockedApi.put).toHaveBeenCalledWith('/categories/Books', {
-    name: 'Books',
-    description: 'Things to read',
-    attributeIds: [1, 2],
-  }))
-})
+    // THEN no attributes are fetched and no editing controls are shown
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/categories'])
+    expect(screen.queryByRole('form', { name: 'Create category' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
+  })
 
-test('deletes a category by name after confirmation', async () => {
-  // GIVEN an admin who confirms the deletion prompt
-  jest.spyOn(window, 'confirm').mockReturnValue(true)
-  renderAsUser(<CategoriesPage />, [UserRole.ADMIN])
-  await screen.findByText('Books')
+  test('lets admins link attributes when editing a category', async () => {
+    // GIVEN an admin editing Books, which is linked to Author
+    loginAs([UserRole.ADMIN, UserRole.USER])
+    renderPage()
+    const booksRow = (await screen.findByText('Books')).closest('tr') as HTMLElement
+    fireEvent.click(within(booksRow).getByRole('button', { name: 'Edit' }))
+    const pagesCheckbox = await screen.findByRole('checkbox', { name: /Pages/ })
+    expect(screen.getByRole('checkbox', { name: /Author/ })).toBeChecked()
 
-  // WHEN deleting Books
-  fireEvent.click(screen.getByRole('button', { name: 'Delete' }))
+    // WHEN ticking Pages and saving
+    fireEvent.click(pagesCheckbox)
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
 
-  // THEN the category is deleted by name
-  await waitFor(() => expect(mockedApi.delete).toHaveBeenCalledWith('/categories/Books'))
-})
+    // THEN both attribute ids are sent for Books
+    expect(await screen.findByText('Category Books updated.')).toBeInTheDocument()
+    const [url, options] = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT') ?? []
+    expect(url).toBe('http://localhost:3000/api/categories/Books')
+    expect(JSON.parse(String(options?.body))).toEqual({ name: 'Books', description: 'Things to read', attributeIds: [1, 2] })
+  })
 
-test('shows the API error message when saving fails', async () => {
-  // GIVEN an admin and an API that rejects the new category
-  mockedApi.post.mockRejectedValue(new Error('Unknown attribute ids: 99'))
-  renderAsUser(<CategoriesPage />, [UserRole.ADMIN])
-  await screen.findByText('Books')
+  test('deletes a category by name after confirmation', async () => {
+    // GIVEN an admin who confirms the deletion prompt
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    loginAs([UserRole.ADMIN])
+    renderPage()
+    const booksRow = (await screen.findByText('Books')).closest('tr') as HTMLElement
 
-  // WHEN creating a category
-  fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Games' } })
-  fireEvent.click(screen.getByRole('button', { name: 'Create category' }))
+    // WHEN deleting Books
+    fireEvent.click(within(booksRow).getByRole('button', { name: 'Delete' }))
 
-  // THEN the API's message is shown
-  expect(await screen.findByText('Unknown attribute ids: 99')).toBeInTheDocument()
+    // THEN the category is deleted by name
+    await waitFor(() => expect(fetchMock.mock.calls.some(([url, init]) => (
+      url === 'http://localhost:3000/api/categories/Books' && init?.method === 'DELETE'
+    ))).toBe(true))
+  })
+
+  test('shows the API error message when saving fails', async () => {
+    // GIVEN an admin and an API that rejects the new category
+    loginAs([UserRole.ADMIN])
+    renderPage()
+    await screen.findByText('Books')
+    fetchMock.mockResolvedValueOnce(jsonResponse({ message: 'Unknown attribute ids: 99' }, 422))
+
+    // WHEN creating a category
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Games' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create category' }))
+
+    // THEN the API's message is shown
+    expect(await screen.findByText('Unknown attribute ids: 99')).toBeInTheDocument()
+  })
 })

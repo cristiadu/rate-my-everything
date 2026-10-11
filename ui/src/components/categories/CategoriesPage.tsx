@@ -1,34 +1,36 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import {
-  Box, Message, Table, Tag,
-} from 'react-bulma-components'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import type { Attribute, Category, CategoryForm } from '@/components/types'
-import { useIsAdmin } from '@/components/users/sessionRoles'
+import {
+  Attribute, Category, CategoryFormValues, StatusMessage, UserRole,
+} from '@/components/types'
+import { getRolesFromToken } from '@/components/admin/RequireAdmin'
+import { useAuth } from '@/components/users/AuthContext'
 
 /** Form values for a new category. */
-const emptyForm: CategoryForm = { name: '', description: '', attributeIds: [] }
+const emptyForm: CategoryFormValues = { name: '', description: '', attributeIds: [] }
 
 /** API path for one category, which the API addresses by name. */
 const categoryPath = (name: string) => `${ApiConfig.ENDPOINTS.CATEGORIES}/${encodeURIComponent(name)}`
 
 /** Lists categories for every user; admins can also create, edit and delete them and link attributes. */
 const CategoriesPage: React.FC = () => {
-  const isAdmin = useIsAdmin()
+  const { token } = useAuth()
+  const isAdmin = getRolesFromToken(token).includes(UserRole.ADMIN)
   const [categories, setCategories] = useState<Category[]>([])
   const [attributes, setAttributes] = useState<Attribute[]>([])
-  const [formFields, setFormFields] = useState<CategoryForm>(emptyForm)
+  const [formFields, setFormFields] = useState<CategoryFormValues>(emptyForm)
   // Categories are addressed by name in the API, so keep the name the category had before editing
   const [editingName, setEditingName] = useState<string | null>(null)
-  const [error, setError] = useState('')
+  const [status, setStatus] = useState<StatusMessage>(null)
   const [isSaving, setIsSaving] = useState(false)
 
+  /** Fetches the category list from the API. */
   const loadCategories = useCallback(async () => {
     try {
       setCategories(await ApiService.get<Category[]>(ApiConfig.ENDPOINTS.CATEGORIES))
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load categories')
+      setStatus({ message: err instanceof Error ? err.message : 'Failed to load categories', isSuccess: false })
     }
   }, [])
 
@@ -36,11 +38,12 @@ const CategoriesPage: React.FC = () => {
     loadCategories()
   }, [loadCategories])
 
+  /** Fetches the attributes an admin can link to a category. */
   const loadAttributes = useCallback(async () => {
     try {
       setAttributes(await ApiService.get<Attribute[]>(ApiConfig.ENDPOINTS.ATTRIBUTES))
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load attributes')
+      setStatus({ message: err instanceof Error ? err.message : 'Failed to load attributes', isSuccess: false })
     }
   }, [])
 
@@ -51,11 +54,13 @@ const CategoriesPage: React.FC = () => {
     }
   }, [isAdmin, loadAttributes])
 
+  /** Clears the form back to a new category. */
   const resetForm = () => {
     setFormFields(emptyForm)
     setEditingName(null)
   }
 
+  /** Links the attribute if it is not linked yet, or unlinks it. */
   const toggleAttribute = (attributeId: number) => {
     const { attributeIds } = formFields
     setFormFields({
@@ -66,28 +71,30 @@ const CategoriesPage: React.FC = () => {
     })
   }
 
+  /** Creates or updates the category in the form, then reloads the list. */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
-    setError('')
-
-    const body = { ...formFields }
+    setStatus(null)
 
     try {
       if (editingName === null) {
-        await ApiService.post<Category>(ApiConfig.ENDPOINTS.CATEGORIES, body)
+        await ApiService.post<Category>(ApiConfig.ENDPOINTS.CATEGORIES, formFields)
+        setStatus({ message: `Category ${formFields.name} created.`, isSuccess: true })
       } else {
-        await ApiService.put<Category>(categoryPath(editingName), body)
+        await ApiService.put<Category>(categoryPath(editingName), formFields)
+        setStatus({ message: `Category ${formFields.name} updated.`, isSuccess: true })
       }
       resetForm()
       await loadCategories()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to save category')
+      setStatus({ message: err instanceof Error ? err.message : 'Failed to save category', isSuccess: false })
     } finally {
       setIsSaving(false)
     }
   }
 
+  /** Loads a category into the form for editing. */
   const handleEdit = (category: Category) => {
     setFormFields({
       name: category.name,
@@ -97,35 +104,38 @@ const CategoriesPage: React.FC = () => {
     setEditingName(category.name)
   }
 
+  /** Deletes the category after the admin confirms, then reloads the list. */
   const handleDelete = async (category: Category) => {
-    if (!window.confirm(`Delete category "${category.name}"?`)) {
+    if (!window.confirm(`Delete category ${category.name}?`)) {
       return
     }
 
-    setError('')
+    setStatus(null)
     try {
-      await ApiService.delete(categoryPath(category.name))
+      await ApiService.delete<void>(categoryPath(category.name))
+      setStatus({ message: `Category ${category.name} deleted.`, isSuccess: true })
       if (editingName === category.name) {
         resetForm()
       }
       await loadCategories()
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to delete category')
+      setStatus({ message: err instanceof Error ? err.message : 'Failed to delete category', isSuccess: false })
     }
   }
 
   return (
-    <>
+    <div className="box">
       <h2 className="title is-4">Categories</h2>
-      {error && (
-        <Message color="danger">
-          <Message.Body>{error}</Message.Body>
-        </Message>
+
+      {status && (
+        <div className={`notification ${status.isSuccess ? 'is-success' : 'is-danger'}`} role="status">
+          {status.message}
+        </div>
       )}
 
       {isAdmin && (
-        <Box>
-          <form onSubmit={handleSubmit}>
+        <div className="box">
+          <form onSubmit={handleSubmit} aria-label={editingName === null ? 'Create category' : 'Edit category'}>
             <h3 className="title is-5">{editingName === null ? 'New category' : `Edit ${editingName}`}</h3>
             <div className="field">
               <label className="label" htmlFor="category-name">Name</label>
@@ -153,12 +163,13 @@ const CategoriesPage: React.FC = () => {
               </div>
             </div>
             <fieldset className="field">
-                <legend className="label">Attributes</legend>
-                {attributes.length === 0 ? (
-                  <p className="is-size-7">No attributes yet. Create them on the <a href="/attributes">attributes page</a>.</p>
-                ) : attributes.map((attribute) => (
-                  <div className="control" key={attribute.id}>
-                    <label className="checkbox">
+              <legend className="label">Attributes</legend>
+              {attributes.length === 0 ? (
+                <p className="is-size-7">No attributes yet. Create them on the <a href="/admin/attributes">attributes page</a>.</p>
+              ) : (
+                <div className="control">
+                  {attributes.map((attribute) => (
+                    <label key={attribute.id} className="checkbox mr-4">
                       <input
                         type="checkbox"
                         checked={formFields.attributeIds.includes(attribute.id)}
@@ -166,22 +177,27 @@ const CategoriesPage: React.FC = () => {
                       />
                       {` ${attribute.name} (${attribute.valueType})`}
                     </label>
-                  </div>
-                ))}
-              </fieldset>
-            <div className="buttons">
-              <button type="submit" className={`button is-primary${isSaving ? ' is-loading' : ''}`} disabled={isSaving}>
-                {editingName === null ? 'Create category' : 'Save category'}
-              </button>
+                  ))}
+                </div>
+              )}
+            </fieldset>
+            <div className="field is-grouped">
+              <div className="control">
+                <button className={`button is-primary ${isSaving ? 'is-loading' : ''}`} type="submit" disabled={isSaving}>
+                  {editingName === null ? 'Create category' : 'Save changes'}
+                </button>
+              </div>
               {editingName !== null && (
-                <button type="button" className="button" onClick={resetForm}>Cancel</button>
+                <div className="control">
+                  <button className="button is-light" type="button" onClick={resetForm}>Cancel</button>
+                </div>
               )}
             </div>
           </form>
-        </Box>
+        </div>
       )}
 
-      <Table striped hoverable size="fullwidth">
+      <table className="table is-fullwidth is-striped is-hoverable">
         <thead>
           <tr>
             <th>Name</th>
@@ -191,32 +207,37 @@ const CategoriesPage: React.FC = () => {
           </tr>
         </thead>
         <tbody>
-          {categories.length === 0 ? (
-            <tr><td colSpan={isAdmin ? 4 : 3}>No categories yet.</td></tr>
-          ) : categories.map((category) => (
+          {categories.length === 0 && (
+            <tr>
+              <td colSpan={isAdmin ? 4 : 3}>No categories yet.</td>
+            </tr>
+          )}
+          {categories.map((category) => (
             <tr key={category.id}>
               <td>{category.name}</td>
               <td>{category.description}</td>
               <td>
-                <Tag.Group>
+                <div className="tags">
                   {category.attributes.map((attribute) => (
-                    <Tag key={attribute.id} color="info" title={attribute.valueType}>{attribute.name}</Tag>
+                    <span key={attribute.id} className="tag is-info" title={attribute.valueType}>{attribute.name}</span>
                   ))}
-                </Tag.Group>
+                </div>
               </td>
               {isAdmin && (
-                <td>
-                  <div className="buttons is-right">
-                    <button type="button" className="button is-small" onClick={() => handleEdit(category)}>Edit</button>
-                    <button type="button" className="button is-small is-danger" onClick={() => handleDelete(category)}>Delete</button>
-                  </div>
+                <td className="has-text-right">
+                  <button className="button is-small mr-2" type="button" onClick={() => handleEdit(category)}>
+                    Edit
+                  </button>
+                  <button className="button is-small is-danger" type="button" onClick={() => handleDelete(category)}>
+                    Delete
+                  </button>
                 </td>
               )}
             </tr>
           ))}
         </tbody>
-      </Table>
-    </>
+      </table>
+    </div>
   )
 }
 

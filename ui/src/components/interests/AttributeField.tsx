@@ -14,9 +14,6 @@ const INPUT_TYPES: Record<Exclude<AttributeValueType, AttributeValueType.BOOLEAN
   [AttributeValueType.DATE]: 'date',
 }
 
-/** Input type for a value type, falling back to text for value types saved before the enum existed. */
-const DEFAULT_INPUT_TYPE = INPUT_TYPES[AttributeValueType.STRING]
-
 /** One form field for an attribute value, shaped by the attribute's value type. */
 const AttributeField: React.FC<AttributeFieldProps> = ({ attribute, value, onChange }) => {
   const inputId = `attribute-${attribute.id}`
@@ -44,7 +41,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({ attribute, value, onCha
         <input
           className="input"
           id={inputId}
-          type={INPUT_TYPES[attribute.valueType as keyof typeof INPUT_TYPES] ?? DEFAULT_INPUT_TYPE}
+          type={INPUT_TYPES[attribute.valueType]}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />

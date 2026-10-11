@@ -1,59 +1,78 @@
 import React from 'react'
-import { screen } from '@testing-library/react'
-import ApiService from '@/config/ApiService'
+import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import OverallRankings from '@/components/rankings/OverallRankings'
+import { AuthProvider } from '@/components/users/AuthContext'
 import { RankingScope, UserRole } from '@/components/types'
-import { renderAsUser } from '@/components/tests/common/auth'
+import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
+import { loginAs } from '@/components/tests/common/Auth'
 import { alienRating, duneRating } from '@/components/tests/common/interestFixtures'
 
-jest.mock('@/config/ApiService')
-const mockedApi = ApiService as jest.Mocked<typeof ApiService>
+/** Renders the rankings page for the given scope inside the auth provider and a router. */
+const renderRankings = (scope: RankingScope) => render(
+  <AuthProvider>
+    <MemoryRouter>
+      <OverallRankings scope={scope} />
+    </MemoryRouter>
+  </AuthProvider>,
+)
 
-beforeEach(() => {
-  jest.resetAllMocks()
-  localStorage.clear()
-})
+describe('OverallRankings', () => {
+  let fetchMock: jest.MockedFunction<typeof fetch>
 
-test('shows my ratings with links to edit them', async () => {
-  // GIVEN the API returns my ratings
-  mockedApi.get.mockResolvedValue([alienRating, duneRating])
+  beforeEach(() => {
+    localStorage.clear()
+    loginAs([UserRole.USER])
+    fetchMock = mockFetch()
+  })
 
-  // WHEN my rankings load
-  renderAsUser(<OverallRankings scope={RankingScope.MINE} />, [UserRole.USER])
+  test('shows my ratings with links to edit them', async () => {
+    // GIVEN the API returns my ratings
+    fetchMock.mockResolvedValue(jsonResponse([alienRating, duneRating]))
 
-  // THEN they come from my ratings, best first, each with an edit link
-  const rows = await screen.findAllByRole('row')
-  expect(mockedApi.get).toHaveBeenCalledWith('/ratings/mine')
-  expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.5Edit', 'AlienMovies7.0Edit'])
-  expect(screen.getAllByRole('link', { name: 'Edit' })[0]).toHaveAttribute('href', '/interests/100/edit')
-  expect(screen.getByRole('link', { name: 'Add interest' })).toHaveAttribute('href', '/interests/new')
-})
+    // WHEN my rankings load
+    renderRankings(RankingScope.MINE)
 
-test('shows everyone\'s average ratings without edit links', async () => {
-  // GIVEN the API returns ratings from every user
-  mockedApi.get.mockResolvedValue([duneRating, { ...duneRating, id: 902, rating: 6.5 }])
+    // THEN they come from my ratings, best first, each with an edit link
+    const rows = await screen.findAllByRole('row')
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings/mine'])
+    expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.5Edit', 'AlienMovies7.0Edit'])
+    expect(screen.getAllByRole('link', { name: 'Edit' })[0]).toHaveAttribute('href', '/interests/100/edit')
+    expect(screen.getByRole('link', { name: 'Add interest' })).toHaveAttribute('href', '/interests/new')
+  })
 
-  // WHEN the overall rankings load
-  renderAsUser(<OverallRankings scope={RankingScope.ALL} />, [UserRole.USER])
+  test('shows everyone\'s average ratings without edit links', async () => {
+    // GIVEN the API returns two users' ratings of Dune
+    fetchMock.mockResolvedValue(jsonResponse([duneRating, { ...duneRating, id: 902, rating: 6.5 }]))
 
-  // THEN Dune shows once with its average rating
-  expect(await screen.findByText('8.0')).toBeInTheDocument()
-  expect(mockedApi.get).toHaveBeenCalledWith('/ratings')
-  expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
-})
+    // WHEN the overall rankings load
+    renderRankings(RankingScope.ALL)
 
-test('tells users when they have not rated anything', async () => {
-  mockedApi.get.mockResolvedValue([])
+    // THEN Dune shows once with its average rating
+    expect(await screen.findByText('8.0')).toBeInTheDocument()
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings'])
+    expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
+  })
 
-  renderAsUser(<OverallRankings scope={RankingScope.MINE} />, [UserRole.USER])
+  test('tells users when they have not rated anything', async () => {
+    // GIVEN the API returns no ratings
+    fetchMock.mockResolvedValue(jsonResponse([]))
 
-  expect(await screen.findByText('You have not rated anything yet.')).toBeInTheDocument()
-})
+    // WHEN my rankings load
+    renderRankings(RankingScope.MINE)
 
-test('shows the API error message when loading fails', async () => {
-  mockedApi.get.mockRejectedValue(new Error('Invalid token'))
+    // THEN an empty-state message is shown
+    expect(await screen.findByText('You have not rated anything yet.')).toBeInTheDocument()
+  })
 
-  renderAsUser(<OverallRankings scope={RankingScope.MINE} />, [UserRole.USER])
+  test('shows the API error message when loading fails', async () => {
+    // GIVEN the API rejects the token
+    fetchMock.mockResolvedValue(jsonResponse({ message: 'Invalid token' }, 401))
 
-  expect(await screen.findByText('Invalid token')).toBeInTheDocument()
+    // WHEN my rankings load
+    renderRankings(RankingScope.MINE)
+
+    // THEN the API message is shown
+    expect(await screen.findByText('Invalid token')).toBeInTheDocument()
+  })
 })

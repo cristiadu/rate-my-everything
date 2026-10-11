@@ -1,7 +1,7 @@
 import {
   AttributeValueType, type Attribute, type Category, type Item, type RatedItem,
 } from '@/components/types'
-import { testAttributes, testCategories } from '@/components/tests/common/categoryFixtures'
+import { testAttributes, testCategories } from '@/components/tests/common/Categories'
 
 const [authorAttribute, pagesAttribute] = testAttributes
 
