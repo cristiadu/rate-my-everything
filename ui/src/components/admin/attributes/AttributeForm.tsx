@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { Attribute, AttributeFormValues, AttributeValueType } from '@/components/types'
+import { type Attribute, type AttributeFormValues, AttributeValueType } from '@/components/types'
 
 /** Props for the admin attribute form; pass an attribute to edit it, or none to create one. */
 interface AttributeFormProps {

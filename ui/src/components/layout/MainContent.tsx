@@ -12,7 +12,7 @@ import CategoriesPage from '@/components/categories/CategoriesPage'
 import AttributeManagement from '@/components/admin/attributes/AttributeManagement'
 import { withAuth } from '@/components/users/AuthContext'
 
-import { RankingItem } from '../types'
+import type { RankingItem } from '../types'
 
 // populate with example data
 const rankings: RankingItem[] = [

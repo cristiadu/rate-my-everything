@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import {
-  AdminUser, MIN_PASSWORD_LENGTH, UserFormValues, UserRole,
+  type AdminUser, MIN_PASSWORD_LENGTH, type UserFormValues, UserRole,
 } from '@/components/types'
 
 /** Props for the admin user form; pass a user to edit it, or none to create one. */
