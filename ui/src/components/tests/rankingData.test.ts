@@ -1,5 +1,5 @@
 import { toMyRankings, toOverallRankings } from '@/components/rankings/rankingData'
-import { alienRating, duneRating } from '@/components/tests/common/interestFixtures'
+import { alienRating, duneRating } from '@/components/tests/common/Interests'
 
 test('lists my ratings best first', () => {
   // GIVEN two of my ratings, the lower one first

@@ -10,7 +10,7 @@ import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import {
   booksCategory, duneItem, duneRating, moviesCategory,
-} from '@/components/tests/common/interestFixtures'
+} from '@/components/tests/common/Interests'
 
 /** API base URL the UI calls. */
 const API_URL = 'http://localhost:3000/api'

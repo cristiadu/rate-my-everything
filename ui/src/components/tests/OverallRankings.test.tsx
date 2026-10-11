@@ -6,7 +6,7 @@ import { AuthProvider } from '@/components/users/AuthContext'
 import { RankingScope, UserRole } from '@/components/types'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
-import { alienRating, duneRating } from '@/components/tests/common/interestFixtures'
+import { alienRating, duneRating } from '@/components/tests/common/Interests'
 
 /** Renders the rankings page for the given scope inside the auth provider and a router. */
 const renderRankings = (scope: RankingScope) => render(
