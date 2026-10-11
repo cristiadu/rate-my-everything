@@ -1,10 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import {
+import type {
   AdminUser, StatusMessage, UserEditorState, UserFormValues,
 } from '@/components/types'
-import UserForm from '@/components/admin/users/UserForm'
+import CreateUserForm from '@/components/users/CreateUserForm'
 
 /** Admin screen to list, create, edit and delete users. */
 const UserManagement: React.FC = () => {
@@ -95,7 +95,7 @@ const UserManagement: React.FC = () => {
           <h3 className="title is-5">
             {editor.mode === 'create' ? 'New user' : `Edit ${editor.user.username}`}
           </h3>
-          <UserForm
+          <CreateUserForm
             key={editor.mode === 'edit' ? editor.user.id : 'new'}
             user={editor.mode === 'edit' ? editor.user : undefined}
             isSaving={isSaving}

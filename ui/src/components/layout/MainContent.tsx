@@ -1,17 +1,16 @@
 import React from 'react'
-import {
-  BrowserRouter as Router, Navigate, Routes, Route,
-} from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Content } from 'react-bulma-components'
 import Index from '@/components/index/Index'
 import OverallRankings from '@/components/rankings/OverallRankings'
 import RequireAdmin, { RequireLogin } from '@/components/admin/RequireAdmin'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 import UserManagement from '@/components/admin/users/UserManagement'
+import CreateUserForm from '@/components/users/CreateUserForm'
 import HealthCheck from '@/components/health/HealthCheck'
 import UserAccount from '@/components/account/UserAccount'
 
-import { RankingItem } from '../types'
+import type { RankingItem } from '../types'
 
 // populate with example data
 const rankings: RankingItem[] = [
@@ -48,7 +47,7 @@ const MainContent = () => (
         <Route path="/account" element={<RequireLogin><UserAccount /></RequireLogin>} />
         <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
         <Route path="/admin/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
-        <Route path="/user/create" element={<Navigate to="/admin/users" replace />} />
+        <Route path="/user/create" element={<RequireAdmin><CreateUserForm /></RequireAdmin>} />
         <Route path="/rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/all_rankings" element={<OverallRankings rankings={rankings} />} />
         <Route path="/health" element={<HealthCheck />} />

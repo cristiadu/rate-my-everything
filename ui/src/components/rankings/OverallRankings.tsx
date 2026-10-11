@@ -1,6 +1,6 @@
 import React from 'react'
 import { Block } from 'react-bulma-components'
-import { RankingItem } from '@/components/types'
+import type { RankingItem } from '@/components/types'
 import RankingTable from '@/components/rankings/RankingTable'
 
 interface OverallRankingsProps {
