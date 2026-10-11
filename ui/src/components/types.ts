@@ -37,3 +37,9 @@ export type UserEditorState = { mode: 'create' } | { mode: 'edit', user: AdminUs
 
 /** Outcome message shown after an admin action. */
 export type StatusMessage = { message: string, isSuccess: boolean } | null
+
+/** User claims the API puts in its JWT payload. */
+export interface TokenPayload {
+    username: string;
+    roles: UserRole[];
+}
