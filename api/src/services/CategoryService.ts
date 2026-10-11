@@ -1,36 +1,21 @@
 import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
-import { UnknownAttributes } from '@/errors/UnknownAttributes'
-import Attribute from '@/models/Attribute'
 import Category, { CategoryInput } from '@/models/Category'
+import AttributeService from '@/services/AttributeService'
 import BaseService from '@/services/BaseService'
-import { DBConnection } from '@/index'
-import { In, Not } from 'typeorm'
+import { Not } from 'typeorm'
 
 class CategoryService extends BaseService<Category> {
+  private attributeService = new AttributeService()
+
   constructor() {
     super(Category)
-  }
-
-  /** Loads the attributes with the given ids; throws UnknownAttributes when any id does not exist. */
-  private async resolveAttributes(attributeIds: number[]): Promise<Attribute[]> {
-    const uniqueIds = [...new Set(attributeIds)]
-    if (uniqueIds.length === 0) {
-      return []
-    }
-
-    const attributes = await DBConnection.getRepository(Attribute).findBy({ id: In(uniqueIds) })
-    if (attributes.length !== uniqueIds.length) {
-      const foundIds = new Set(attributes.map((attribute) => attribute.id))
-      throw new UnknownAttributes(uniqueIds.filter((id) => !foundIds.has(id)))
-    }
-    return attributes
   }
 
   // Create a new Category
   public async create({ attributeIds, ...category }: CategoryInput): Promise<Category> {
     const newCategory = this.repository.create(category)
     if (attributeIds) {
-      newCategory.attributes = await this.resolveAttributes(attributeIds)
+      newCategory.attributes = await this.attributeService.fetchAttributesByID(attributeIds)
     }
     return this.repository.save(newCategory)
   }
@@ -61,7 +46,7 @@ class CategoryService extends BaseService<Category> {
 
     this.repository.merge(existingCategory, category)
     if (attributeIds) {
-      existingCategory.attributes = await this.resolveAttributes(attributeIds)
+      existingCategory.attributes = await this.attributeService.fetchAttributesByID(attributeIds)
     }
     return this.repository.save(existingCategory)
   }

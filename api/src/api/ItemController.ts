@@ -59,6 +59,7 @@ export default class ItemController {
     }
   }
 
+  /** Creates an item with its attribute values; 400 when name or categoryId is missing, 422 for an unknown category or attribute. */
   public async create(req: Request, res: Response) {
     try {
       const itemInput = req.body as ItemInput
@@ -76,6 +77,7 @@ export default class ItemController {
     }
   }
 
+  /** Updates the fields sent for an item; 404 when it does not exist, 422 for an unknown category or attribute. */
   public async update(req: Request, res: Response) {
     try {
       const data = await this.itemService.update(parseInt(req.params.id, 10), req.body as ItemInput)

@@ -45,6 +45,7 @@ export default class RatedItemController {
     }
   }
 
+  /** Lists the signed-in user's ratings, each with its item and category. */
   public async getMine(_req: Request, res: Response) {
     try {
       const sessionUser = res.locals.user as SessionUser
@@ -70,6 +71,7 @@ export default class RatedItemController {
     }
   }
 
+  /** Creates a rating of an item for the signed-in user; 400 when item_id or a numeric rating is missing. */
   public async create(req: Request, res: Response) {
     try {
       const { item_id, rating, notes } = req.body

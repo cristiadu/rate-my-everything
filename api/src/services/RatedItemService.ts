@@ -9,20 +9,20 @@ class RatedItemService extends BaseService<RatedItem> {
     super(RatedItem)
   }
 
-  // Create a new RatedItem for the given item and user
+  /** Create a new RatedItem for the given item and user. */
   public async create(itemId: number, userId: number, rating: number, notes?: string): Promise<RatedItem> {
     const newRatedItem = this.repository.create({ item: { id: itemId }, user: { id: userId }, rating, notes })
     const savedRatedItem = await this.repository.save(newRatedItem)
     return this.repository.findOneOrFail({ where: { id: savedRatedItem.id }, relations: RATING_RELATIONS })
   }
 
-  // Read a RatedItem by id
+  /** Read a RatedItem by id. */
   public async get(id: number): Promise<RatedItem | null> {
     const ratedItem = await this.repository.findOne({ where: { id }, relations: RATING_RELATIONS })
     return ratedItem
   }
 
-  // Update a RatedItem
+  /** Update a RatedItem. */
   public async update(id: number, ratedItem: Omit<RatedItem, 'id'>): Promise<RatedItem | null> {
     const updatedRatedItem = await this.get(id)
     if (updatedRatedItem) {
@@ -32,7 +32,7 @@ class RatedItemService extends BaseService<RatedItem> {
     return null
   }
 
-  // Delete a RatedItem
+  /** Delete a RatedItem. */
   public async delete(id: number): Promise<void> {
     const ratedItem = await this.get(id)
     if (ratedItem) {
@@ -40,12 +40,12 @@ class RatedItemService extends BaseService<RatedItem> {
     }
   }
 
-  // get all RatedItems
+  /** Get all RatedItems. */
   public async getAll(): Promise<RatedItem[]> {
     return this.repository.find({ relations: RATING_RELATIONS })
   }
 
-  // get all RatedItems by user_id
+  /** Get all RatedItems by user_id. */
   public async getAllByUserId(userId: number): Promise<RatedItem[]> {
     return this.repository.find({ where: { user: { id: userId } }, relations: RATING_RELATIONS })
   }

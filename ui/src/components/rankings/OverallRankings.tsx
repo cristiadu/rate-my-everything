@@ -7,6 +7,7 @@ import { RankingScope, type RankingItem, type RatedItem } from '@/components/typ
 import RankingTable from '@/components/rankings/RankingTable'
 import { toMyRankings, toOverallRankings } from '@/components/rankings/rankingData'
 
+/** Props for the rankings page. */
 interface OverallRankingsProps {
     scope: RankingScope;
 }

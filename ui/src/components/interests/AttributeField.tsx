@@ -1,6 +1,7 @@
 import React from 'react'
 import { AttributeValueType, type Attribute } from '@/components/types'
 
+/** Props for one attribute value field: the attribute, its current value and the change handler. */
 interface AttributeFieldProps {
   attribute: Attribute;
   value: string;

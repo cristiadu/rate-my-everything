@@ -11,6 +11,8 @@ import { NextFunction, Request, Response } from 'express'
 import { SessionUser } from '@/models/User'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
+import { RouteConfig } from '@/models/RouteConfig'
+import { canAccessRoute } from '@/helpers/RouteHelper'
 
 export const unprotectedRoutes = new Set([
   '/api/login',
@@ -19,11 +21,8 @@ export const unprotectedRoutes = new Set([
   // Add more unprotected routes as needed
 ])
 
-/** HTTP methods that only read data and so are checked against a route's `roles`. */
-const readMethods = new Set(['GET', 'HEAD', 'OPTIONS'])
-
-/** API routes; `roles` may call the route, and optional `writeRoles` may call its non-read methods. */
-export const routes = [
+/** API routes and the roles that may call them. */
+export const routes: RouteConfig[] = [
   { path: '/api/ratings', controller: () => new RatedItemController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/users', controller: () => new UserController().router, roles: [UserRole.ADMIN] },
   { path: '/api/login', controller: () => new LoginController().router },
@@ -70,8 +69,7 @@ export const authenticationFilter = (req: Request, res: Response, next: NextFunc
     }
 
     const route = routes.find((currentRoute) => req.path.startsWith(currentRoute.path))
-    const allowedRoles = route && 'writeRoles' in route && !readMethods.has(req.method) ? route.writeRoles : route?.roles
-    if (!route || (allowedRoles && !allowedRoles.some((role) => decodedUser.roles.includes(role)))) {
+    if (!route || !canAccessRoute(route, req.method, decodedUser.roles)) {
       return res.status(403).json(NewApiError(ErrorCode.FORBIDDEN, 403, 'You do not have permission to access this resource'))
     }
 

@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { Image } from 'react-bulma-components'
 import type { RankingItem } from '@/components/types'
 
+/** Props for one rankings row. */
 interface RankingTableItemProps {
     ranking: RankingItem;
     canEdit: boolean;

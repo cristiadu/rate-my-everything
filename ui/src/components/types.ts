@@ -121,7 +121,7 @@ export interface InterestForm {
 }
 
 /** Item fields sent to the items API, with attribute values given by attribute id. */
-export interface ItemInput {
+export type ItemInput = {
     name: string;
     description: string;
     imageUrl: string | null;
@@ -130,7 +130,13 @@ export interface ItemInput {
 }
 
 /** Rating fields sent to the ratings API. */
-export interface RatingInput {
+export type RatingInput = {
     rating: number;
     notes: string;
 }
+
+/** A value that survives JSON.stringify unchanged. */
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
+
+/** A JSON object sent as an API request body. */
+export type JsonObject = { [key: string]: JsonValue }

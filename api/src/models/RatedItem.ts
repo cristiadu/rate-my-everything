@@ -4,7 +4,7 @@ import {
 import { Min, Max } from 'class-validator'
 import User from '@/models/User'
 import Item from '@/models/Item'
-import { decimalToNumber } from '@/helpers/ColumnTransformers'
+import { decimalToNumber } from '@/helpers/RatedItemHelper'
 
 @Entity()
 export default class RatedItem {
