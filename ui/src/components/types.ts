@@ -140,3 +140,9 @@ export type JsonValue = string | number | boolean | null | JsonValue[] | { [key:
 
 /** A JSON object sent as an API request body. */
 export type JsonObject = { [key: string]: JsonValue }
+
+/** User claims the API puts in its JWT payload. */
+export interface TokenPayload {
+    username: string;
+    roles: UserRole[];
+}

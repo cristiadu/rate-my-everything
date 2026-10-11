@@ -45,7 +45,7 @@ describe('UserManagement', () => {
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'carol' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'carol@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Create user' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Create User' }))
 
     // THEN the user is posted with the default role and a success message shows
     expect(await screen.findByText('User carol created.')).toBeInTheDocument()
