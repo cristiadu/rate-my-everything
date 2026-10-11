@@ -1,15 +1,10 @@
 import {
-  Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, ValueTransformer,
+  Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn,
 } from 'typeorm'
 import { Min, Max } from 'class-validator'
 import User from '@/models/User'
 import Item from '@/models/Item'
-
-/** Postgres returns decimal columns as strings; read ratings back as numbers. */
-const decimalToNumber: ValueTransformer = {
-  to: (value: number) => value,
-  from: (value: string | null) => (value === null ? null : parseFloat(value)),
-}
+import { decimalToNumber } from '@/helpers/ColumnTransformers'
 
 @Entity()
 export default class RatedItem {
