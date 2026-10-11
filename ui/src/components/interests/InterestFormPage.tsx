@@ -7,6 +7,8 @@ import type {
   Category, InterestForm, Item, RatedItem,
 } from '@/components/types'
 import AttributeField from '@/components/interests/AttributeField'
+import { useAuth } from '@/components/users/AuthContext'
+import { getUserIdFromToken } from '@/components/admin/RequireAdmin'
 import RatingHistory from '@/components/interests/RatingHistory'
 import {
   MAX_RATING, MIN_RATING, emptyInterestForm, toInterestForm, toItemInput, toRatingInput,
@@ -19,17 +21,23 @@ const MY_RANKINGS_PATH = '/rankings'
 const InterestFormPage: React.FC = () => {
   const { itemId } = useParams()
   const navigate = useNavigate()
+  const { token } = useAuth()
+  /** Id of the signed-in user, used to pick their ratings out of everyone's. */
+  const userId = getUserIdFromToken(token)
   const editingItemId = itemId === undefined ? null : Number(itemId)
   const [categories, setCategories] = useState<Category[]>([])
   const [formFields, setFormFields] = useState<InterestForm>(emptyInterestForm)
-  const [myRatings, setMyRatings] = useState<RatedItem[]>([])
   const [itemRatings, setItemRatings] = useState<RatedItem[]>([])
   const [error, setError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
   const selectedCategory = categories.find((category) => String(category.id) === formFields.categoryId)
+  /** Every time the signed-in user rated this item. */
+  const myRatings = itemRatings.filter((ratedItem) => ratedItem.userId === userId)
+  /** Whether the signed-in user already rated this item, which makes a new rating optional. */
   const hasRated = myRatings.length > 0
 
+  /** Loads the categories and, when editing, the item and everyone's ratings of it. */
   const loadForm = useCallback(async () => {
     try {
       setCategories(await ApiService.get<Category[]>(ApiConfig.ENDPOINTS.CATEGORIES))
@@ -38,11 +46,8 @@ const InterestFormPage: React.FC = () => {
       }
 
       const item = await ApiService.get<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${editingItemId}`)
-      const allMyRatings = await ApiService.get<RatedItem[]>(`${ApiConfig.ENDPOINTS.RATINGS}/mine`)
-      const everyonesRatings = await ApiService.get<RatedItem[]>(`${ApiConfig.ENDPOINTS.RATINGS}/item/${editingItemId}`)
       setFormFields(toInterestForm(item))
-      setMyRatings(allMyRatings.filter((ratedItem) => ratedItem.item.id === editingItemId))
-      setItemRatings(everyonesRatings)
+      setItemRatings(await ApiService.get<RatedItem[]>(`${ApiConfig.ENDPOINTS.RATINGS}/item/${editingItemId}`))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load the interest')
     }
@@ -52,10 +57,12 @@ const InterestFormPage: React.FC = () => {
     loadForm()
   }, [loadForm])
 
+  /** Stores the value typed for one of the chosen category's attributes. */
   const setAttributeValue = (attributeId: number, value: string) => {
     setFormFields({ ...formFields, attributeValues: { ...formFields.attributeValues, [attributeId]: value } })
   }
 
+  /** Saves the item, then adds the rating when one was given; returns to my interests when done. */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!selectedCategory) {
@@ -82,6 +89,7 @@ const InterestFormPage: React.FC = () => {
     }
   }
 
+  /** Removes the item from the signed-in user's interests by deleting all of their ratings of it; the item itself stays. */
   const handleRemoveInterest = async () => {
     if (!window.confirm(`Remove "${formFields.name}" and all your ratings of it from your interests?`)) {
       return
@@ -98,6 +106,7 @@ const InterestFormPage: React.FC = () => {
     }
   }
 
+  /** Deletes one of the signed-in user's ratings after confirming, and updates the grades without reloading. */
   const handleRemoveRating = async (ratedItem: RatedItem) => {
     if (!window.confirm(`Remove your ${ratedItem.rating.toFixed(1)} rating of "${formFields.name}"?`)) {
       return
@@ -106,7 +115,6 @@ const InterestFormPage: React.FC = () => {
     setError('')
     try {
       await ApiService.delete(`${ApiConfig.ENDPOINTS.RATINGS}/${ratedItem.id}`)
-      setMyRatings(myRatings.filter((rating) => rating.id !== ratedItem.id))
       setItemRatings(itemRatings.filter((rating) => rating.id !== ratedItem.id))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove the rating')
@@ -121,7 +129,7 @@ const InterestFormPage: React.FC = () => {
           <Message.Body>{error}</Message.Body>
         </Message>
       )}
-      {hasRated && <RatingHistory myRatings={myRatings} itemRatings={itemRatings} onRemove={handleRemoveRating} />}
+      {hasRated && <RatingHistory itemRatings={itemRatings} userId={userId} onRemove={handleRemoveRating} />}
       <Box>
         <form onSubmit={handleSubmit}>
           <div className="field">

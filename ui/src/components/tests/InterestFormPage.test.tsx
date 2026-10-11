@@ -19,7 +19,6 @@ const API_URL = 'http://localhost:3000/api'
 const responses: Record<string, object> = {
   'GET /categories': [booksCategory, moviesCategory],
   'GET /items/100': duneItem,
-  'GET /ratings/mine': [duneRating, duneRerating],
   'GET /ratings/item/100': [duneRating, otherUserDuneRating, duneRerating],
   'POST /items': { ...duneItem, id: 101 },
   'PUT /items/100': duneItem,

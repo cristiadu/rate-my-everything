@@ -4,9 +4,11 @@ export interface RankingItem {
     item_name: string;
     item_id: number;
     item_img_url?: string | null;
-    /** Grade shown for the item: the personal grade on my rankings, the collective grade on all rankings. */
+    /** Collective grade: the average of each user's personal grade of the item. */
     rating: number;
-    /** How many ratings the grade was worked out from. */
+    /** Personal grade of the signed-in user, or null when they have not rated the item. */
+    my_rating: number | null;
+    /** How many ratings everyone gave the item. */
     rating_count: number;
 }
 
@@ -95,6 +97,7 @@ export type JsonObject = { [key: string]: JsonValue }
 
 /** User claims the API puts in its JWT payload. */
 export interface TokenPayload {
+    id: number;
     username: string;
     roles: UserRole[];
 }
