@@ -84,6 +84,24 @@ export type AttributeFormValues = {
 /** Which attribute form the admin screen shows: none, a new attribute, or an existing attribute being edited. */
 export type AttributeEditorState = { mode: 'create' } | { mode: 'edit', attribute: Attribute } | null
 
+/** A value that survives JSON.stringify unchanged. */
+export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
+
+/** A JSON object sent as an API request body. */
+export type JsonObject = { [key: string]: JsonValue }
+
+/** User claims the API puts in its JWT payload. */
+export interface TokenPayload {
+    username: string;
+    roles: UserRole[];
+}
+
+/** One choice in a multiselect dropdown. */
+export type SelectOption = {
+    value: number;
+    label: string;
+}
+
 /** A value an item holds for one attribute of its category. */
 export interface AttributeValue {
     id: number;
@@ -133,16 +151,4 @@ export type ItemInput = {
 export type RatingInput = {
     rating: number;
     notes: string;
-}
-
-/** A value that survives JSON.stringify unchanged. */
-export type JsonValue = string | number | boolean | null | JsonValue[] | { [key: string]: JsonValue }
-
-/** A JSON object sent as an API request body. */
-export type JsonObject = { [key: string]: JsonValue }
-
-/** User claims the API puts in its JWT payload. */
-export interface TokenPayload {
-    username: string;
-    roles: UserRole[];
 }
