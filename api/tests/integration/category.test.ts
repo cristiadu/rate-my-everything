@@ -2,6 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import request from 'supertest'
 import { appReady } from '@/index'
 import Category from '@/models/Category'
+import AttributeValueType from '@/models/AttributeValueType'
 import Attribute from '@/models/Attribute'
 import APIError from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
@@ -345,7 +346,7 @@ describe('Category API Integration Tests', async () => {
       const attributeRes = await request(app)
         .post(Endpoints.ATTRIBUTES_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send({ name: `Linked-Attribute-${Date.now()}`, valueType: 'string' })
+        .send({ name: `Linked-Attribute-${Date.now()}`, valueType: AttributeValueType.STRING })
         .expect(201)
       linkedAttribute = attributeRes.body as Attribute
     })

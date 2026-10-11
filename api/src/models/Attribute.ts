@@ -2,6 +2,7 @@ import {
   Column, Entity, ManyToMany, OneToMany, PrimaryGeneratedColumn,
 } from 'typeorm'
 import AttributeValue from '@/models/AttributeValue'
+import AttributeValueType from '@/models/AttributeValueType'
 import Category from '@/models/Category'
 
 @Entity()
@@ -13,7 +14,7 @@ export default class Attribute {
       name!: string
 
     @Column('varchar')
-      valueType!: string
+      valueType!: AttributeValueType
 
     @ManyToMany(() => Category, (category) => category.attributes)
       categories!: Category[]

@@ -1,12 +1,13 @@
 import React, { useState } from 'react'
 import { Navbar } from 'react-bulma-components'
 import { useAuth } from '@/components/users/AuthContext'
-import { useIsAdmin } from '@/components/users/sessionRoles'
+import { getRolesFromToken } from '@/components/admin/RequireAdmin'
+import { UserRole } from '@/components/types'
 
 const HeaderMenu = () => {
   const [isActive, setActive] = useState(false)
-  const { isAuthenticated } = useAuth()
-  const isAdmin = useIsAdmin()
+  const { isAuthenticated, token } = useAuth()
+  const isAdmin = getRolesFromToken(token).includes(UserRole.ADMIN)
 
   return (
     <Navbar active={isActive} color="danger">
@@ -49,7 +50,7 @@ const HeaderMenu = () => {
             </Navbar.Item>
           )}
           {isAdmin && (
-            <Navbar.Item renderAs="a" href="/attributes">
+            <Navbar.Item renderAs="a" href="/admin/attributes">
               Attributes
             </Navbar.Item>
           )}
