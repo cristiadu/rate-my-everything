@@ -1,4 +1,4 @@
-import UserRole from '@api/models/UserRole'
+import { UserRole } from '@/components/types'
 
 /** Base64-encodes a JSON value as one JWT segment. */
 const encodeTokenSegment = (value: object) => btoa(JSON.stringify(value))

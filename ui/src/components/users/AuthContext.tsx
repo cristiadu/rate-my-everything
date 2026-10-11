@@ -1,11 +1,9 @@
 import React, { createContext, useState, useContext, useEffect } from 'react'
 import { Navigate, useLocation } from 'react-router-dom'
-import UserRole from '@api/models/UserRole'
 
 interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
-  roles: UserRole[];
   login: (token: string) => void;
   logout: () => void;
 }
@@ -13,23 +11,11 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   token: null,
-  roles: [],
   login: () => {},
   logout: () => {},
 })
 
 export const useAuth = () => useContext(AuthContext)
-
-/** Reads the roles from the JWT payload; the API still enforces them on every request. */
-export const getRolesFromToken = (token: string | null): UserRole[] => {
-  if (!token) return []
-  try {
-    const payload: { roles?: UserRole[] } = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
-    return Array.isArray(payload.roles) ? payload.roles : []
-  } catch {
-    return []
-  }
-}
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'))
@@ -56,7 +42,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }
 
   return (
-    <AuthContext.Provider value={{ isAuthenticated, token, roles: getRolesFromToken(token), login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   )

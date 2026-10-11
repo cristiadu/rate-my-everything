@@ -1,5 +1,8 @@
 import UserRole from '@api/models/UserRole'
 
+/** Roles a user can hold; the API's own enum, re-exported so UI code imports it from here. */
+export { UserRole }
+
 export interface RankingItem {
     category: string;
     item_name: string;

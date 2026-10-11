@@ -5,9 +5,8 @@ import {
 } from 'react-bulma-components'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import UserRole from '@api/models/UserRole'
 import {
-  AdminUser, MIN_PASSWORD_LENGTH, StatusMessage, UserFormValues,
+  AdminUser, MIN_PASSWORD_LENGTH, StatusMessage, UserFormValues, UserRole,
 } from '@/components/types'
 
 /** Props for the user form; pass a user to edit it, or none to create one. */

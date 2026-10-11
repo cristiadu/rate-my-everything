@@ -3,8 +3,7 @@ import {
   fireEvent, render, screen, waitFor,
 } from '@testing-library/react'
 import UserManagement from '@/components/admin/users/UserManagement'
-import UserRole from '@api/models/UserRole'
-import { AdminUser } from '@/components/types'
+import { AdminUser, UserRole } from '@/components/types'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 
 /** Users returned by the mocked list endpoint. */
