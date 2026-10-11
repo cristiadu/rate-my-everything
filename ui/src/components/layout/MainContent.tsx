@@ -8,7 +8,7 @@ import UserManagement from '@/components/admin/users/UserManagement'
 import CreateUserForm from '@/components/users/CreateUserForm'
 import HealthCheck from '@/components/health/HealthCheck'
 
-import { RankingItem } from '../types'
+import type { RankingItem } from '../types'
 
 // populate with example data
 const rankings: RankingItem[] = [

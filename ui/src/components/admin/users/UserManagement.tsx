@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import { AdminUser, StatusMessage, UserEditorState } from '@/components/types'
+import type { AdminUser, StatusMessage, UserEditorState } from '@/components/types'
 import CreateUserForm from '@/components/users/CreateUserForm'
 
 /** Admin screen to list, create, edit and delete users. */

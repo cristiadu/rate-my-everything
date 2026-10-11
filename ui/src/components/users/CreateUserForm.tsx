@@ -6,7 +6,7 @@ import {
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
 import {
-  AdminUser, MIN_PASSWORD_LENGTH, StatusMessage, UserFormValues, UserRole,
+  type AdminUser, MIN_PASSWORD_LENGTH, type StatusMessage, type UserFormValues, UserRole,
 } from '@/components/types'
 
 /** Props for the user form; pass a user to edit it, or none to create one. */
