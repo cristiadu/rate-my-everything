@@ -6,6 +6,7 @@ import {
 } from '@/components/types'
 import { getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
+import MultiSelectDropdown from '@/components/common/MultiSelectDropdown'
 
 /** Form values for a new category. */
 const emptyForm: CategoryFormValues = { name: '', description: '', attributeIds: [] }
@@ -58,17 +59,6 @@ const CategoriesPage: React.FC = () => {
   const resetForm = () => {
     setFormFields(emptyForm)
     setEditingName(null)
-  }
-
-  /** Links the attribute if it is not linked yet, or unlinks it. */
-  const toggleAttribute = (attributeId: number) => {
-    const { attributeIds } = formFields
-    setFormFields({
-      ...formFields,
-      attributeIds: attributeIds.includes(attributeId)
-        ? attributeIds.filter((id) => id !== attributeId)
-        : [...attributeIds, attributeId],
-    })
   }
 
   /** Creates or updates the category in the form, then reloads the list. */
@@ -162,25 +152,23 @@ const CategoriesPage: React.FC = () => {
                 />
               </div>
             </div>
-            <fieldset className="field">
-              <legend className="label">Attributes</legend>
+            <div className="field">
+              <label className="label" htmlFor="category-attributes">Attributes</label>
               {attributes.length === 0 ? (
                 <p className="is-size-7">No attributes yet. Create them on the <a href="/admin/attributes">attributes page</a>.</p>
               ) : (
                 <div className="control">
-                  {attributes.map((attribute) => (
-                    <label key={attribute.id} className="checkbox mr-4">
-                      <input
-                        type="checkbox"
-                        checked={formFields.attributeIds.includes(attribute.id)}
-                        onChange={() => toggleAttribute(attribute.id)}
-                      />
-                      {` ${attribute.name} (${attribute.valueType})`}
-                    </label>
-                  ))}
+                  <MultiSelectDropdown
+                    id="category-attributes"
+                    label="Attributes"
+                    placeholder="Select attributes"
+                    options={attributes.map((attribute) => ({ value: attribute.id, label: `${attribute.name} (${attribute.valueType})` }))}
+                    selected={formFields.attributeIds}
+                    onChange={(attributeIds) => setFormFields({ ...formFields, attributeIds })}
+                  />
                 </div>
               )}
-            </fieldset>
+            </div>
             <div className="field is-grouped">
               <div className="control">
                 <button className={`button is-primary ${isSaving ? 'is-loading' : ''}`} type="submit" disabled={isSaving}>

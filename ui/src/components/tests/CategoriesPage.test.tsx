@@ -59,6 +59,7 @@ describe('CategoriesPage', () => {
     renderPage()
     const booksRow = (await screen.findByText('Books')).closest('tr') as HTMLElement
     fireEvent.click(within(booksRow).getByRole('button', { name: 'Edit' }))
+    fireEvent.click(await screen.findByRole('button', { name: 'Attributes' }))
     const pagesCheckbox = await screen.findByRole('checkbox', { name: /Pages/ })
     expect(screen.getByRole('checkbox', { name: /Author/ })).toBeChecked()
 

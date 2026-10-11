@@ -88,3 +88,9 @@ export interface TokenPayload {
     username: string;
     roles: UserRole[];
 }
+
+/** One choice in a multiselect dropdown. */
+export type SelectOption = {
+    value: number;
+    label: string;
+}
