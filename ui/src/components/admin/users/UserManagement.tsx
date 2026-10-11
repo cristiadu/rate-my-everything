@@ -1,13 +1,16 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import type { AdminUser, StatusMessage, UserEditorState } from '@/components/types'
+import type {
+  AdminUser, StatusMessage, UserEditorState, UserFormValues,
+} from '@/components/types'
 import CreateUserForm from '@/components/users/CreateUserForm'
 
 /** Admin screen to list, create, edit and delete users. */
 const UserManagement: React.FC = () => {
   const [users, setUsers] = useState<AdminUser[]>([])
   const [isLoading, setIsLoading] = useState(true)
+  const [isSaving, setIsSaving] = useState(false)
   const [editor, setEditor] = useState<UserEditorState>(null)
   const [status, setStatus] = useState<StatusMessage>(null)
 
@@ -27,13 +30,31 @@ const UserManagement: React.FC = () => {
     loadUsers()
   }, [loadUsers])
 
-  /** Closes the form, reports the saved user and reloads the list. */
-  const handleSaved = async (savedUser: AdminUser) => {
+  /** Creates or updates the user in the open form, then reloads the list. */
+  const handleSave = async (values: UserFormValues) => {
     if (!editor) return
-    const action = editor.mode === 'create' ? 'created' : 'updated'
-    setEditor(null)
-    setStatus({ message: `User ${savedUser.username} ${action}.`, isSuccess: true })
-    await loadUsers()
+    setIsSaving(true)
+    setStatus(null)
+
+    // Only send a password when one was typed, so editing keeps the current one
+    const { password, ...rest } = values
+    const body: Partial<UserFormValues> = password ? values : rest
+
+    try {
+      if (editor.mode === 'create') {
+        await ApiService.post<AdminUser>(ApiConfig.ENDPOINTS.USERS, body)
+        setStatus({ message: `User ${values.username} created.`, isSuccess: true })
+      } else {
+        await ApiService.put<AdminUser>(`${ApiConfig.ENDPOINTS.USERS}/${editor.user.id}`, body)
+        setStatus({ message: `User ${values.username} updated.`, isSuccess: true })
+      }
+      setEditor(null)
+      await loadUsers()
+    } catch (err) {
+      setStatus({ message: err instanceof Error ? err.message : 'Failed to save user', isSuccess: false })
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   /** Deletes the user after the admin confirms, then reloads the list. */
@@ -77,7 +98,8 @@ const UserManagement: React.FC = () => {
           <CreateUserForm
             key={editor.mode === 'edit' ? editor.user.id : 'new'}
             user={editor.mode === 'edit' ? editor.user : undefined}
-            onSaved={handleSaved}
+            isSaving={isSaving}
+            onSubmit={handleSave}
             onCancel={() => setEditor(null)}
           />
         </div>

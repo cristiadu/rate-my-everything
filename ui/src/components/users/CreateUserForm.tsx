@@ -9,15 +9,21 @@ import {
   type AdminUser, MIN_PASSWORD_LENGTH, type StatusMessage, type UserFormValues, UserRole,
 } from '@/components/types'
 
-/** Props for the user form; pass a user to edit it, or none to create one. */
+/**
+ * Props for the user form. Without onSubmit the form creates the user through the API itself;
+ * with onSubmit the parent saves the values (and passes a user to edit it).
+ */
 interface CreateUserFormProps {
   user?: AdminUser;
-  onSaved?: (user: AdminUser) => void;
+  isSaving?: boolean;
+  onSubmit?: (values: UserFormValues) => void;
   onCancel?: () => void;
 }
 
-/** Form that creates a user, or edits one when a user is passed in. */
-const CreateUserForm: React.FC<CreateUserFormProps> = ({ user, onSaved, onCancel }) => {
+/** Form that creates a user, or hands its values to the parent to create or edit one. */
+const CreateUserForm: React.FC<CreateUserFormProps> = ({
+  user, isSaving: isParentSaving = false, onSubmit, onCancel,
+}) => {
   const isEditing = !!user
   const [formFields, setFormFields] = useState<UserFormValues>({
     username: user?.username ?? '',
@@ -46,30 +52,22 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ user, onSaved, onCancel
     })
   }
 
-  /** Creates or updates the user, then reports the outcome. */
+  /** Hands the values to the parent when it saves them, otherwise creates the user and reports the outcome. */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (onSubmit) {
+      onSubmit(formFields)
+      return
+    }
+
     setIsSaving(true)
     setSubmitStatus(null)
 
-    // Only send a password when one was typed, so editing keeps the current one
-    const { password, ...rest } = formFields
-    const body: Partial<UserFormValues> = password ? formFields : rest
-
     try {
-      const savedUser = isEditing
-        ? await ApiService.put<AdminUser>(`${ApiConfig.ENDPOINTS.USERS}/${user.id}`, body)
-        : await ApiService.post<AdminUser>(ApiConfig.ENDPOINTS.USERS, body)
-      setSubmitStatus({
-        message: isEditing ? 'User updated successfully!' : 'User created successfully!',
-        isSuccess: true,
-      })
-      onSaved?.(savedUser)
+      await ApiService.post<AdminUser>(ApiConfig.ENDPOINTS.USERS, formFields)
+      setSubmitStatus({ message: 'User created successfully!', isSuccess: true })
     } catch (err) {
-      setSubmitStatus({
-        message: err instanceof Error ? err.message : `Failed to ${isEditing ? 'update' : 'create'} user`,
-        isSuccess: false,
-      })
+      setSubmitStatus({ message: err instanceof Error ? err.message : 'Failed to create user', isSuccess: false })
     } finally {
       setIsSaving(false)
     }
@@ -154,7 +152,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({ user, onSaved, onCancel
 
       <Form.Field kind="group">
         <Form.Control>
-          <Button renderAs="button" type="submit" color="primary" loading={isSaving}>
+          <Button renderAs="button" type="submit" color="primary" loading={isSaving || isParentSaving}>
             {isEditing ? 'Save changes' : 'Create User'}
           </Button>
         </Form.Control>
