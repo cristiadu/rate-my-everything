@@ -1,19 +1,18 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
 import { Box, Heading } from 'react-bulma-components'
 import { useAuth } from '@/components/users/AuthContext'
+import { getUsernameFromToken } from '@/components/admin/RequireAdmin'
 
 /** Landing page of the admin area. */
 const AdminDashboard: React.FC = () => {
-  const { user } = useAuth()
+  const { token } = useAuth()
 
   return (
     <Box>
-      <Heading size={5} subtitle renderAs="h3">
-        Signed in as {user?.username}
-      </Heading>
+      <Heading size={4} renderAs="h2">Admin Area</Heading>
+      <p>Signed in as {getUsernameFromToken(token)}.</p>
       <p>
-        This area is only visible to administrators. Manage accounts from the <Link to="/admin/users">Users</Link> page.
+        This area is only visible to administrators. Manage accounts from the <a href="/admin/users">Users</a> page.
       </p>
     </Box>
   )

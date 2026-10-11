@@ -1,12 +1,12 @@
 import React, { useState } from 'react'
 import { Navbar } from 'react-bulma-components'
-import { Link } from 'react-router-dom'
 import { useAuth } from '@/components/users/AuthContext'
-import UserRole from '@/components/users/UserRole'
+import { getRolesFromToken } from '@/components/admin/RequireAdmin'
+import { UserRole } from '@/components/types'
 
 const HeaderMenu = () => {
   const [isActive, setActive] = useState(false)
-  const { isAuthenticated, hasRole } = useAuth()
+  const { isAuthenticated, token } = useAuth()
 
   return (
     <Navbar active={isActive} color="danger">
@@ -44,16 +44,24 @@ const HeaderMenu = () => {
             Second
           </Navbar.Item>
           {isAuthenticated && (
-            <Link className="navbar-item" to="/account">My Account</Link>
+            <Navbar.Item renderAs="a" href="/account">
+              My Account
+            </Navbar.Item>
           )}
-          {hasRole(UserRole.ADMIN) && (
-            <div className="navbar-item has-dropdown is-hoverable">
-              <Link className="navbar-link" to="/admin">Admin</Link>
-              <div className="navbar-dropdown">
-                <Link className="navbar-item" to="/admin">Dashboard</Link>
-                <Link className="navbar-item" to="/admin/users">Users</Link>
-              </div>
-            </div>
+          {getRolesFromToken(token).includes(UserRole.ADMIN) && (
+            <Navbar.Item hoverable>
+              <Navbar.Link renderAs="a" href="/admin">
+                Admin
+              </Navbar.Link>
+              <Navbar.Dropdown>
+                <Navbar.Item renderAs="a" href="/admin">
+                  Dashboard
+                </Navbar.Item>
+                <Navbar.Item renderAs="a" href="/admin/users">
+                  Users
+                </Navbar.Item>
+              </Navbar.Dropdown>
+            </Navbar.Item>
           )}
         </Navbar.Container>
         <Navbar.Container align="right">

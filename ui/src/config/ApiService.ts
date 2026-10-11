@@ -35,6 +35,10 @@ export default class ApiService {
 
     const response = await fetch(url, config)
 
+    if (response.status === 204) {
+      return undefined as T
+    }
+
     const contentType = response.headers.get('content-type')
     let data
 

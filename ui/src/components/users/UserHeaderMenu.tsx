@@ -11,7 +11,7 @@ const UserHeaderMenu = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const { isAuthenticated, user, login, logout } = useAuth()
+  const { isAuthenticated, login, logout } = useAuth()
 
   const handleLogin = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -54,7 +54,7 @@ const UserHeaderMenu = () => {
             size={6}
             subtitle
           >
-            {isAuthenticated ? `Welcome, ${user?.username}!` : 'User Section'}
+            {isAuthenticated ? 'Welcome!' : 'User Section'}
           </Heading>
         </Level.Item>
       </Level.Side>

@@ -1,6 +1,3 @@
-import type React from 'react'
-import type UserRole from '@/components/users/UserRole'
-
 export interface RankingItem {
     category: string;
     item_name: string;
@@ -9,26 +6,40 @@ export interface RankingItem {
     rating: number;
 }
 
-/** The signed-in user, as carried in the API's JWT. */
-export interface SessionUser {
+/** Roles a user can hold; mirrors the API's UserRole enum. */
+export enum UserRole {
+    ADMIN = 'admin',
+    MODERATOR = 'moderator',
+    USER = 'user',
+}
+
+/** A user as returned by the admin users API, without a password. */
+export interface AdminUser {
     id: number;
     username: string;
+    email: string;
     roles: UserRole[];
 }
 
-/** Claims the API puts in its JWT payload; `exp` is the expiry in seconds since the epoch. */
-export interface JwtClaims extends SessionUser {
-    exp?: number;
+/** Minimum password length, in characters, accepted by the user forms. */
+export const MIN_PASSWORD_LENGTH = 6
+
+/** Values edited in the admin user form; an empty password means "keep the current one" when editing. */
+export type UserFormValues = {
+    username: string;
+    email: string;
+    password: string;
+    roles: UserRole[];
 }
 
-/** Props for AccessMessage: a heading and the explanation shown under it. */
-export interface AccessMessageProps {
-    title: string;
-    children: React.ReactNode;
-}
+/** Which user form the admin screen shows: none, a new user, or an existing user being edited. */
+export type UserEditorState = { mode: 'create' } | { mode: 'edit', user: AdminUser } | null
 
-/** Props for the RequireAuth route guard; `roles` lists the roles allowed in, any one of them is enough. */
-export interface RequireAuthProps {
-    children: React.ReactNode;
-    roles?: UserRole[];
+/** Outcome message shown after an admin action. */
+export type StatusMessage = { message: string, isSuccess: boolean } | null
+
+/** User claims the API puts in its JWT payload. */
+export interface TokenPayload {
+    username: string;
+    roles: UserRole[];
 }

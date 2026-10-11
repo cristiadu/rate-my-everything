@@ -2,6 +2,10 @@ import { Request, Response, Router } from 'express'
 import UserService from '@/services/UserService'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
+import User from '@/models/User'
+
+/** Removes the password hash so it is never sent in an API response. */
+const withoutPassword = (user: User) => ({ ...user, password: undefined })
 
 export default class UserController {
   public router = Router()
@@ -26,7 +30,7 @@ export default class UserController {
     // Implement the logic for getting all users
     try {
       const data = await this.userService.getAll()
-      res.status(200).json(data)
+      res.status(200).json(data.map(withoutPassword))
     } catch (error) {
       console.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
@@ -36,7 +40,11 @@ export default class UserController {
   public async getByUsername(req: Request, res: Response) {
     try {
       const data = await this.userService.getByUsername(req.params.username)
-      res.status(200).json(data)
+      if (data) {
+        res.status(200).json(withoutPassword(data))
+      } else {
+        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
+      }
     } catch (error) {
       console.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
@@ -45,8 +53,12 @@ export default class UserController {
 
   public async getById(req: Request, res: Response) {
     try {
-      const data = await this.userService.getById(parseInt(req.params.user_id, 10))
-      res.status(200).json(data)
+      const data = await this.userService.getById(parseInt(req.params.id, 10))
+      if (data) {
+        res.status(200).json(withoutPassword(data))
+      } else {
+        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
+      }
     } catch (error) {
       console.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
@@ -56,7 +68,7 @@ export default class UserController {
   public async create(req: Request, res: Response) {
     try {
       const data = await this.userService.create(req.body)
-      res.status(201).json(data)
+      res.status(201).json(withoutPassword(data))
     } catch (error) {
       console.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
@@ -67,7 +79,7 @@ export default class UserController {
     try {
       const data = await this.userService.update(parseInt(req.params.id, 10), req.body)
       if (data) {
-        res.status(200).json(data)
+        res.status(200).json(withoutPassword(data))
       } else {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
       }

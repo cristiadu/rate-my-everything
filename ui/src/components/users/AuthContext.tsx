@@ -1,12 +1,9 @@
-import React, { createContext, useState, useContext } from 'react'
-import type { JwtClaims, SessionUser } from '@/components/types'
-import UserRole from '@/components/users/UserRole'
+import React, { createContext, useState, useContext, useEffect } from 'react'
+import { Navigate, useLocation } from 'react-router-dom'
 
 interface AuthContextType {
   isAuthenticated: boolean;
   token: string | null;
-  user: SessionUser | null;
-  hasRole: (...roles: UserRole[]) => boolean;
   login: (token: string) => void;
   logout: () => void;
 }
@@ -14,74 +11,61 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType>({
   isAuthenticated: false,
   token: null,
-  user: null,
-  hasRole: () => false,
   login: () => {},
   logout: () => {},
 })
 
 export const useAuth = () => useContext(AuthContext)
 
-/** localStorage key that holds the JWT. */
-const TOKEN_KEY = 'authToken'
-
-/** Milliseconds per second, to compare the JWT's `exp` (seconds) with Date.now() (milliseconds). */
-const MS_PER_SECOND = 1000
-
-/**
- * Reads the user from the JWT payload, or returns null for a malformed or expired token.
- * The API checks the signature on every request, so the UI only uses the claims to decide what to show.
- */
-export const decodeToken = (token: string): SessionUser | null => {
-  try {
-    const payload = token.split('.')[1]
-    const base64 = payload.replace(/-/g, '+').replace(/_/g, '/')
-    const claims: JwtClaims = JSON.parse(atob(base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')))
-
-    if (typeof claims.exp === 'number' && claims.exp * MS_PER_SECOND <= Date.now()) {
-      return null
-    }
-    if (typeof claims.id !== 'number' || typeof claims.username !== 'string' || !Array.isArray(claims.roles)) {
-      return null
-    }
-
-    return { id: claims.id, username: claims.username, roles: claims.roles }
-  } catch {
-    return null
-  }
-}
-
-/** Returns the stored token, clearing it first if it is no longer usable. */
-const readStoredToken = (): string | null => {
-  const storedToken = localStorage.getItem(TOKEN_KEY)
-  if (storedToken && !decodeToken(storedToken)) {
-    localStorage.removeItem(TOKEN_KEY)
-    return null
-  }
-  return storedToken
-}
-
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [token, setToken] = useState<string | null>(readStoredToken)
-  const user = token ? decodeToken(token) : null
+  const [token, setToken] = useState<string | null>(localStorage.getItem('authToken'))
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(!!token)
+
+  useEffect(() => {
+    const storedToken = localStorage.getItem('authToken')
+    if (storedToken) {
+      setToken(storedToken)
+      setIsAuthenticated(true)
+    }
+  }, [])
 
   const login = (newToken: string) => {
-    localStorage.setItem(TOKEN_KEY, newToken)
+    localStorage.setItem('authToken', newToken)
     setToken(newToken)
+    setIsAuthenticated(true)
   }
 
   const logout = () => {
-    localStorage.removeItem(TOKEN_KEY)
+    localStorage.removeItem('authToken')
     setToken(null)
+    setIsAuthenticated(false)
   }
 
-  const hasRole = (...roles: UserRole[]) => !!user && roles.some((role) => user.roles.includes(role))
-
   return (
-    <AuthContext.Provider value={{ isAuthenticated: !!user, token, user, hasRole, login, logout }}>
+    <AuthContext.Provider value={{ isAuthenticated, token, login, logout }}>
       {children}
     </AuthContext.Provider>
   )
+}
+
+export const withAuth = <P extends object>(
+  Component: React.ComponentType<P>,
+  redirectPath: string = '/login'
+) => {
+  const WithAuthComponent = (props: P) => {
+    const { isAuthenticated } = useAuth()
+    const location = useLocation()
+    
+    // If not authenticated, redirect to login page
+    if (!isAuthenticated) {
+      return <Navigate to={redirectPath} state={{ from: location }} replace />
+    }
+    
+    return <Component {...props} />
+  }
+  
+  WithAuthComponent.displayName = `WithAuth(${Component.displayName || Component.name || 'Component'})`
+  return WithAuthComponent
 }
 
 export default AuthContext
