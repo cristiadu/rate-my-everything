@@ -1,17 +1,15 @@
 import {
-  AttributeValueType, type Category, type Item, type RatedItem,
+  AttributeValueType, type Attribute, type Category, type Item, type RatedItem,
 } from '@/components/types'
+import { testAttributes, testCategories } from '@/components/tests/common/categoryFixtures'
 
-/** Category whose items record pages and whether they were finished. */
-export const booksCategory: Category = {
-  id: 10,
-  name: 'Books',
-  description: 'Things to read',
-  attributes: [
-    { id: 1, name: 'Pages', valueType: AttributeValueType.NUMBER },
-    { id: 2, name: 'Finished', valueType: AttributeValueType.BOOLEAN },
-  ],
-}
+const [authorAttribute, pagesAttribute] = testAttributes
+
+/** Boolean attribute recording whether a book was finished. */
+const finishedAttribute: Attribute = { id: 3, name: 'Finished', valueType: AttributeValueType.BOOLEAN }
+
+/** The shared Books category, linked to Author, Pages and Finished. */
+export const booksCategory: Category = { ...testCategories[0], attributes: [authorAttribute, pagesAttribute, finishedAttribute] }
 
 /** Category without attributes. */
 export const moviesCategory: Category = { id: 20, name: 'Movies', description: null, attributes: [] }
@@ -23,7 +21,7 @@ export const duneItem: Item = {
   description: 'Desert planet epic',
   imageUrl: 'https://example.com/dune.png',
   category: { id: booksCategory.id, name: booksCategory.name, description: booksCategory.description },
-  attributes: [{ id: 500, attribute: booksCategory.attributes[0], value: '412' }],
+  attributes: [{ id: 500, attribute: pagesAttribute, value: '412' }],
 }
 
 /** The signed-in user's rating of Dune. */

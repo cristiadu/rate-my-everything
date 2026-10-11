@@ -3,7 +3,8 @@ import ItemService from '@/services/ItemService'
 import { ItemInput } from '@/models/Item'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import { InvalidItemAttributes } from '@/errors/InvalidItemAttributes'
+import { UnknownAttributes } from '@/errors/UnknownAttributes'
+import { UnknownCategory } from '@/errors/UnknownCategory'
 
 export default class ItemController {
   public router = Router()
@@ -67,8 +68,8 @@ export default class ItemController {
       const data = await this.itemService.create(itemInput)
       res.status(201).json(data)
     } catch (error) {
-      if (error instanceof InvalidItemAttributes) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, error.message))
+      if (error instanceof UnknownAttributes || error instanceof UnknownCategory) {
+        return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
       console.error((error as Error).stack || error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
@@ -84,8 +85,8 @@ export default class ItemController {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Item not found'))
       }
     } catch (error) {
-      if (error instanceof InvalidItemAttributes) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, error.message))
+      if (error instanceof UnknownAttributes || error instanceof UnknownCategory) {
+        return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
       console.error((error as Error).stack || error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))

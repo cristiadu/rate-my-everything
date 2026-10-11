@@ -59,7 +59,7 @@ test('adds an interest with its category attributes and my rating', async () => 
     description: 'Pilgrims and the Shrike',
     imageUrl: null,
     categoryId: 10,
-    attributeValues: [{ attributeId: 1, value: '482' }, { attributeId: 2, value: 'true' }],
+    attributeValues: [{ attributeId: 2, value: '482' }, { attributeId: 3, value: 'true' }],
   })
   expect(mockedApi.post).toHaveBeenNthCalledWith(2, '/ratings', { item_id: 101, rating: 8.5, notes: 'Great frame story' })
 })
@@ -94,7 +94,7 @@ test('edits an interest and my existing rating of it', async () => {
     description: 'Desert planet epic',
     imageUrl: 'https://example.com/dune.png',
     categoryId: 10,
-    attributeValues: [{ attributeId: 1, value: '420' }],
+    attributeValues: [{ attributeId: 2, value: '420' }],
   })
   expect(mockedApi.put).toHaveBeenNthCalledWith(2, '/ratings/900', { rating: 9, notes: 'Reread every year' })
   expect(mockedApi.post).not.toHaveBeenCalled()

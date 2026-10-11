@@ -1,25 +1,26 @@
-import { DBConnection } from '@/index'
 import Item, { AttributeValueInput, ItemInput } from '@/models/Item'
 import Category from '@/models/Category'
 import AttributeValue from '@/models/AttributeValue'
 import BaseService from '@/services/BaseService'
-import { InvalidItemAttributes } from '@/errors/InvalidItemAttributes'
+import CategoryService from '@/services/CategoryService'
+import { UnknownAttributes } from '@/errors/UnknownAttributes'
+import { UnknownCategory } from '@/errors/UnknownCategory'
 
 /** Relations returned with every item so clients see its category and attribute values. */
 const ITEM_RELATIONS = { category: true, attributes: { attribute: true } }
 
 class ItemService extends BaseService<Item> {
+  private categoryService = new CategoryService()
+
   constructor() {
     super(Item)
   }
 
   // Load a category with its attributes, failing when it does not exist
   private async getCategory(categoryId: number | undefined): Promise<Category> {
-    const category = categoryId === undefined
-      ? null
-      : await DBConnection.getRepository(Category).findOne({ where: { id: categoryId }, relations: { attributes: true } })
+    const category = categoryId === undefined ? null : await this.categoryService.getById(categoryId)
     if (!category) {
-      throw new InvalidItemAttributes(`Category ${categoryId} does not exist`)
+      throw new UnknownCategory(categoryId)
     }
     return category
   }
@@ -29,7 +30,7 @@ class ItemService extends BaseService<Item> {
     const categoryAttributes = new Map(category.attributes.map((attribute) => [attribute.id, attribute]))
     const unknownIds = inputs.map((input) => input.attributeId).filter((attributeId) => !categoryAttributes.has(attributeId))
     if (unknownIds.length > 0) {
-      throw new InvalidItemAttributes(`Attributes ${unknownIds.join(', ')} do not belong to category "${category.name}"`)
+      throw new UnknownAttributes(unknownIds)
     }
 
     return inputs.map((input) => {

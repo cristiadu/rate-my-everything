@@ -20,7 +20,7 @@ export enum UserRole {
     USER = 'user',
 }
 
-/** Kinds of value an attribute holds. */
+/** Kinds of value an attribute holds; mirrors the API's AttributeValueType enum. */
 export enum AttributeValueType {
     STRING = 'string',
     NUMBER = 'number',

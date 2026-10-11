@@ -7,11 +7,15 @@ interface AttributeFieldProps {
   onChange: (value: string) => void;
 }
 
-/** HTML input type for each attribute value type that is not a checkbox; other types use a text input. */
-const INPUT_TYPES: Record<string, string> = {
+/** HTML input type for each attribute value type shown as an input; booleans are checkboxes instead. */
+const INPUT_TYPES: Record<Exclude<AttributeValueType, AttributeValueType.BOOLEAN>, string> = {
+  [AttributeValueType.STRING]: 'text',
   [AttributeValueType.NUMBER]: 'number',
   [AttributeValueType.DATE]: 'date',
 }
+
+/** Input type for a value type, falling back to text for value types saved before the enum existed. */
+const DEFAULT_INPUT_TYPE = INPUT_TYPES[AttributeValueType.STRING]
 
 /** One form field for an attribute value, shaped by the attribute's value type. */
 const AttributeField: React.FC<AttributeFieldProps> = ({ attribute, value, onChange }) => {
@@ -40,7 +44,7 @@ const AttributeField: React.FC<AttributeFieldProps> = ({ attribute, value, onCha
         <input
           className="input"
           id={inputId}
-          type={INPUT_TYPES[attribute.valueType] ?? 'text'}
+          type={INPUT_TYPES[attribute.valueType as keyof typeof INPUT_TYPES] ?? DEFAULT_INPUT_TYPE}
           value={value}
           onChange={(e) => onChange(e.target.value)}
         />

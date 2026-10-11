@@ -5,6 +5,7 @@ import APIError from '@/models/APIError'
 import Item from '@/models/Item'
 import Category from '@/models/Category'
 import Attribute from '@/models/Attribute'
+import AttributeValueType from '@/models/AttributeValueType'
 import ErrorCode from '@/errors/ErrorCode'
 import { getAuthTokenFromFile } from '@@/testutils/common/Auth'
 import { cleanupAllItems, cleanupAllCategories } from '@@/testutils/common/DataCleanup'
@@ -25,14 +26,14 @@ describe('Item API Integration Tests', async () => {
     const pagesRes = await request(app)
       .post(Endpoints.ATTRIBUTES_BASE_PATH)
       .set('Authorization', `Bearer ${testAuthToken}`)
-      .send({ name: `Pages-${Date.now()}`, valueType: 'number' })
+      .send({ name: `Pages-${Date.now()}`, valueType: AttributeValueType.NUMBER })
       .expect(201)
     pagesAttribute = pagesRes.body
 
     const unlinkedRes = await request(app)
       .post(Endpoints.ATTRIBUTES_BASE_PATH)
       .set('Authorization', `Bearer ${testAuthToken}`)
-      .send({ name: `Unlinked-${Date.now()}`, valueType: 'string' })
+      .send({ name: `Unlinked-${Date.now()}`, valueType: AttributeValueType.STRING })
       .expect(201)
     unlinkedAttribute = unlinkedRes.body
 
@@ -108,16 +109,16 @@ describe('Item API Integration Tests', async () => {
         attributeValues: [{ attributeId: unlinkedAttribute.id, value: 'nope' }],
       }
 
-      // WHEN it is created THEN the API refuses it as a validation error
+      // WHEN it is created THEN the API refuses it as an unknown attribute
       await request(app)
         .post(Endpoints.ITEMS_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .send(newItem)
         .expect('Content-Type', /json/)
-        .expect(400)
+        .expect(422)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe(`Attributes ${unlinkedAttribute.id} do not belong to category "${testCategory.name}"`)
+          expect(apiError.message).toBe(`Unknown attribute ids: ${unlinkedAttribute.id}`)
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
         })
     })
@@ -128,10 +129,10 @@ describe('Item API Integration Tests', async () => {
         .set('Authorization', `Bearer ${testAuthToken}`)
         .send({ name: 'No category', description: 'Missing category', categoryId: 999999 })
         .expect('Content-Type', /json/)
-        .expect(400)
+        .expect(422)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Category 999999 does not exist')
+          expect(apiError.message).toBe('Unknown category id: 999999')
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
         })
     })

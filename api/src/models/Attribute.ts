@@ -3,6 +3,7 @@ import {
 } from 'typeorm'
 import AttributeValue from '@/models/AttributeValue'
 import Category from '@/models/Category'
+import AttributeValueType from '@/models/AttributeValueType'
 
 @Entity()
 export default class Attribute {
@@ -13,7 +14,7 @@ export default class Attribute {
       name!: string
 
     @Column('varchar')
-      valueType!: string
+      valueType!: AttributeValueType
 
     @ManyToMany(() => Category, (category) => category.attributes)
       categories!: Category[]
