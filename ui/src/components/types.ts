@@ -1,3 +1,5 @@
+import UserRole from '@api/models/UserRole'
+
 export interface RankingItem {
     category: string;
     item_name: string;
@@ -6,12 +8,6 @@ export interface RankingItem {
     rating: number;
 }
 
-/** Roles a user can hold; mirrors the API's UserRole enum. */
-export enum UserRole {
-    ADMIN = 'admin',
-    MODERATOR = 'moderator',
-    USER = 'user',
-}
 
 /** A user as returned by the admin users API, without a password. */
 export interface AdminUser {

@@ -1,7 +1,8 @@
 import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import CreateUserForm from '@/components/users/CreateUserForm'
-import { AdminUser, UserRole } from '@/components/types'
+import UserRole from '@api/models/UserRole'
+import { AdminUser } from '@/components/types'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 
 /** Existing user passed to the form in edit mode. */

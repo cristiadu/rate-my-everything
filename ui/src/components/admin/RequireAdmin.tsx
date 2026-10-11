@@ -1,21 +1,10 @@
 import React from 'react'
 import { useAuth } from '@/components/users/AuthContext'
-import { UserRole } from '@/components/types'
-
-/** Reads the roles from the JWT payload; the API still enforces them on every request. */
-export const getRolesFromToken = (token: string | null): UserRole[] => {
-  if (!token) return []
-  try {
-    const payload: { roles?: UserRole[] } = JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))
-    return Array.isArray(payload.roles) ? payload.roles : []
-  } catch {
-    return []
-  }
-}
+import UserRole from '@api/models/UserRole'
 
 /** Renders its children only for logged-in admins, and an explanation for everyone else. */
 const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { isAuthenticated, token } = useAuth()
+  const { isAuthenticated, roles } = useAuth()
 
   if (!isAuthenticated) {
     return (
@@ -23,7 +12,7 @@ const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     )
   }
 
-  if (!getRolesFromToken(token).includes(UserRole.ADMIN)) {
+  if (!roles.includes(UserRole.ADMIN)) {
     return (
       <div className="notification is-danger">You do not have permission to access the administration area.</div>
     )

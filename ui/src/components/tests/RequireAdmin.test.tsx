@@ -1,9 +1,9 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import RequireAdmin, { getRolesFromToken } from '@/components/admin/RequireAdmin'
+import RequireAdmin from '@/components/admin/RequireAdmin'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { UserRole } from '@/components/types'
-import { loginAs, makeTestToken } from '@/components/tests/common/Auth'
+import UserRole from '@api/models/UserRole'
+import { loginAs } from '@/components/tests/common/Auth'
 
 /** Renders RequireAdmin around a marker child inside the auth provider. */
 const renderGuard = () => render(
@@ -17,17 +17,6 @@ const renderGuard = () => render(
 describe('RequireAdmin', () => {
   beforeEach(() => {
     localStorage.clear()
-  })
-
-  test('reads roles from the token payload', () => {
-    // GIVEN tokens with and without a readable payload
-    const adminToken = makeTestToken([UserRole.ADMIN])
-
-    // WHEN the roles are read
-    const roles = [getRolesFromToken(adminToken), getRolesFromToken('not-a-token'), getRolesFromToken(null)]
-
-    // THEN only the valid token yields roles
-    expect(roles).toEqual([['admin'], [], []])
   })
 
   test('asks logged-out visitors to log in', () => {
