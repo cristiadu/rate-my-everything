@@ -7,8 +7,9 @@ export class UnknownResource extends Error {
     public readonly ids: number[] | undefined
 
     constructor(resource: string, ids: number | number[] | undefined) {
-        const normalizedIds = Array.isArray(ids) ? ids : ids === undefined ? undefined : [ids]
-        super(`Unknown ${resource} ${normalizedIds && normalizedIds.length !== 1 ? 'ids' : 'id'}: ${normalizedIds?.join(', ')}`)
+        const isList = Array.isArray(ids)
+        const normalizedIds = isList ? ids : ids === undefined ? undefined : [ids]
+        super(`Unknown ${resource} ${isList ? 'ids' : 'id'}: ${normalizedIds?.join(', ')}`)
         this.name = 'UnknownResource'
         this.resource = resource
         this.ids = normalizedIds
