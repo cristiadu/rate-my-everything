@@ -3,8 +3,11 @@ import Item from '@/models/Item'
 /** Number of items requested from a paginated external service at a time. */
 export const IMPORT_PAGE_SIZE = 50
 
+/** Categories of results the importer can show. */
+export type ImportedItemType = 'Artist' | 'Album' | 'Video'
+
 /** An interest found on an external service, with the item fields it fills in. */
-export type ImportedItem = Pick<Item, 'name' | 'description' | 'imageUrl'>
+export type ImportedItem = Pick<Item, 'name' | 'description' | 'imageUrl'> & { type: ImportedItemType }
 
 /** One picture of a Last.fm album, at one of Last.fm's sizes (small, medium, large, extralarge). */
 export type LastFmImage = {

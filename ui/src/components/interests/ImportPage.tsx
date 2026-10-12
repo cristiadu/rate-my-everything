@@ -138,6 +138,7 @@ const ImportPage: React.FC = () => {
               <thead>
                 <tr>
                   <th aria-label="Picture" />
+                  <th>Type</th>
                   <th>Name</th>
                   <th>Description</th>
                   <th>Import</th>
@@ -149,6 +150,7 @@ const ImportPage: React.FC = () => {
                     <td>
                       {item.imageUrl && <img src={item.imageUrl} alt="" width={IMPORTED_IMAGE_SIZE} height={IMPORTED_IMAGE_SIZE} />}
                     </td>
+                    <td>{item.type}</td>
                     <td>{item.name}</td>
                     <td>{item.description}</td>
                     <td>

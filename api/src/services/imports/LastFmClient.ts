@@ -52,6 +52,7 @@ export default class LastFmClient {
       }
 
       items.push(...body.topalbums.album.map((album) => ({
+        type: 'Album' as const,
         name: album.name,
         description: `Album by ${album.artist.name}, played ${album.playcount} times on Last.fm`,
         imageUrl: album.image.find((image) => image.size === LASTFM_IMAGE_SIZE)?.['#text'] || undefined,
@@ -92,6 +93,7 @@ export default class LastFmClient {
       }
 
       items.push(...body.topartists.artist.map((artist) => ({
+        type: 'Artist' as const,
         name: artist.name,
         description: `Artist, played ${artist.playcount} times on Last.fm`,
         imageUrl: artist.image.find((image) => image.size === LASTFM_IMAGE_SIZE)?.['#text'] || undefined,

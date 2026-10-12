@@ -64,12 +64,14 @@ describe('ImportPage', () => {
     // WHEN a Last.fm username is searched
     searchLastFm('rj')
 
-    // THEN each album is listed and selected
+    // THEN artists and albums are listed with their type and selected
+    expect(await screen.findByText('Artist')).toBeInTheDocument()
+    expect(screen.getByLabelText('Select Radiohead')).toBeChecked()
     expect(await screen.findByText('In Rainbows')).toBeInTheDocument()
     expect(screen.getByText('Album by Unknown Band, played 4 times on Last.fm')).toBeInTheDocument()
     expect(screen.getByLabelText('Select In Rainbows')).toBeChecked()
     expect(screen.getByLabelText('Select Demo Tape')).toBeChecked()
-    expect(screen.getByRole('button', { name: 'Import 2 selected' })).toBeEnabled()
+    expect(screen.getByRole('button', { name: 'Import 3 selected' })).toBeEnabled()
   })
 
   test('asks for a video or playlist URL when YouTube is chosen', () => {
@@ -84,10 +86,11 @@ describe('ImportPage', () => {
   })
 
   test('imports the selected interests into the chosen category with links to rate them', async () => {
-    // GIVEN the Last.fm albums are listed and only In Rainbows stays selected
+    // GIVEN the Last.fm artists and albums are listed and only In Rainbows stays selected
     renderImportPage()
     searchLastFm('rj')
     await screen.findByRole('option', { name: 'Books' })
+    fireEvent.click(screen.getByLabelText('Select Radiohead'))
     fireEvent.click(screen.getByLabelText('Select Demo Tape'))
 
     // WHEN it is imported into Books

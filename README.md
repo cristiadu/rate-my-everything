@@ -42,7 +42,7 @@ Signed-in users open **Import interests** in the top menu, pick a source, and se
 
 | Source | What they type | What becomes an item |
 | --- | --- | --- |
-| Last.fm | A Last.fm username, e.g. `rj` | Every page of the user's all-time artists and albums, with play counts and available images |
+| Last.fm | A Last.fm username, e.g. `rj` | Every page of the user's all-time artists and albums, each labeled by type and with play counts and available images |
 | YouTube | A video URL such as `https://youtu.be/dQw4w9WgXcQ` or a playlist URL | One video or every available playlist video, with its thumbnail; deleted and private playlist videos are skipped. Choose the destination category when importing. |
 
 `GET /api/imports/:source?query=...` returns the found items without saving them. The UI then creates the selected ones in the chosen category through `POST /api/items`, and links each new item to its rating form.

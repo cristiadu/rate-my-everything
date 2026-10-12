@@ -35,6 +35,7 @@ describe('Import API Integration Tests', async () => {
         .expect(res => {
           const items = res.body as ImportedItem[]
           expect(items.map((item) => item.name)).toEqual(['Radiohead', 'In Rainbows', 'Demo Tape'])
+          expect(items.map((item) => item.type)).toEqual(['Artist', 'Album', 'Album'])
         })
     })
 
@@ -50,6 +51,7 @@ describe('Import API Integration Tests', async () => {
         .expect(200)
         .expect(res => {
           expect(res.body).toEqual([{
+            type: 'Video',
             name: 'Never Gonna Give You Up',
             description: 'Video by Rick Astley on YouTube',
             imageUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',

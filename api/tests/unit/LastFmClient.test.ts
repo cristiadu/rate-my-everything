@@ -25,11 +25,17 @@ describe('LastFmClient', () => {
       + '?method=user.gettopalbums&user=rj&period=overall&limit=50&page=1&api_key=lastfm-key&format=json')
     expect(items).toEqual([
       {
+        type: 'Album',
         name: 'In Rainbows',
         description: 'Album by Radiohead, played 312 times on Last.fm',
         imageUrl: 'https://lastfm.freetls.fastly.net/i/u/300x300/in-rainbows.png',
       },
-      { name: 'Demo Tape', description: 'Album by Unknown Band, played 4 times on Last.fm', imageUrl: undefined },
+      {
+        type: 'Album',
+        name: 'Demo Tape',
+        description: 'Album by Unknown Band, played 4 times on Last.fm',
+        imageUrl: undefined,
+      },
     ])
   })
 
@@ -64,6 +70,7 @@ describe('LastFmClient', () => {
     // THEN Last.fm is asked for top artists and the artist becomes an item
     expect(String(fetchMock.mock.calls[0][0])).toContain('method=user.gettopartists')
     expect(items).toEqual([{
+      type: 'Artist',
       name: 'Radiohead',
       description: 'Artist, played 1200 times on Last.fm',
       imageUrl: 'https://lastfm.freetls.fastly.net/i/u/300x300/radiohead.png',

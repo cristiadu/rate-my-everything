@@ -177,6 +177,7 @@ export const IMPORT_SOURCES: Record<ImportSource, { label: string, queryLabel: s
 
 /** An interest found on an external service, not saved yet. */
 export interface ImportedItem {
+    type: 'Artist' | 'Album' | 'Video'
     name: string;
     description: string;
     imageUrl?: string | null;

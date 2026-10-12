@@ -47,6 +47,7 @@ export default class YouTubeClient {
         throw new ImportNotFound(`YouTube video "${videoId}" was not found`)
       }
       return body.items.map(({ snippet }) => ({
+        type: 'Video' as const,
         name: snippet.title,
         description: `Video by ${snippet.channelTitle} on YouTube`,
         imageUrl: (snippet.thumbnails.high ?? snippet.thumbnails.medium ?? snippet.thumbnails.default)?.url,
@@ -73,6 +74,7 @@ export default class YouTubeClient {
       items.push(...body.items
         .filter((playlistItem) => playlistItem.snippet.videoOwnerChannelTitle)
         .map(({ snippet }) => ({
+          type: 'Video' as const,
           name: snippet.title,
           description: `Video by ${snippet.videoOwnerChannelTitle} on YouTube`,
           imageUrl: (snippet.thumbnails.high ?? snippet.thumbnails.medium ?? snippet.thumbnails.default)?.url,

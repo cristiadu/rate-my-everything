@@ -28,6 +28,7 @@ describe('YouTubeClient', () => {
     // THEN YouTube is asked for 50 playlist entries and only the available video becomes an item
     expect(String(fetchMock.mock.calls[0][0])).toBe(PLAYLIST_REQUEST_URL)
     expect(items).toEqual([{
+      type: 'Video',
       name: 'Never Gonna Give You Up',
       description: 'Video by Rick Astley on YouTube',
       imageUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
@@ -80,6 +81,7 @@ describe('YouTubeClient', () => {
     // THEN YouTube is asked for that video and it is returned as an importable item
     expect(String(fetchMock.mock.calls[0][0])).toBe(VIDEO_REQUEST_URL)
     expect(items).toEqual([{
+      type: 'Video',
       name: 'Never Gonna Give You Up',
       description: 'Video by Rick Astley on YouTube',
       imageUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
