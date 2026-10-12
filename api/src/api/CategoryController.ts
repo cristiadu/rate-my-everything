@@ -4,7 +4,7 @@ import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import { isEmpty } from 'class-validator'
 import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
-import { UnknownAttributes } from '@/errors/UnknownAttributes'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { isValidAttributeIds } from '@/helpers/CategoryHelper'
 import { isValidSimilarName } from '@/helpers/SimilarityHelper'
 
@@ -82,7 +82,7 @@ export default class CategoryController {
       const data = await this.categoryService.create(req.body)
       res.status(201).json(data)
     } catch (error) {
-      if (error instanceof UnknownAttributes) {
+      if (error instanceof UnknownResource) {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
 
@@ -116,7 +116,7 @@ export default class CategoryController {
       if (error instanceof ResourceAlreadyExists) {
         return res.status(422).json(NewApiError(ErrorCode.RESOURCE_ALREADY_EXISTS, 422, error.message))
       }
-      if (error instanceof UnknownAttributes) {
+      if (error instanceof UnknownResource) {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
       

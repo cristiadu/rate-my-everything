@@ -10,6 +10,7 @@ const ApiConfig = {
     CATEGORIES: '/categories',
     CHANGE_REQUESTS: '/change-requests',
     MODERATION_CHANGE_REQUESTS: '/moderation/change-requests',
+    COMMENTS: '/comments',
     HEALTH: '/health',
   },
 }

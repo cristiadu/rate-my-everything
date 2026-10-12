@@ -5,6 +5,8 @@ import AttributeController from '@/api/AttributeController'
 import ItemController from '@/api/ItemController'
 import CategoryController from '@/api/CategoryController'
 import UserRole, { MODERATION_ROLES } from '@/models/UserRole'
+import CommentController from '@/api/CommentController'
+import UserRole from '@/models/UserRole'
 import LoginController from '@/api/LoginController'
 import HealthController from '@/api/HealthController'
 import ChangeRequestController from '@/api/ChangeRequestController'
@@ -47,6 +49,7 @@ export const routes: RouteConfig[] = [
     roles: [UserRole.USER, ...MODERATION_ROLES],
   },
   { path: '/api/moderation', controller: () => new ModerationController().router, roles: MODERATION_ROLES },
+  { path: '/api/comments', controller: () => new CommentController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/health', controller: () => new HealthController().router },
   { path: '/api', controller: () => (_req: Request, res: Response) => {
       res.status(404).json(NewApiError(ErrorCode.NOT_FOUND, 404, 'Could not find an API resource at the specified path'))

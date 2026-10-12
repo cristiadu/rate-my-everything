@@ -3,13 +3,12 @@ import ItemService from '@/services/ItemService'
 import { ItemInput } from '@/models/Item'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import { UnknownAttributes } from '@/errors/UnknownAttributes'
-import { UnknownCategory } from '@/errors/UnknownCategory'
 import { SessionUser } from '@/models/User'
 import { canModerate } from '@/helpers/RouteHelper'
 
 /** Message returned when a user without a moderation role tries to change a shared interest directly. */
 const MODERATION_REQUIRED_MESSAGE = 'Only moderators can change interests directly; send a change request instead'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { isValidSimilarName } from '@/helpers/SimilarityHelper'
 
 export default class ItemController {
@@ -98,7 +97,7 @@ export default class ItemController {
       const data = await this.itemService.create(itemInput)
       res.status(201).json(data)
     } catch (error) {
-      if (error instanceof UnknownAttributes || error instanceof UnknownCategory) {
+      if (error instanceof UnknownResource) {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
       console.error((error as Error).stack || error)
@@ -122,7 +121,7 @@ export default class ItemController {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Item not found'))
       }
     } catch (error) {
-      if (error instanceof UnknownAttributes || error instanceof UnknownCategory) {
+      if (error instanceof UnknownResource) {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
       console.error((error as Error).stack || error)
