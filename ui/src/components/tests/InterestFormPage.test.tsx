@@ -167,7 +167,7 @@ describe('InterestFormPage', () => {
 
     // WHEN the page count and rating change and are saved
     fireEvent.change(screen.getByLabelText('Pages'), { target: { value: '420' } })
-    fireEvent.change(screen.getByLabelText('My rating (0 to 10)'), { target: { value: '9' } })
+    fireEvent.change(screen.getByLabelText('Rate it again (0 to 10)'), { target: { value: '9' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
 
     // THEN the item edit becomes a change request, my rating is added, and I land on my change requests
@@ -195,7 +195,7 @@ describe('InterestFormPage', () => {
     await screen.findByDisplayValue('412')
 
     // WHEN only the rating changes and is saved
-    fireEvent.change(screen.getByLabelText('My rating (0 to 10)'), { target: { value: '8' } })
+    fireEvent.change(screen.getByLabelText('Rate it again (0 to 10)'), { target: { value: '8' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
 
     // THEN only the rating is added
@@ -264,6 +264,7 @@ describe('InterestFormPage', () => {
 
   test('shows the API error message when saving fails', async () => {
     // GIVEN the API rejects the item update
+    loginAs([UserRole.USER, UserRole.MODERATOR])
     fetchMock.mockImplementation(async (url, init) => (init?.method === 'PUT'
       ? jsonResponse({ message: 'Unknown attribute ids: 9' }, 422)
       : respond(url, init)))
