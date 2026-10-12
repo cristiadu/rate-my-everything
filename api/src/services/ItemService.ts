@@ -5,6 +5,8 @@ import BaseService from '@/services/BaseService'
 import CategoryService from '@/services/CategoryService'
 import { UnknownAttributes } from '@/errors/UnknownAttributes'
 import { UnknownCategory } from '@/errors/UnknownCategory'
+import { findSimilarIds, orderByIds } from '@/helpers/SimilarityHelper'
+import { In } from 'typeorm'
 
 /** Relations returned with every item so clients see its category and attribute values. */
 const ITEM_RELATIONS = { category: true, attributes: { attribute: true } }
@@ -91,6 +93,16 @@ class ItemService extends BaseService<Item> {
   /** Get all Items by category. */
   public async getAllByCategory(category: string): Promise<Item[]> {
     return this.repository.find({ where: { category: { name: category } }, relations: ITEM_RELATIONS })
+  }
+
+  /** Get the Items whose name is likely a duplicate of the given name, most similar first, optionally only in one category. */
+  public async getSimilar(name: string, categoryId?: number): Promise<Item[]> {
+    const query = this.repository.createQueryBuilder('item')
+    if (categoryId !== undefined) {
+      query.where('item.category = :categoryId', { categoryId })
+    }
+    const ids = await findSimilarIds(query, name)
+    return orderByIds(await this.repository.find({ where: { id: In(ids) }, relations: ITEM_RELATIONS }), ids)
   }
 }
 

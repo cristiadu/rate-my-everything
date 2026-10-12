@@ -3,6 +3,9 @@ import { Link } from 'react-router-dom'
 import { Image } from 'react-bulma-components'
 import type { RankingItem } from '@/components/types'
 
+/** Shown in place of a personal grade for items the signed-in user has not rated. */
+const NOT_RATED = '-'
+
 /** Props for one rankings row. */
 interface RankingTableItemProps {
     ranking: RankingItem;
@@ -16,7 +19,9 @@ const RankingTableItem: React.FC<RankingTableItemProps> = ({ ranking, canEdit })
     </td>
     <td><strong>{ranking.item_name}</strong></td>
     <td>{ranking.category}</td>
+    <td>{ranking.my_rating === null ? NOT_RATED : ranking.my_rating.toFixed(1)}</td>
     <td>{ranking.rating.toFixed(1)}</td>
+    <td>{ranking.rating_count}</td>
     {canEdit && (
       <td>
         <Link className="button is-small" to={`/interests/${ranking.item_id}/edit`}>Edit</Link>

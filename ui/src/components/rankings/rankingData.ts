@@ -3,33 +3,48 @@ import type { RankingItem, RatedItem } from '@/components/types'
 /** Category label for items saved before categories were required. */
 const UNCATEGORIZED = 'Uncategorized'
 
-/** Builds a ranking row for a rated item with the given rating. */
-const toRankingItem = (ratedItem: RatedItem, rating: number): RankingItem => ({
-  item_id: ratedItem.item.id,
-  item_name: ratedItem.item.name,
-  item_img_url: ratedItem.item.imageUrl,
-  category: ratedItem.item.category?.name ?? UNCATEGORIZED,
-  rating,
-})
+/** Groups ratings by the key each one maps to, keeping the order they came in. */
+const groupRatings = (ratings: RatedItem[], keyOf: (ratedItem: RatedItem) => number): RatedItem[][] => {
+  const groups = new Map<number, RatedItem[]>()
+  for (const ratedItem of ratings) {
+    groups.set(keyOf(ratedItem), [...(groups.get(keyOf(ratedItem)) ?? []), ratedItem])
+  }
+  return [...groups.values()]
+}
 
-/** Sorts ranking rows from the highest rating to the lowest. */
-const sortByRating = (rankings: RankingItem[]): RankingItem[] => [...rankings].sort((a, b) => b.rating - a.rating)
+/** Averages a list of grades. */
+const average = (grades: number[]): number => grades.reduce((sum, grade) => sum + grade, 0) / grades.length
 
-/** Turns the signed-in user's ratings into ranking rows, best first. */
-export const toMyRankings = (ratings: RatedItem[]): RankingItem[] => sortByRating(
-  ratings.map((ratedItem) => toRankingItem(ratedItem, ratedItem.rating)),
+/** Personal grade: the average of every time the given user rated, or null when they gave no rating. */
+export const personalGrade = (ratings: RatedItem[], userId: number | null): number | null => {
+  const userRatings = ratings.filter((ratedItem) => ratedItem.userId === userId)
+  return userRatings.length > 0 ? average(userRatings.map((ratedItem) => ratedItem.rating)) : null
+}
+
+/** Collective grade: the average of each user's personal grade, so rating an item many times still counts once. */
+export const collectiveGrade = (ratings: RatedItem[]): number => average(
+  groupRatings(ratings, (ratedItem) => ratedItem.userId)
+    .map((userRatings) => average(userRatings.map((ratedItem) => ratedItem.rating))),
 )
 
-/** Averages everyone's ratings of each item into one ranking row per item, best first. */
-export const toOverallRankings = (ratings: RatedItem[]): RankingItem[] => {
-  const ratingsByItem = new Map<number, RatedItem[]>()
-  for (const ratedItem of ratings) {
-    ratingsByItem.set(ratedItem.item.id, [...(ratingsByItem.get(ratedItem.item.id) ?? []), ratedItem])
-  }
+/** Builds one ranking row per rated item, with its collective grade and the given user's personal grade. */
+const toRankingItems = (ratings: RatedItem[], userId: number | null): RankingItem[] => (
+  groupRatings(ratings, (ratedItem) => ratedItem.item.id).map((itemRatings) => ({
+    item_id: itemRatings[0].item.id,
+    item_name: itemRatings[0].item.name,
+    item_img_url: itemRatings[0].item.imageUrl,
+    category: itemRatings[0].item.category?.name ?? UNCATEGORIZED,
+    rating: collectiveGrade(itemRatings),
+    my_rating: personalGrade(itemRatings, userId),
+    rating_count: itemRatings.length,
+  }))
+)
 
-  const rankings = [...ratingsByItem.values()].map((itemRatings) => {
-    const total = itemRatings.reduce((sum, ratedItem) => sum + ratedItem.rating, 0)
-    return toRankingItem(itemRatings[0], total / itemRatings.length)
-  })
-  return sortByRating(rankings)
-}
+/** Lists the items the given user rated, best personal grade first, each with its collective grade too. */
+export const toMyRankings = (ratings: RatedItem[], userId: number | null): RankingItem[] => toRankingItems(ratings, userId)
+  .filter((ranking) => ranking.my_rating !== null)
+  .sort((a, b) => (b.my_rating ?? 0) - (a.my_rating ?? 0))
+
+/** Lists every rated item, best collective grade first, each with the given user's personal grade too. */
+export const toOverallRankings = (ratings: RatedItem[], userId: number | null): RankingItem[] => toRankingItems(ratings, userId)
+  .sort((a, b) => b.rating - a.rating)
