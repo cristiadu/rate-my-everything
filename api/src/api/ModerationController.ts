@@ -7,9 +7,8 @@ import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import { ChangeRequestNotPending } from '@/errors/ChangeRequestNotPending'
 import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
-import { UnknownAttributes } from '@/errors/UnknownAttributes'
-import { UnknownCategory } from '@/errors/UnknownCategory'
 import { UnknownChangeTarget } from '@/errors/UnknownChangeTarget'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { isChangeRequestStatus } from '@/helpers/ChangeRequestHelper'
 
 /** Lets moderators and admins list change requests and approve or reject them. */
@@ -55,8 +54,7 @@ export default class ModerationController {
       }
       res.status(200).json(data)
     } catch (error) {
-      if (error instanceof ChangeRequestNotPending || error instanceof UnknownChangeTarget || error instanceof UnknownAttributes
-        || error instanceof UnknownCategory) {
+      if (error instanceof ChangeRequestNotPending || error instanceof UnknownChangeTarget || error instanceof UnknownResource) {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
       if (error instanceof ResourceAlreadyExists) {

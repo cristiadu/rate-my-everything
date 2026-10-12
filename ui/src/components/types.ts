@@ -188,6 +188,10 @@ export enum ChangeRequestStatus {
 
 /** The user who submitted or reviewed a change request. */
 export interface ChangeRequestUser {
+    id: number;
+    username: string;
+}
+
 /** Longest comment body the comments API accepts, in characters. */
 export const MAX_COMMENT_LENGTH = 2000
 
@@ -232,6 +236,7 @@ export type ChangeRequestLookups = {
 
 /** A moderator's decision on a pending change request. */
 export type ReviewDecision = ChangeRequestStatus.APPROVED | ChangeRequestStatus.REJECTED
+
 /** One message in the discussion thread of an interest. */
 export interface Comment {
     id: number;
