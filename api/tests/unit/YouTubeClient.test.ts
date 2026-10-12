@@ -45,6 +45,27 @@ describe('YouTubeClient', () => {
     expect(String(fetchMock.mock.calls[0][0])).toBe(PLAYLIST_REQUEST_URL)
   })
 
+  it('returns videos from every YouTube playlist page', async () => {
+    // GIVEN YouTube has two pages of playlist videos
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const params = new URL(String(input)).searchParams
+      const body = params.has('pageToken')
+        ? { items: [{ snippet: {
+          title: 'Second song', videoOwnerChannelTitle: 'Artist', thumbnails: {},
+        } }] }
+        : { ...youTubePlaylistItems, nextPageToken: 'page-2' }
+      return new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } })
+    })
+
+    // WHEN the playlist is read
+    const items = await new YouTubeClient('youtube-key').getVideos('PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf')
+
+    // THEN both pages are requested and the later video is included
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(String(fetchMock.mock.calls[1][0])).toContain('pageToken=page-2')
+    expect(items.map((item) => item.name)).toEqual(['Never Gonna Give You Up', 'Second song'])
+  })
+
   it('imports one video from a standard YouTube watch URL', async () => {
     // GIVEN YouTube returns one video's public details
     const fetchMock = mockExternalApi({ items: [{ snippet: {

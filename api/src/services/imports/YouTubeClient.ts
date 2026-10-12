@@ -1,6 +1,6 @@
 import ImportSource from '@/models/ImportSource'
 import {
-  ImportedItem, MAX_IMPORTED_ITEMS, YouTubePlaylistItemsResponse, YouTubeVideosResponse,
+  IMPORT_PAGE_SIZE, ImportedItem, YouTubePlaylistItemsResponse, YouTubeVideosResponse,
 } from '@/models/ImportedItem'
 import { ImportNotFound } from '@/errors/ImportNotFound'
 import { ImportSourceFailed } from '@/errors/ImportSourceFailed'
@@ -30,20 +30,18 @@ export default class YouTubeClient {
     }
 
     const parsedUrl = URL.parse(query)
-    const videoId = this.getVideoId(parsedUrl)
-    const playlistId = parsedUrl?.searchParams.get('list') ?? query
-    const params = new URLSearchParams(videoId
-      ? { part: 'snippet', id: videoId, key: this.apiKey }
-      : { part: 'snippet', playlistId, maxResults: String(MAX_IMPORTED_ITEMS), key: this.apiKey })
-    const response = await fetch(`${videoId ? YOUTUBE_VIDEOS_URL : YOUTUBE_PLAYLIST_ITEMS_URL}?${params}`)
-    if (response.status === YOUTUBE_PLAYLIST_NOT_FOUND_STATUS) {
-      throw new ImportNotFound(`YouTube ${videoId ? 'video' : 'playlist'} "${videoId ?? playlistId}" was not found`)
-    }
-    if (!response.ok) {
-      throw new ImportSourceFailed(ImportSource.YOUTUBE, response.status)
-    }
-
+    const playlistIdFromUrl = parsedUrl?.searchParams.get('list')
+    const videoId = playlistIdFromUrl ? null : this.getVideoId(parsedUrl)
+    const playlistId = playlistIdFromUrl ?? query
     if (videoId) {
+      const params = new URLSearchParams({ part: 'snippet', id: videoId, key: this.apiKey })
+      const response = await fetch(`${YOUTUBE_VIDEOS_URL}?${params}`)
+      if (response.status === YOUTUBE_PLAYLIST_NOT_FOUND_STATUS) {
+        throw new ImportNotFound(`YouTube video "${videoId}" was not found`)
+      }
+      if (!response.ok) {
+        throw new ImportSourceFailed(ImportSource.YOUTUBE, response.status)
+      }
       const body = await response.json() as YouTubeVideosResponse
       if (body.items.length === 0) {
         throw new ImportNotFound(`YouTube video "${videoId}" was not found`)
@@ -55,14 +53,34 @@ export default class YouTubeClient {
       }))
     }
 
-    const body = await response.json() as YouTubePlaylistItemsResponse
-    return body.items
-      .filter((playlistItem) => playlistItem.snippet.videoOwnerChannelTitle)
-      .map(({ snippet }) => ({
-        name: snippet.title,
-        description: `Video by ${snippet.videoOwnerChannelTitle} on YouTube`,
-        imageUrl: (snippet.thumbnails.high ?? snippet.thumbnails.medium ?? snippet.thumbnails.default)?.url,
-      }))
+    const items: ImportedItem[] = []
+    let pageToken: string | undefined
+    do {
+      const params = new URLSearchParams({
+        part: 'snippet', playlistId, maxResults: String(IMPORT_PAGE_SIZE), key: this.apiKey,
+      })
+      if (pageToken) {
+        params.set('pageToken', pageToken)
+      }
+      const response = await fetch(`${YOUTUBE_PLAYLIST_ITEMS_URL}?${params}`)
+      if (response.status === YOUTUBE_PLAYLIST_NOT_FOUND_STATUS) {
+        throw new ImportNotFound(`YouTube playlist "${playlistId}" was not found`)
+      }
+      if (!response.ok) {
+        throw new ImportSourceFailed(ImportSource.YOUTUBE, response.status)
+      }
+      const body = await response.json() as YouTubePlaylistItemsResponse
+      items.push(...body.items
+        .filter((playlistItem) => playlistItem.snippet.videoOwnerChannelTitle)
+        .map(({ snippet }) => ({
+          name: snippet.title,
+          description: `Video by ${snippet.videoOwnerChannelTitle} on YouTube`,
+          imageUrl: (snippet.thumbnails.high ?? snippet.thumbnails.medium ?? snippet.thumbnails.default)?.url,
+        })))
+      pageToken = body.nextPageToken
+    } while (pageToken)
+
+    return items
   }
 
   /** Reads a video id from supported YouTube video URLs, returning null for playlists and other text. */

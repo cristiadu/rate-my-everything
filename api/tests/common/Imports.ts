@@ -4,6 +4,7 @@ import { LastFmTopAlbumsResponse, YouTubePlaylistItemsResponse } from '@/models/
 /** Last.fm top albums with one album that has a picture and one that has none. */
 export const lastFmTopAlbums: LastFmTopAlbumsResponse = {
   topalbums: {
+    '@attr': { totalPages: '1' },
     album: [
       {
         name: 'In Rainbows',

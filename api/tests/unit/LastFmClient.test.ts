@@ -18,9 +18,9 @@ describe('LastFmClient', () => {
     // WHEN the albums of a user are read
     const items = await new LastFmClient('lastfm-key').getTopAlbums('rj')
 
-    // THEN Last.fm is asked for the user's top 50 albums and each album becomes an item
+    // THEN Last.fm is asked for the user's first album page and each album becomes an item
     expect(String(fetchMock.mock.calls[0][0])).toBe('https://ws.audioscrobbler.com/2.0/'
-      + '?method=user.gettopalbums&user=rj&period=overall&limit=50&api_key=lastfm-key&format=json')
+      + '?method=user.gettopalbums&user=rj&period=overall&limit=50&page=1&api_key=lastfm-key&format=json')
     expect(items).toEqual([
       {
         name: 'In Rainbows',
@@ -29,6 +29,27 @@ describe('LastFmClient', () => {
       },
       { name: 'Demo Tape', description: 'Album by Unknown Band, played 4 times on Last.fm', imageUrl: undefined },
     ])
+  })
+
+  it('returns albums from every Last.fm page', async () => {
+    // GIVEN Last.fm has two pages of albums for the user
+    const fetchMock = vi.spyOn(globalThis, 'fetch').mockImplementation(async (input) => {
+      const page = new URL(String(input)).searchParams.get('page')
+      const body = page === '1'
+        ? { ...lastFmTopAlbums, topalbums: { ...lastFmTopAlbums.topalbums!, '@attr': { totalPages: '2' } } }
+        : { topalbums: { album: [{
+          name: 'OK Computer', playcount: '200', artist: { name: 'Radiohead' }, image: [],
+        }], '@attr': { totalPages: '2' } } }
+      return new Response(JSON.stringify(body), { status: 200, headers: { 'content-type': 'application/json' } })
+    })
+
+    // WHEN all top albums are requested
+    const items = await new LastFmClient('lastfm-key').getTopAlbums('rj')
+
+    // THEN both pages are requested and the page two album is returned
+    expect(fetchMock).toHaveBeenCalledTimes(2)
+    expect(String(fetchMock.mock.calls[1][0])).toContain('page=2')
+    expect(items.map((item) => item.name)).toEqual(['In Rainbows', 'Demo Tape', 'OK Computer'])
   })
 
   it('fails with ImportNotFound when the user does not exist', async () => {

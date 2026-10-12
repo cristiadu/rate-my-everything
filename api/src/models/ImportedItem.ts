@@ -1,7 +1,7 @@
 import Item from '@/models/Item'
 
-/** Most items one import returns; both Last.fm and YouTube cap a page at this many. */
-export const MAX_IMPORTED_ITEMS = 50
+/** Number of items requested from a paginated external service at a time. */
+export const IMPORT_PAGE_SIZE = 50
 
 /** An interest found on an external service, with the item fields it fills in. */
 export type ImportedItem = Pick<Item, 'name' | 'description' | 'imageUrl'>
@@ -22,7 +22,10 @@ export type LastFmAlbum = {
 
 /** Body of Last.fm's user.gettopalbums method: the albums on success, or a Last.fm error code and message. */
 export type LastFmTopAlbumsResponse = {
-    topalbums?: { album: LastFmAlbum[] }
+    topalbums?: {
+        album: LastFmAlbum[]
+        '@attr'?: { totalPages: string }
+    }
     error?: number
     message?: string
 }
@@ -44,6 +47,7 @@ export type YouTubePlaylistItem = {
 /** Body of YouTube's playlistItems.list endpoint. */
 export type YouTubePlaylistItemsResponse = {
     items: YouTubePlaylistItem[]
+    nextPageToken?: string
 }
 
 /** One video returned by YouTube's videos.list endpoint. */
