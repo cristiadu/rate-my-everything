@@ -24,7 +24,7 @@ const InterestDetails: React.FC<InterestDetailsProps> = ({ item }) => (
           <dl>
             {item.attributes.map((attributeValue) => (
               <React.Fragment key={attributeValue.id}>
-                <dt><strong>{attributeValue.attribute.name}</strong></dt>
+                <dt><strong>{attributeValue.attribute.name} ({attributeValue.attribute.valueType})</strong></dt>
                 <dd>{attributeValue.value}</dd>
               </React.Fragment>
             ))}

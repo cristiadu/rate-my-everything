@@ -45,7 +45,7 @@ describe('InterestPage', () => {
     expect(await screen.findByRole('heading', { name: 'Dune' })).toBeInTheDocument()
     expect(screen.getByText('Books')).toBeInTheDocument()
     expect(screen.getByText('Desert planet epic')).toBeInTheDocument()
-    expect(screen.getByText('Pages')).toBeInTheDocument()
+    expect(screen.getByText('Pages (number)')).toBeInTheDocument()
     expect(screen.getByText('412')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Discussion' })).toBeInTheDocument()
     expect(screen.getByText('Everyone\'s grade')).toBeInTheDocument()
