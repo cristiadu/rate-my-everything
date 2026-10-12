@@ -1,7 +1,8 @@
 import { vi } from 'vitest'
-import { LastFmTopAlbumsResponse, LastFmTopArtistsResponse, YouTubePlaylistItemsResponse } from '@/models/ImportedItem'
+import type { LastFmTopAlbumsResponse, LastFmTopArtistsResponse } from '@/models/LastFmModels'
+import type { YouTubePlaylistItemsResponse } from '@/models/YouTubeModels'
 
-/** Last.fm top albums with one album that has a picture and one that has none. */
+/** Last.fm top albums with one largest image and one blank largest image that falls back to a smaller image. */
 export const lastFmTopAlbums: LastFmTopAlbumsResponse = {
   topalbums: {
     '@attr': { totalPages: '1' },
@@ -19,7 +20,10 @@ export const lastFmTopAlbums: LastFmTopAlbumsResponse = {
         name: 'Demo Tape',
         playcount: '4',
         artist: { name: 'Unknown Band' },
-        image: [{ size: 'extralarge', '#text': '' }],
+        image: [
+          { size: 'small', '#text': 'https://lastfm.freetls.fastly.net/i/u/34s/demo-tape.png' },
+          { size: 'extralarge', '#text': '' },
+        ],
       },
     ],
   },
@@ -47,6 +51,7 @@ export const youTubePlaylistItems: YouTubePlaylistItemsResponse = {
       snippet: {
         title: 'Never Gonna Give You Up',
         videoOwnerChannelTitle: 'Rick Astley',
+        description: 'The official music video.',
         thumbnails: {
           default: { url: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/default.jpg' },
           high: { url: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg' },

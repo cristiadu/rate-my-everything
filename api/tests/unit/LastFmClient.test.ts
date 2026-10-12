@@ -34,7 +34,7 @@ describe('LastFmClient', () => {
         type: 'Album',
         name: 'Demo Tape',
         description: 'Album by Unknown Band, played 4 times on Last.fm',
-        imageUrl: undefined,
+        imageUrl: 'https://lastfm.freetls.fastly.net/i/u/34s/demo-tape.png',
       },
     ])
   })

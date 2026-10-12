@@ -1,7 +1,8 @@
 import ImportSource from '@/models/ImportSource'
 import {
-  IMPORT_PAGE_SIZE, ImportedItem, YouTubePlaylistItemsResponse, YouTubeVideosResponse,
+  IMPORT_PAGE_SIZE, ImportedItem,
 } from '@/models/ImportedItem'
+import type { YouTubePlaylistItemsResponse, YouTubeVideosResponse } from '@/models/YouTubeModels'
 import { ImportNotFound } from '@/errors/ImportNotFound'
 import { ImportSourceFailed } from '@/errors/ImportSourceFailed'
 import { ImportSourceNotConfigured } from '@/errors/ImportSourceNotConfigured'
@@ -14,6 +15,11 @@ const YOUTUBE_VIDEOS_URL = 'https://www.googleapis.com/youtube/v3/videos'
 
 /** Status YouTube answers with when the playlist does not exist or is private. */
 const YOUTUBE_PLAYLIST_NOT_FOUND_STATUS = 404
+
+/** Combines a video's source channel and description for the imported interest. */
+const createVideoDescription = (channelTitle: string, description?: string): string => (
+  [`Video by ${channelTitle} on YouTube`, description?.trim()].filter(Boolean).join('\n\n')
+)
 
 /** Reads a public YouTube video or playlist through the YouTube Data API. */
 export default class YouTubeClient {
@@ -49,7 +55,7 @@ export default class YouTubeClient {
       return body.items.map(({ snippet }) => ({
         type: 'Video' as const,
         name: snippet.title,
-        description: `Video by ${snippet.channelTitle} on YouTube`,
+        description: createVideoDescription(snippet.channelTitle, snippet.description),
         imageUrl: (snippet.thumbnails.high ?? snippet.thumbnails.medium ?? snippet.thumbnails.default)?.url,
       }))
     }
@@ -76,7 +82,7 @@ export default class YouTubeClient {
         .map(({ snippet }) => ({
           type: 'Video' as const,
           name: snippet.title,
-          description: `Video by ${snippet.videoOwnerChannelTitle} on YouTube`,
+          description: createVideoDescription(snippet.videoOwnerChannelTitle ?? 'Unknown channel', snippet.description),
           imageUrl: (snippet.thumbnails.high ?? snippet.thumbnails.medium ?? snippet.thumbnails.default)?.url,
         })))
       pageToken = body.nextPageToken

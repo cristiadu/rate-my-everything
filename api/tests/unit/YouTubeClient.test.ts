@@ -30,7 +30,7 @@ describe('YouTubeClient', () => {
     expect(items).toEqual([{
       type: 'Video',
       name: 'Never Gonna Give You Up',
-      description: 'Video by Rick Astley on YouTube',
+      description: 'Video by Rick Astley on YouTube\n\nThe official music video.',
       imageUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
     }])
   })
