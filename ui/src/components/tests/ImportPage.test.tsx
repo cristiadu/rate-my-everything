@@ -72,7 +72,7 @@ describe('ImportPage', () => {
     expect(screen.getByRole('button', { name: 'Import 2 selected' })).toBeEnabled()
   })
 
-  test('asks for a playlist when YouTube is chosen', () => {
+  test('asks for a video or playlist URL when YouTube is chosen', () => {
     // GIVEN the import page
     renderImportPage()
 
@@ -80,7 +80,7 @@ describe('ImportPage', () => {
     fireEvent.change(screen.getByLabelText('Import from'), { target: { value: 'youtube' } })
 
     // THEN the search box asks for a playlist
-    expect(screen.getByLabelText('Playlist URL or id')).toBeInTheDocument()
+    expect(screen.getByLabelText('Video or playlist URL')).toBeInTheDocument()
   })
 
   test('imports the selected interests into the chosen category with links to rate them', async () => {

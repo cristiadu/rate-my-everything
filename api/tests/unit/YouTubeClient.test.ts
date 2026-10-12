@@ -10,6 +10,9 @@ import { mockExternalApi, youTubePlaylistItems } from '@@/testutils/common/Impor
 const PLAYLIST_REQUEST_URL = 'https://www.googleapis.com/youtube/v3/playlistItems'
   + '?part=snippet&playlistId=PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf&maxResults=50&key=youtube-key'
 
+/** Request YouTube receives for the Never Gonna Give You Up video. */
+const VIDEO_REQUEST_URL = 'https://www.googleapis.com/youtube/v3/videos?part=snippet&id=dQw4w9WgXcQ&key=youtube-key'
+
 describe('YouTubeClient', () => {
   afterEach(() => {
     vi.restoreAllMocks()
@@ -20,7 +23,7 @@ describe('YouTubeClient', () => {
     const fetchMock = mockExternalApi(youTubePlaylistItems)
 
     // WHEN the videos of a playlist id are read
-    const items = await new YouTubeClient('youtube-key').getPlaylistVideos('PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf')
+    const items = await new YouTubeClient('youtube-key').getVideos('PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf')
 
     // THEN YouTube is asked for 50 playlist entries and only the available video becomes an item
     expect(String(fetchMock.mock.calls[0][0])).toBe(PLAYLIST_REQUEST_URL)
@@ -36,10 +39,30 @@ describe('YouTubeClient', () => {
     const fetchMock = mockExternalApi(youTubePlaylistItems)
 
     // WHEN the videos of a playlist URL are read
-    await new YouTubeClient('youtube-key').getPlaylistVideos('https://www.youtube.com/playlist?list=PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf')
+    await new YouTubeClient('youtube-key').getVideos('https://www.youtube.com/playlist?list=PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf')
 
     // THEN YouTube is asked for the playlist id from the URL
     expect(String(fetchMock.mock.calls[0][0])).toBe(PLAYLIST_REQUEST_URL)
+  })
+
+  it('imports one video from a standard YouTube watch URL', async () => {
+    // GIVEN YouTube returns one video's public details
+    const fetchMock = mockExternalApi({ items: [{ snippet: {
+      title: 'Never Gonna Give You Up',
+      channelTitle: 'Rick Astley',
+      thumbnails: { high: { url: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg' } },
+    } }] })
+
+    // WHEN the video is read from its watch URL
+    const items = await new YouTubeClient('youtube-key').getVideos('https://www.youtube.com/watch?v=dQw4w9WgXcQ')
+
+    // THEN YouTube is asked for that video and it is returned as an importable item
+    expect(String(fetchMock.mock.calls[0][0])).toBe(VIDEO_REQUEST_URL)
+    expect(items).toEqual([{
+      name: 'Never Gonna Give You Up',
+      description: 'Video by Rick Astley on YouTube',
+      imageUrl: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg',
+    }])
   })
 
   it('fails with ImportNotFound when the playlist does not exist', async () => {
@@ -47,7 +70,7 @@ describe('YouTubeClient', () => {
     mockExternalApi({ error: { code: 404, message: 'playlistNotFound' } }, 404)
 
     // WHEN the videos are read THEN the missing playlist is reported
-    await expect(new YouTubeClient('youtube-key').getPlaylistVideos('PLmissing'))
+    await expect(new YouTubeClient('youtube-key').getVideos('PLmissing'))
       .rejects.toThrow(new ImportNotFound('YouTube playlist "PLmissing" was not found'))
   })
 
@@ -56,7 +79,7 @@ describe('YouTubeClient', () => {
     mockExternalApi({ error: { code: 403, message: 'quotaExceeded' } }, 403)
 
     // WHEN the videos are read THEN the failed call is reported with its status
-    await expect(new YouTubeClient('youtube-key').getPlaylistVideos('PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf'))
+    await expect(new YouTubeClient('youtube-key').getVideos('PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf'))
       .rejects.toThrow(new ImportSourceFailed(ImportSource.YOUTUBE, 403))
   })
 
@@ -65,7 +88,7 @@ describe('YouTubeClient', () => {
     const fetchMock = mockExternalApi(youTubePlaylistItems)
 
     // WHEN the videos are read THEN the missing configuration is reported
-    await expect(new YouTubeClient(undefined).getPlaylistVideos('PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf'))
+    await expect(new YouTubeClient(undefined).getVideos('PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf'))
       .rejects.toThrow(ImportSourceNotConfigured)
     expect(fetchMock).not.toHaveBeenCalled()
   })

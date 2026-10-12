@@ -9,13 +9,13 @@ export default class ImportService {
 
   private youTubeClient = new YouTubeClient(process.env.YOUTUBE_API_KEY)
 
-  /** Returns the items found on the source for the query: a Last.fm username or a YouTube playlist. */
+  /** Returns the items found on the source for the query: a Last.fm username or a YouTube video or playlist URL. */
   public async findItems(source: ImportSource, query: string): Promise<ImportedItem[]> {
     switch (source) {
       case ImportSource.LASTFM:
         return this.lastFmClient.getTopAlbums(query)
       case ImportSource.YOUTUBE:
-        return this.youTubeClient.getPlaylistVideos(query)
+        return this.youTubeClient.getVideos(query)
     }
   }
 }

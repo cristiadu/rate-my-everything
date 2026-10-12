@@ -2,7 +2,7 @@
 enum ImportSource {
     /** A Last.fm user's most played albums; the query is the Last.fm username. */
     LASTFM = 'lastfm',
-    /** The videos of a public YouTube playlist; the query is the playlist URL or id. */
+    /** Public YouTube videos; the query is a video or playlist URL. */
     YOUTUBE = 'youtube',
 }
 

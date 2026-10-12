@@ -172,7 +172,7 @@ export enum ImportSource {
 /** How each import source is named, and what its search box asks for. */
 export const IMPORT_SOURCES: Record<ImportSource, { label: string, queryLabel: string }> = {
     [ImportSource.LASTFM]: { label: 'Last.fm top albums', queryLabel: 'Last.fm username' },
-    [ImportSource.YOUTUBE]: { label: 'YouTube playlist', queryLabel: 'Playlist URL or id' },
+    [ImportSource.YOUTUBE]: { label: 'YouTube', queryLabel: 'Video or playlist URL' },
 }
 
 /** An interest found on an external service, not saved yet. */

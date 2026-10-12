@@ -45,3 +45,17 @@ export type YouTubePlaylistItem = {
 export type YouTubePlaylistItemsResponse = {
     items: YouTubePlaylistItem[]
 }
+
+/** One video returned by YouTube's videos.list endpoint. */
+export type YouTubeVideo = {
+    snippet: {
+        title: string
+        channelTitle: string
+        thumbnails: { default?: YouTubeThumbnail, medium?: YouTubeThumbnail, high?: YouTubeThumbnail }
+    }
+}
+
+/** Body of YouTube's videos.list endpoint. */
+export type YouTubeVideosResponse = {
+    items: YouTubeVideo[]
+}
