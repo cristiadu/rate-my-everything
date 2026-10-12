@@ -3,7 +3,6 @@ import Category from '@/models/Category'
 import AttributeValue from '@/models/AttributeValue'
 import BaseService from '@/services/BaseService'
 import CategoryService from '@/services/CategoryService'
-import { UnknownAttributes } from '@/errors/UnknownAttributes'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { findSimilarIds, orderByIds } from '@/helpers/SimilarityHelper'
 import { In } from 'typeorm'
@@ -32,7 +31,7 @@ class ItemService extends BaseService<Item> {
     const categoryAttributes = new Map(category.attributes.map((attribute) => [attribute.id, attribute]))
     const unknownIds = inputs.map((input) => input.attributeId).filter((attributeId) => !categoryAttributes.has(attributeId))
     if (unknownIds.length > 0) {
-      throw new UnknownAttributes(unknownIds)
+      throw new UnknownResource('attribute', unknownIds)
     }
 
     return inputs.map((input) => {
