@@ -4,7 +4,7 @@ import { MAX_COMMENT_LENGTH } from '@/models/Comment'
 import { SessionUser } from '@/models/User'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import { UnknownItem } from '@/errors/UnknownItem'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { CommentNotOwned } from '@/errors/CommentNotOwned'
 
 /** Discussion threads on items: list an item's comments, post one, and delete one. */
@@ -19,7 +19,7 @@ export default class CommentController {
 
   public initializeRoutes() {
     this.router.get('/item/:item_id', (req, res) => this.getAllByItemId(req, res))
-    this.router.post('/', (req, res) => this.create(req, res))
+    this.router.post('/item/:item_id', (req, res) => this.create(req, res))
     this.router.delete('/:id', (req, res) => this.delete(req, res))
   }
 
@@ -34,12 +34,13 @@ export default class CommentController {
     }
   }
 
-  /** Posts a comment by the signed-in user; 400 when item_id or the body is missing or too long, 404 for an unknown item. */
+  /** Posts a comment to an item by the signed-in user; 400 when the body is missing or too long, 404 for an unknown item. */
   public async create(req: Request, res: Response) {
     try {
-      const { item_id, body } = req.body
+      const itemId = parseInt(req.params.item_id, 10)
+      const { body } = req.body
       const trimmedBody = typeof body === 'string' ? body.trim() : ''
-      if (!item_id || !trimmedBody) {
+      if (!Number.isInteger(itemId) || itemId <= 0 || !trimmedBody) {
         return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: item_id, body'))
       }
       if (trimmedBody.length > MAX_COMMENT_LENGTH) {
@@ -47,11 +48,12 @@ export default class CommentController {
         return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, message))
       }
       const sessionUser = res.locals.user as SessionUser
-      const data = await this.commentService.create(item_id, sessionUser.id, trimmedBody)
+      const data = await this.commentService.create(itemId, sessionUser.id, trimmedBody)
       res.status(201).json(data)
     } catch (error) {
-      if (error instanceof UnknownItem) {
-        return res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Item not found'))
+      if (error instanceof UnknownResource) {
+        const resourceName = `${error.resource[0].toUpperCase()}${error.resource.slice(1)}`
+        return res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, `${resourceName} not found`))
       }
       console.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))

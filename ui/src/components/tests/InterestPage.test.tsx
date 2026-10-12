@@ -31,7 +31,12 @@ describe('InterestPage', () => {
 
   test('shows the interest details and its discussion', async () => {
     // GIVEN the API returns Dune and one comment on it
-    fetchMock.mockImplementation(async (url) => jsonResponse(String(url).includes('/comments/') ? [myComment] : duneItem))
+    fetchMock.mockImplementation(async (url) => {
+      const requestUrl = String(url)
+      if (requestUrl.includes('/comments/')) return jsonResponse([myComment])
+      if (requestUrl.includes('/ratings/')) return jsonResponse([])
+      return jsonResponse(duneItem)
+    })
 
     // WHEN Dune's page opens
     renderPageAt('/interests/100')
@@ -43,6 +48,8 @@ describe('InterestPage', () => {
     expect(screen.getByText('Pages')).toBeInTheDocument()
     expect(screen.getByText('412')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Discussion' })).toBeInTheDocument()
+    expect(screen.getByText('Everyone\'s grade')).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: 'My ratings' })).toBeInTheDocument()
     expect(await screen.findByText('Best sci-fi ever written')).toBeInTheDocument()
   })
 

@@ -1,21 +1,29 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
-import { Box, Image, Message } from 'react-bulma-components'
+import { Message } from 'react-bulma-components'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
-import type { Item } from '@/components/types'
+import type { Item, RatedItem } from '@/components/types'
 import InterestDiscussion from '@/components/interests/InterestDiscussion'
+import InterestDetails from '@/components/interests/InterestDetails'
+import RatingHistory from '@/components/interests/RatingHistory'
+import { getUserIdFromToken } from '@/components/admin/RequireAdmin'
+import { useAuth } from '@/components/users/AuthContext'
 
 /** View page of one interest: its details, and the discussion thread everyone shares about it. */
 const InterestPage: React.FC = () => {
   const { itemId } = useParams()
   const viewedItemId = Number(itemId)
+  const { token } = useAuth()
+  const userId = getUserIdFromToken(token)
   const [item, setItem] = useState<Item | null>(null)
+  const [itemRatings, setItemRatings] = useState<RatedItem[]>([])
   const [error, setError] = useState('')
 
   const loadItem = useCallback(async () => {
     try {
       setItem(await ApiService.get<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${viewedItemId}`))
+      setItemRatings(await ApiService.get<RatedItem[]>(`${ApiConfig.ENDPOINTS.RATINGS}/item/${viewedItemId}`))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load the interest')
     }
@@ -39,30 +47,8 @@ const InterestPage: React.FC = () => {
 
   return (
     <>
-      <Box>
-        <article className="media">
-          {item.imageUrl && (
-            <div className="media-left">
-              <Image size={128} alt={item.name} src={item.imageUrl} />
-            </div>
-          )}
-          <div className="media-content">
-            <h2 className="title is-4">{item.name}</h2>
-            {item.category && <p className="subtitle is-6">{item.category.name}</p>}
-            <p>{item.description}</p>
-            {item.attributes.length > 0 && (
-              <dl>
-                {item.attributes.map((attributeValue) => (
-                  <React.Fragment key={attributeValue.id}>
-                    <dt><strong>{attributeValue.attribute.name}</strong></dt>
-                    <dd>{attributeValue.value}</dd>
-                  </React.Fragment>
-                ))}
-              </dl>
-            )}
-          </div>
-        </article>
-      </Box>
+      <InterestDetails item={item} />
+      <RatingHistory itemRatings={itemRatings} userId={userId} />
       <InterestDiscussion itemId={item.id} />
     </>
   )

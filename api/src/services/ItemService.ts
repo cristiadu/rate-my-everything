@@ -4,7 +4,7 @@ import AttributeValue from '@/models/AttributeValue'
 import BaseService from '@/services/BaseService'
 import CategoryService from '@/services/CategoryService'
 import { UnknownAttributes } from '@/errors/UnknownAttributes'
-import { UnknownCategory } from '@/errors/UnknownCategory'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { findSimilarIds, orderByIds } from '@/helpers/SimilarityHelper'
 import { In } from 'typeorm'
 
@@ -22,7 +22,7 @@ class ItemService extends BaseService<Item> {
   private async getCategory(categoryId: number | undefined): Promise<Category> {
     const category = categoryId === undefined ? null : await this.categoryService.getById(categoryId)
     if (!category) {
-      throw new UnknownCategory(categoryId)
+      throw new UnknownResource('category', categoryId)
     }
     return category
   }

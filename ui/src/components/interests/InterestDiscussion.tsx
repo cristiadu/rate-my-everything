@@ -41,7 +41,7 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
     setIsPosting(true)
     setError('')
     try {
-      await ApiService.post<Comment>(ApiConfig.ENDPOINTS.COMMENTS, { item_id: itemId, body: draft })
+      await ApiService.post<Comment>(`${ApiConfig.ENDPOINTS.COMMENTS}/item/${itemId}`, { body: draft })
       setDraft('')
       await loadComments()
     } catch (err) {

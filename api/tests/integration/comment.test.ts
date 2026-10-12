@@ -28,7 +28,7 @@ describe('Comment API Integration Tests', async () => {
     otherUserToken = await getUserRoleAuthToken(app)
   })
 
-  describe(`POST ${Endpoints.COMMENTS_BASE_PATH}`, () => {
+  describe(`POST ${Endpoints.COMMENTS_BASE_PATH}/item/:item_id`, () => {
     it('should post a trimmed comment by the signed-in user without exposing private user fields', async () => {
       // GIVEN a comment body with surrounding whitespace
       const body = { item_id: testItem.id, body: '  Loved the ending  ' }

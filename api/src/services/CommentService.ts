@@ -3,7 +3,7 @@ import BaseService from '@/services/BaseService'
 import ItemService from '@/services/ItemService'
 import { SessionUser } from '@/models/User'
 import UserRole from '@/models/UserRole'
-import { UnknownItem } from '@/errors/UnknownItem'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { CommentNotOwned } from '@/errors/CommentNotOwned'
 
 /** Fields returned for every comment: its author is limited to id and username. */
@@ -40,7 +40,7 @@ class CommentService extends BaseService<Comment> {
   /** Add a comment by the given user to the discussion of an item, failing when the item does not exist. */
   public async create(itemId: number, userId: number, body: string): Promise<Comment> {
     if (!await this.itemService.get(itemId)) {
-      throw new UnknownItem(itemId)
+      throw new UnknownResource('item', itemId)
     }
     const savedComment = await this.repository.save(this.repository.create({ item: { id: itemId }, user: { id: userId }, body }))
     return this.repository.findOneOrFail({ where: { id: savedComment.id }, select: COMMENT_SELECT, relations: COMMENT_RELATIONS })

@@ -9,7 +9,7 @@ interface RatingHistoryProps {
   itemRatings: RatedItem[];
   /** Id of the signed-in user, whose ratings are listed. */
   userId: number | null;
-  onRemove: (ratedItem: RatedItem) => void;
+  onRemove?: (ratedItem: RatedItem) => void;
 }
 
 /** Shows an item's personal and collective grades and lists each time the signed-in user rated it, newest first. */
@@ -51,11 +51,11 @@ const RatingHistory: React.FC<RatingHistoryProps> = ({ itemRatings, userId, onRe
               <td>{new Date(ratedItem.ratedAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}</td>
               <td>{ratedItem.rating.toFixed(1)}</td>
               <td>{ratedItem.notes}</td>
-              <td>
+              {onRemove && <td>
                 <button type="button" className="button is-small is-danger is-outlined" onClick={() => onRemove(ratedItem)}>
                   Remove
                 </button>
-              </td>
+              </td>}
             </tr>
           ))}
         </tbody>

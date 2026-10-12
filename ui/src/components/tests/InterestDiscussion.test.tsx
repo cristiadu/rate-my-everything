@@ -81,7 +81,8 @@ describe('InterestDiscussion', () => {
     // THEN it is sent for this item and the form is emptied
     await waitFor(() => expect(screen.getByLabelText('Add a comment')).toHaveValue(''))
     const [, postInit] = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST') ?? []
-    expect(JSON.parse(String(postInit?.body))).toEqual({ item_id: 100, body: 'Best sci-fi ever written' })
+    expect(fetchMock.mock.calls.find(([, init]) => init?.method === 'POST')?.[0]).toBe('http://localhost:3000/api/comments/item/100')
+    expect(JSON.parse(String(postInit?.body))).toEqual({ body: 'Best sci-fi ever written' })
   })
 
   test('keeps the post button disabled for a blank comment', async () => {
