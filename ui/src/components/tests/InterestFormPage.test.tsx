@@ -133,11 +133,9 @@ describe('InterestFormPage', () => {
     expect(screen.queryByText('Movies details')).not.toBeInTheDocument()
   })
 
-  test('lets moderators edit an interest and their existing rating of it', async () => {
-    // GIVEN a moderator on the edit form for Dune, filled from the API
+  test('lets moderators edit an interest and rate it again', async () => {
+    // GIVEN a moderator on the edit form for Dune
     loginAs([UserRole.USER, UserRole.MODERATOR])
-  test('edits an interest and rates it again', async () => {
-    // GIVEN the edit form for Dune, filled from the API, with an empty rating field
     renderFormAt('/interests/100/edit')
     expect(await screen.findByDisplayValue('412')).toBeInTheDocument()
     expect(screen.getByLabelText('Rate it again (0 to 10)')).toHaveValue(null)
@@ -162,7 +160,7 @@ describe('InterestFormPage', () => {
     ])
   })
 
-  test('sends a user\'s edit of an interest for approval and updates their rating', async () => {
+  test('sends a user\'s edit of an interest for approval and adds their new rating', async () => {
     // GIVEN a user without a moderation role on the edit form for Dune
     renderFormAt('/interests/100/edit')
     await screen.findByDisplayValue('412')
@@ -172,7 +170,7 @@ describe('InterestFormPage', () => {
     fireEvent.change(screen.getByLabelText('My rating (0 to 10)'), { target: { value: '9' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
 
-    // THEN the item edit becomes a change request, my rating is updated, and I land on my change requests
+    // THEN the item edit becomes a change request, my rating is added, and I land on my change requests
     expect(await screen.findByText('My change requests page')).toBeInTheDocument()
     expect(sentWrites(fetchMock)).toEqual([
       ['POST', '/change-requests', {
@@ -187,11 +185,11 @@ describe('InterestFormPage', () => {
           attributeValues: [{ attributeId: 2, value: '420' }],
         },
       }],
-      ['PUT', '/ratings/900', { rating: 9, notes: 'Reread every year' }],
+      ['POST', '/ratings', { item_id: 100, rating: 9, notes: '' }],
     ])
   })
 
-  test('only updates a user\'s rating when the interest itself did not change', async () => {
+  test('adds a rating without requesting an unchanged interest', async () => {
     // GIVEN a user without a moderation role on the edit form for Dune
     renderFormAt('/interests/100/edit')
     await screen.findByDisplayValue('412')
@@ -200,12 +198,11 @@ describe('InterestFormPage', () => {
     fireEvent.change(screen.getByLabelText('My rating (0 to 10)'), { target: { value: '8' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
 
-    // THEN no change request is sent
+    // THEN only the rating is added
     expect(await screen.findByText('My rankings page')).toBeInTheDocument()
-    expect(sentWrites(fetchMock)).toEqual([['PUT', '/ratings/900', { rating: 8, notes: 'Reread every year' }]])
+    expect(sentWrites(fetchMock)).toEqual([['POST', '/ratings', { item_id: 100, rating: 8, notes: '' }]])
   })
 
-  test('removes the interest from my list by deleting my rating', async () => {
   test('saves an interest I already rated without adding a rating', async () => {
     // GIVEN the edit form for Dune, which I already rated
     renderFormAt('/interests/100/edit')
@@ -214,9 +211,9 @@ describe('InterestFormPage', () => {
     // WHEN it is saved with the rating field left empty
     fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
 
-    // THEN only the item is updated
+    // THEN no writes are sent
     expect(await screen.findByText('My rankings page')).toBeInTheDocument()
-    expect(sentWrites(fetchMock).map(([method, path]) => [method, path])).toEqual([['PUT', '/items/100']])
+    expect(sentWrites(fetchMock)).toEqual([])
   })
 
   test('shows my grade, everyone\'s grade and my ratings newest first', async () => {

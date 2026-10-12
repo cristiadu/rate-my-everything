@@ -34,11 +34,9 @@ const InterestFormPage: React.FC = () => {
   const [categories, setCategories] = useState<Category[]>([])
   const [formFields, setFormFields] = useState<InterestForm>(emptyInterestForm)
   const [loadedForm, setLoadedForm] = useState<InterestForm>(emptyInterestForm)
-  const [ratingId, setRatingId] = useState<number | null>(null)
   /** Id of the signed-in user, used to pick their ratings out of everyone's. */
   const userId = getUserIdFromToken(token)
   const [itemRatings, setItemRatings] = useState<RatedItem[]>([])
-  const [loadedForm, setLoadedForm] = useState<InterestForm>(emptyInterestForm)
   const [error, setError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
@@ -59,14 +57,13 @@ const InterestFormPage: React.FC = () => {
       const item = await ApiService.get<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${editingItemId}`)
       const ratings = await ApiService.get<RatedItem[]>(`${ApiConfig.ENDPOINTS.RATINGS}/item/${editingItemId}`)
       setItemRatings(ratings)
-      const myRating = ratings.find((ratedItem) => ratedItem.userId === userId)
-      const itemForm = toInterestForm(item, myRating)
+      const itemForm = toInterestForm(item)
       setFormFields(itemForm)
       setLoadedForm(itemForm)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load the interest')
     }
-  }, [editingItemId])
+  }, [editingItemId, userId])
 
   useEffect(() => {
     loadForm()
