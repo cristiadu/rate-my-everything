@@ -3,8 +3,9 @@ import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Box, Message } from 'react-bulma-components'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
+import { createChangeRequest } from '@/config/ChangeRequestService'
 import {
-  type Category, type ChangeRequest, ChangeRequestAction, ChangeRequestTarget, type InterestForm, type Item, type RatedItem,
+  type Category, ChangeRequestAction, ChangeRequestTarget, type InterestForm, type Item, type RatedItem,
 } from '@/components/types'
 import { useAuth } from '@/components/users/AuthContext'
 import { canModerate } from '@/components/admin/RequireAdmin'
@@ -80,7 +81,7 @@ const InterestFormPage: React.FC = () => {
       if (editingItemId === null) {
         savedItemId = (await ApiService.post<Item>(ApiConfig.ENDPOINTS.ITEMS, itemInput)).id
       } else if (isProposingChange) {
-        await ApiService.post<ChangeRequest>(ApiConfig.ENDPOINTS.CHANGE_REQUESTS, {
+        await createChangeRequest({
           targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.UPDATE, targetId: editingItemId, changes: itemInput,
         })
       } else if (canModerate(token)) {

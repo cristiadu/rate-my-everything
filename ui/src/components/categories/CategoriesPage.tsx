@@ -1,8 +1,9 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
+import { createChangeRequest } from '@/config/ChangeRequestService'
 import {
-  type Attribute, type Category, type CategoryFormValues, type ChangeRequest, ChangeRequestAction, type ChangeRequestInput,
+  type Attribute, type Category, type CategoryFormValues, ChangeRequestAction, type ChangeRequestInput,
   ChangeRequestTarget, type StatusMessage, UserRole,
 } from '@/components/types'
 import { getRolesFromToken } from '@/components/admin/RequireAdmin'
@@ -67,7 +68,7 @@ const CategoriesPage: React.FC = () => {
 
   /** Sends a user's proposed category change to the moderators. */
   const proposeChange = async (changeRequestInput: ChangeRequestInput) => {
-    await ApiService.post<ChangeRequest>(ApiConfig.ENDPOINTS.CHANGE_REQUESTS, changeRequestInput)
+    await createChangeRequest(changeRequestInput)
     setStatus({ message: SENT_FOR_APPROVAL_MESSAGE, isSuccess: true })
   }
 
