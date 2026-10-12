@@ -2,6 +2,7 @@ import React from 'react'
 import { Box } from 'react-bulma-components'
 import type { RatedItem } from '@/components/types'
 import { collectiveGrade, personalGrade } from '@/components/rankings/rankingData'
+import { formatDate } from '@/components/common/formatDate'
 
 /** Props for an item's grades and the signed-in user's rating history of it. */
 interface RatingHistoryProps {
@@ -48,7 +49,7 @@ const RatingHistory: React.FC<RatingHistoryProps> = ({ itemRatings, userId, onRe
         <tbody>
           {[...myRatings].sort((a, b) => Date.parse(b.ratedAt) - Date.parse(a.ratedAt)).map((ratedItem) => (
             <tr key={ratedItem.id}>
-              <td>{new Date(ratedItem.ratedAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}</td>
+              <td>{formatDate(ratedItem.ratedAt)}</td>
               <td>{ratedItem.rating.toFixed(1)}</td>
               <td>{ratedItem.notes}</td>
               {onRemove && <td>

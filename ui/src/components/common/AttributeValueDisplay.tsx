@@ -1,17 +1,11 @@
 import React from 'react'
 import { AttributeValueType, type Attribute } from '@/components/types'
+import { formatDate } from '@/components/common/formatDate'
 
 /** Props for one type-aware attribute value. */
 interface AttributeValueDisplayProps {
   attribute: Attribute;
   value: string;
-}
-
-/** Formats a date-only attribute without shifting its calendar day across time zones. */
-const formatDate = (value: string): string => {
-  const date = new Date(`${value}T00:00:00Z`)
-  if (Number.isNaN(date.getTime())) return value
-  return new Intl.DateTimeFormat(undefined, { dateStyle: 'medium', timeZone: 'UTC' }).format(date)
 }
 
 /** Presents an attribute value with a visual treatment suited to its type. */
