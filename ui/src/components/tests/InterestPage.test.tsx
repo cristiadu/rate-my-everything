@@ -3,11 +3,21 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import InterestPage from '@/components/interests/InterestPage'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { UserRole } from '@/components/types'
+import { AttributeValueType, UserRole, type Item } from '@/components/types'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import { myComment } from '@/components/tests/common/Comments'
 import { duneItem } from '@/components/tests/common/Interests'
+
+const typedDuneItem: Item = {
+  ...duneItem,
+  attributes: [
+    ...duneItem.attributes,
+    { id: 501, attribute: { id: 3, name: 'Finished', valueType: AttributeValueType.BOOLEAN }, value: 'true' },
+    { id: 502, attribute: { id: 4, name: 'Released', valueType: AttributeValueType.DATE }, value: '2026-10-01' },
+    { id: 503, attribute: { id: 5, name: 'Author', valueType: AttributeValueType.STRING }, value: 'Frank Herbert' },
+  ],
+}
 
 /** Renders the interest page route at the given path. */
 const renderPageAt = (path: string) => render(
@@ -35,7 +45,7 @@ describe('InterestPage', () => {
       const requestUrl = String(url)
       if (requestUrl.includes('/comments/')) return jsonResponse([myComment])
       if (requestUrl.includes('/ratings/')) return jsonResponse([])
-      return jsonResponse(duneItem)
+      return jsonResponse(typedDuneItem)
     })
 
     // WHEN Dune's page opens
@@ -45,8 +55,13 @@ describe('InterestPage', () => {
     expect(await screen.findByRole('heading', { name: 'Dune' })).toBeInTheDocument()
     expect(screen.getByText('Books')).toBeInTheDocument()
     expect(screen.getByText('Desert planet epic')).toBeInTheDocument()
-    expect(screen.getByText('Pages (number)')).toBeInTheDocument()
+    expect(screen.getByText('Pages')).toBeInTheDocument()
     expect(screen.getByText('412')).toBeInTheDocument()
+    expect(screen.getByText('Finished')).toBeInTheDocument()
+    expect(screen.getByText('Yes')).toBeInTheDocument()
+    expect(screen.getByText('Released')).toBeInTheDocument()
+    expect(document.querySelector('time[datetime="2026-10-01"]')).toBeInTheDocument()
+    expect(screen.getByText('Frank Herbert')).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Discussion' })).toBeInTheDocument()
     expect(screen.getByText('Everyone\'s grade')).toBeInTheDocument()
     expect(screen.getByRole('table', { name: 'My ratings' })).toBeInTheDocument()
