@@ -4,7 +4,9 @@ import ImportSource from '@/models/ImportSource'
 import { ImportNotFound } from '@/errors/ImportNotFound'
 import { ImportSourceFailed } from '@/errors/ImportSourceFailed'
 import { ImportSourceNotConfigured } from '@/errors/ImportSourceNotConfigured'
-import { lastFmTopAlbums, lastFmUserNotFound, mockExternalApi } from '@@/testutils/common/Imports'
+import {
+  lastFmTopAlbums, lastFmTopArtists, lastFmUserNotFound, mockExternalApi,
+} from '@@/testutils/common/Imports'
 
 describe('LastFmClient', () => {
   afterEach(() => {
@@ -50,6 +52,22 @@ describe('LastFmClient', () => {
     expect(fetchMock).toHaveBeenCalledTimes(2)
     expect(String(fetchMock.mock.calls[1][0])).toContain('page=2')
     expect(items.map((item) => item.name)).toEqual(['In Rainbows', 'Demo Tape', 'OK Computer'])
+  })
+
+  it('returns the users top artists with their images', async () => {
+    // GIVEN Last.fm returns the user's top artists
+    const fetchMock = mockExternalApi(lastFmTopArtists)
+
+    // WHEN the user's artists are read
+    const items = await new LastFmClient('lastfm-key').getTopArtists('rj')
+
+    // THEN Last.fm is asked for top artists and the artist becomes an item
+    expect(String(fetchMock.mock.calls[0][0])).toContain('method=user.gettopartists')
+    expect(items).toEqual([{
+      name: 'Radiohead',
+      description: 'Artist, played 1200 times on Last.fm',
+      imageUrl: 'https://lastfm.freetls.fastly.net/i/u/300x300/radiohead.png',
+    }])
   })
 
   it('fails with ImportNotFound when the user does not exist', async () => {

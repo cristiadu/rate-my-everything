@@ -13,7 +13,10 @@ export default class ImportService {
   public async findItems(source: ImportSource, query: string): Promise<ImportedItem[]> {
     switch (source) {
       case ImportSource.LASTFM:
-        return this.lastFmClient.getTopAlbums(query)
+        return (await Promise.all([
+          this.lastFmClient.getTopArtists(query),
+          this.lastFmClient.getTopAlbums(query),
+        ])).flat()
       case ImportSource.YOUTUBE:
         return this.youTubeClient.getVideos(query)
     }

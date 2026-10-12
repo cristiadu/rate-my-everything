@@ -33,7 +33,7 @@ This is a monorepo with two main apps:
 
 | Variable | Default | Used for |
 | --- | --- | --- |
-| `LASTFM_API_KEY` | none | Importing all pages of a Last.fm user's most played albums. Create a key at https://www.last.fm/api/account/create. |
+| `LASTFM_API_KEY` | none | Importing all pages of a Last.fm user's most played artists and albums. Create a key at https://www.last.fm/api/account/create. |
 | `YOUTUBE_API_KEY` | none | Importing a public YouTube video or every available video in a playlist. Create a key for the YouTube Data API v3 in the Google Cloud console. |
 
 ## Importing interests
@@ -42,7 +42,7 @@ Signed-in users open **Import interests** in the top menu, pick a source, and se
 
 | Source | What they type | What becomes an item |
 | --- | --- | --- |
-| Last.fm top albums | A Last.fm username, e.g. `rj` | Every page of the user's all-time albums, described with artist and play count, with its cover |
+| Last.fm | A Last.fm username, e.g. `rj` | Every page of the user's all-time artists and albums, with play counts and available images |
 | YouTube | A video URL such as `https://youtu.be/dQw4w9WgXcQ` or a playlist URL | One video or every available playlist video, with its thumbnail; deleted and private playlist videos are skipped. Choose the destination category when importing. |
 
 `GET /api/imports/:source?query=...` returns the found items without saving them. The UI then creates the selected ones in the chosen category through `POST /api/items`, and links each new item to its rating form.

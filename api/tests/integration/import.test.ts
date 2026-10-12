@@ -7,7 +7,7 @@ import ErrorCode from '@/errors/ErrorCode'
 import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { Endpoints } from '@@/testutils/common/constants'
 import {
-  lastFmTopAlbums, lastFmUserNotFound, mockExternalApi, youTubePlaylistItems,
+  lastFmTopAlbums, lastFmTopArtists, lastFmUserNotFound, mockExternalApi, youTubePlaylistItems,
 } from '@@/testutils/common/Imports'
 
 describe('Import API Integration Tests', async () => {
@@ -20,11 +20,13 @@ describe('Import API Integration Tests', async () => {
   })
 
   describe(`GET ${Endpoints.IMPORTS_BASE_PATH}/:source`, () => {
-    it('should list the Last.fm top albums of a user to a regular user', async () => {
-      // GIVEN Last.fm returns two top albums
-      mockExternalApi(lastFmTopAlbums)
+    it('should list the Last.fm top artists and albums of a user to a regular user', async () => {
+      // GIVEN Last.fm returns the user's top artists and albums
+      mockExternalApi((url) => new URL(url).searchParams.get('method') === 'user.gettopartists'
+        ? lastFmTopArtists
+        : lastFmTopAlbums)
 
-      // WHEN a regular user imports from Last.fm THEN the albums are listed as items
+      // WHEN a regular user imports from Last.fm THEN the artists and albums are listed as items
       await request(app)
         .get(`${Endpoints.IMPORTS_BASE_PATH}/lastfm`)
         .query({ query: 'rj' })
@@ -32,7 +34,7 @@ describe('Import API Integration Tests', async () => {
         .expect(200)
         .expect(res => {
           const items = res.body as ImportedItem[]
-          expect(items.map((item) => item.name)).toEqual(['In Rainbows', 'Demo Tape'])
+          expect(items.map((item) => item.name)).toEqual(['Radiohead', 'In Rainbows', 'Demo Tape'])
         })
     })
 
