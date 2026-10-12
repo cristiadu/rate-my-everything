@@ -2,6 +2,7 @@ import React from 'react'
 import { Box } from 'react-bulma-components'
 import type { RatedItem } from '@/components/types'
 import { collectiveGrade, personalGrade } from '@/components/rankings/rankingData'
+import { formatDate } from '@/components/common/formatDate'
 
 /** Props for an item's grades and the signed-in user's rating history of it. */
 interface RatingHistoryProps {
@@ -9,7 +10,7 @@ interface RatingHistoryProps {
   itemRatings: RatedItem[];
   /** Id of the signed-in user, whose ratings are listed. */
   userId: number | null;
-  onRemove: (ratedItem: RatedItem) => void;
+  onRemove?: (ratedItem: RatedItem) => void;
 }
 
 /** Shows an item's personal and collective grades and lists each time the signed-in user rated it, newest first. */
@@ -48,14 +49,14 @@ const RatingHistory: React.FC<RatingHistoryProps> = ({ itemRatings, userId, onRe
         <tbody>
           {[...myRatings].sort((a, b) => Date.parse(b.ratedAt) - Date.parse(a.ratedAt)).map((ratedItem) => (
             <tr key={ratedItem.id}>
-              <td>{new Date(ratedItem.ratedAt).toLocaleDateString(undefined, { dateStyle: 'medium' })}</td>
+              <td>{formatDate(ratedItem.ratedAt)}</td>
               <td>{ratedItem.rating.toFixed(1)}</td>
               <td>{ratedItem.notes}</td>
-              <td>
+              {onRemove && <td>
                 <button type="button" className="button is-small is-danger is-outlined" onClick={() => onRemove(ratedItem)}>
                   Remove
                 </button>
-              </td>
+              </td>}
             </tr>
           ))}
         </tbody>

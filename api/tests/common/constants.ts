@@ -1,5 +1,6 @@
 export enum Endpoints {
   CATEGORIES_BASE_PATH = '/api/categories',
+  COMMENTS_BASE_PATH = '/api/comments',
   ATTRIBUTES_BASE_PATH = '/api/attributes',
   HEALTH_BASE_PATH = '/api/health',
   IMPORTS_BASE_PATH = '/api/imports',

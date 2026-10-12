@@ -9,6 +9,7 @@ const ApiConfig = {
     ITEMS: '/items',
     CATEGORIES: '/categories',
     IMPORTS: '/imports',
+    COMMENTS: '/comments',
     HEALTH: '/health',
   },
 }

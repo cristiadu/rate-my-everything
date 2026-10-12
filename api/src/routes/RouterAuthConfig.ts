@@ -4,6 +4,7 @@ import UserController from '@/api/UserController'
 import AttributeController from '@/api/AttributeController'
 import ItemController from '@/api/ItemController'
 import CategoryController from '@/api/CategoryController'
+import CommentController from '@/api/CommentController'
 import UserRole from '@/models/UserRole'
 import LoginController from '@/api/LoginController'
 import HealthController from '@/api/HealthController'
@@ -36,6 +37,7 @@ export const routes: RouteConfig[] = [
     writeRoles: [UserRole.ADMIN],
   },
   { path: '/api/imports', controller: () => new ImportController().router, roles: [UserRole.USER, UserRole.ADMIN] },
+  { path: '/api/comments', controller: () => new CommentController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/health', controller: () => new HealthController().router },
   { path: '/api', controller: () => (_req: Request, res: Response) => {
       res.status(404).json(NewApiError(ErrorCode.NOT_FOUND, 404, 'Could not find an API resource at the specified path'))

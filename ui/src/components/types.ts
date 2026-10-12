@@ -181,6 +181,21 @@ export interface ImportedItem {
     name: string;
     description: string;
     imageUrl?: string | null;
+/** Longest comment body the comments API accepts, in characters. */
+export const MAX_COMMENT_LENGTH = 2000
+
+/** Author of a comment; the API only returns their id and username. */
+export type CommentAuthor = {
+    id: number;
+    username: string;
+}
+
+/** One message in the discussion thread of an interest. */
+export interface Comment {
+    id: number;
+    body: string;
+    createdAt: string;
+    user: CommentAuthor;
 }
 
 /** Records the API found for one similar-name query, kept with that query so stale answers can be ignored. */
