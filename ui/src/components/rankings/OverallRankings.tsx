@@ -6,27 +6,30 @@ import ApiService from '@/config/ApiService'
 import { RankingScope, type RankingItem, type RatedItem } from '@/components/types'
 import RankingTable from '@/components/rankings/RankingTable'
 import { toMyRankings, toOverallRankings } from '@/components/rankings/rankingData'
+import { useAuth } from '@/components/users/AuthContext'
+import { getUserIdFromToken } from '@/components/admin/RequireAdmin'
 
 /** Props for the rankings page. */
 interface OverallRankingsProps {
     scope: RankingScope;
 }
 
-/** Rankings page: the signed-in user's own ratings, or everyone's ratings averaged per item. */
+/** Rankings page: the items the signed-in user rated, or every rated item, each with its personal and collective grades. */
 const OverallRankings: React.FC<OverallRankingsProps> = ({ scope }) => {
   const [rankings, setRankings] = useState<RankingItem[] | null>(null)
   const [error, setError] = useState('')
+  const { token } = useAuth()
   const isMine = scope === RankingScope.MINE
+  const userId = getUserIdFromToken(token)
 
   const loadRankings = useCallback(async () => {
     try {
-      const endpoint = isMine ? `${ApiConfig.ENDPOINTS.RATINGS}/mine` : ApiConfig.ENDPOINTS.RATINGS
-      const ratings = await ApiService.get<RatedItem[]>(endpoint)
-      setRankings(isMine ? toMyRankings(ratings) : toOverallRankings(ratings))
+      const ratings = await ApiService.get<RatedItem[]>(ApiConfig.ENDPOINTS.RATINGS)
+      setRankings(isMine ? toMyRankings(ratings, userId) : toOverallRankings(ratings, userId))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load rankings')
     }
-  }, [isMine])
+  }, [isMine, userId])
 
   useEffect(() => {
     loadRankings()

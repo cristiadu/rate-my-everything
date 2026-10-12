@@ -9,6 +9,7 @@ import {
 import { getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
 import MultiSelectDropdown from '@/components/common/MultiSelectDropdown'
+import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
 
 /** Form values for a new category. */
 const emptyForm: CategoryFormValues = { name: '', description: '', attributeIds: [] }
@@ -200,6 +201,18 @@ const CategoriesPage: React.FC = () => {
               <button className={`button is-primary ${isSaving ? 'is-loading' : ''}`} type="submit" disabled={isSaving}>
                 {submitLabel}
               </button>
+              <SimilarRecordsWarning<Category>
+                endpoint={`${ApiConfig.ENDPOINTS.CATEGORIES}/similar`}
+                name={formFields.name}
+                isEnabled={editingName === null}
+                label="Similar categories"
+                message="Similar categories already exist. Edit one of them instead of adding a duplicate:"
+                renderRecord={(category) => (
+                  <button className="button is-small" type="button" onClick={() => handleEdit(category)}>
+                    {`Edit ${category.name}`}
+                  </button>
+                )}
+              />
             </div>
             {editingName !== null && (
               <div className="control">

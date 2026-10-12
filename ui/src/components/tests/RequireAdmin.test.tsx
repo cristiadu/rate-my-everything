@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import RequireAdmin, {
-  canModerate, getRolesFromToken, getUsernameFromToken, RequireLogin, RequireModerator,
+  canModerate, getRolesFromToken, getUserIdFromToken, getUsernameFromToken, RequireLogin, RequireModerator,
 } from '@/components/admin/RequireAdmin'
 import { AuthProvider } from '@/components/users/AuthContext'
 import { UserRole } from '@/components/types'
@@ -43,6 +43,17 @@ describe('RequireAdmin', () => {
     expect(usernames).toEqual(['admin', '', ''])
   })
 
+  test('reads the user id from the token payload', () => {
+    // GIVEN tokens with and without a readable payload
+    const userToken = makeTestToken([UserRole.USER])
+
+    // WHEN the user ids are read
+    const userIds = [getUserIdFromToken(userToken), getUserIdFromToken('not-a-token'), getUserIdFromToken(null)]
+
+    // THEN only the valid token yields an id
+    expect(userIds).toEqual([1, null, null])
+  })
+
   test('asks logged-out visitors to log in', () => {
     // GIVEN nobody is logged in
     // WHEN the guarded content renders
@@ -80,6 +91,17 @@ describe('RequireAdmin', () => {
 describe('RequireLogin', () => {
   beforeEach(() => {
     localStorage.clear()
+  })
+
+  test('reads the user id from the token payload', () => {
+    // GIVEN tokens with and without a readable payload
+    const userToken = makeTestToken([UserRole.USER])
+
+    // WHEN the user ids are read
+    const userIds = [getUserIdFromToken(userToken), getUserIdFromToken('not-a-token'), getUserIdFromToken(null)]
+
+    // THEN only the valid token yields an id
+    expect(userIds).toEqual([1, null, null])
   })
 
   test('asks logged-out visitors to log in', () => {

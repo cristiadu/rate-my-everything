@@ -17,6 +17,7 @@ export default class RatedItemController {
   public initializeRoutes() {
     this.router.get('/', (req, res) => this.getAll(req, res))
     this.router.get('/user/:user_id', (req, res) => this.getAllByUserId(req, res))
+    this.router.get('/item/:item_id', (req, res) => this.getAllByItemId(req, res))
     this.router.get('/mine', (req, res) => this.getMine(req, res))
     this.router.get('/:id', (req, res) => this.getById(req, res))
     this.router.post('/', (req, res) => this.create(req, res))
@@ -38,6 +39,17 @@ export default class RatedItemController {
   public async getAllByUserId(req: Request, res: Response) {
     try {
       const data = await this.ratedItemService.getAllByUserId(parseInt(req.params.user_id, 10))
+      res.status(200).json(data)
+    } catch (error) {
+      console.error(error)
+      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+    }
+  }
+
+  /** Lists every user's ratings of one item, used to work out its collective grade. */
+  public async getAllByItemId(req: Request, res: Response) {
+    try {
+      const data = await this.ratedItemService.getAllByItemId(parseInt(req.params.item_id, 10))
       res.status(200).json(data)
     } catch (error) {
       console.error(error)

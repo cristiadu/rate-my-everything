@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  fireEvent, render, screen, waitFor,
+  fireEvent, render, screen, waitFor, within,
 } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import InterestFormPage from '@/components/interests/InterestFormPage'
@@ -9,8 +9,11 @@ import { UserRole } from '@/components/types'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import {
-  booksCategory, duneItem, duneRating, moviesCategory,
+  booksCategory, duneItem, duneRating, duneRerating, moviesCategory, otherUserDuneRating,
 } from '@/components/tests/common/Interests'
+
+/** Longer than the form waits after typing before looking for similar names, in milliseconds. */
+const LOOKUP_WAIT_MS = 400
 
 /** API base URL the UI calls. */
 const API_URL = 'http://localhost:3000/api'
@@ -19,9 +22,10 @@ const API_URL = 'http://localhost:3000/api'
 const responses: Record<string, object> = {
   'GET /categories': [booksCategory, moviesCategory],
   'GET /items/100': duneItem,
-  'GET /ratings/mine': [duneRating],
+  'GET /ratings/item/100': [duneRating, otherUserDuneRating, duneRerating],
   'POST /items': { ...duneItem, id: 101 },
   'PUT /items/100': duneItem,
+  'GET /items/similar?categoryId=10&name=dune': [duneItem],
 }
 
 /** Answers a mocked request from the responses table, or with an empty object. */
@@ -87,6 +91,34 @@ describe('InterestFormPage', () => {
     ])
   })
 
+  test('points to existing interests with a similar name instead of adding a duplicate', async () => {
+    // GIVEN the new-interest form with Books chosen, where Dune already exists
+    renderFormAt('/interests/new')
+    await screen.findByRole('option', { name: 'Books' })
+    fireEvent.change(screen.getByLabelText('Category'), { target: { value: '10' } })
+
+    // WHEN "dune" is typed as the name
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'dune' } })
+
+    // THEN Dune is suggested with a link to rate it instead
+    const warning = await screen.findByRole('status', { name: 'Similar interests' })
+    expect(within(warning).getByRole('link', { name: 'Dune' })).toHaveAttribute('href', '/interests/100/edit')
+    expect(warning).toHaveTextContent('Dune (Books)')
+  })
+
+  test('does not look for duplicates while editing an interest', async () => {
+    // GIVEN the edit form for Dune, filled from the API
+    renderFormAt('/interests/100/edit')
+    await screen.findByDisplayValue('412')
+
+    // WHEN the name is changed and the lookup delay passes
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'dune' } })
+    await new Promise((resolve) => { setTimeout(resolve, LOOKUP_WAIT_MS) })
+
+    // THEN no similar-name lookup is sent
+    expect(fetchMock.mock.calls.map(([url]) => String(url)).filter((url) => url.includes('/similar'))).toEqual([])
+  })
+
   test('only shows the attributes of the chosen category', async () => {
     // GIVEN the new-interest form
     renderFormAt('/interests/new')
@@ -104,16 +136,19 @@ describe('InterestFormPage', () => {
   test('lets moderators edit an interest and their existing rating of it', async () => {
     // GIVEN a moderator on the edit form for Dune, filled from the API
     loginAs([UserRole.USER, UserRole.MODERATOR])
+  test('edits an interest and rates it again', async () => {
+    // GIVEN the edit form for Dune, filled from the API, with an empty rating field
     renderFormAt('/interests/100/edit')
     expect(await screen.findByDisplayValue('412')).toBeInTheDocument()
-    expect(screen.getByLabelText('My rating (0 to 10)')).toHaveValue(9.5)
+    expect(screen.getByLabelText('Rate it again (0 to 10)')).toHaveValue(null)
 
-    // WHEN the page count and rating change and are saved
+    // WHEN the page count changes, a new rating is given and the form is saved
     fireEvent.change(screen.getByLabelText('Pages'), { target: { value: '420' } })
-    fireEvent.change(screen.getByLabelText('My rating (0 to 10)'), { target: { value: '9' } })
+    fireEvent.change(screen.getByLabelText('Rate it again (0 to 10)'), { target: { value: '9' } })
+    fireEvent.change(screen.getByLabelText('My notes'), { target: { value: 'Third read' } })
     fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
 
-    // THEN the item and my rating are updated in place
+    // THEN the item is updated and the new rating is added next to my earlier ones
     expect(await screen.findByText('My rankings page')).toBeInTheDocument()
     expect(sentWrites(fetchMock)).toEqual([
       ['PUT', '/items/100', {
@@ -123,7 +158,7 @@ describe('InterestFormPage', () => {
         categoryId: 10,
         attributeValues: [{ attributeId: 2, value: '420' }],
       }],
-      ['PUT', '/ratings/900', { rating: 9, notes: 'Reread every year' }],
+      ['POST', '/ratings', { item_id: 100, rating: 9, notes: 'Third read' }],
     ])
   })
 
@@ -171,6 +206,53 @@ describe('InterestFormPage', () => {
   })
 
   test('removes the interest from my list by deleting my rating', async () => {
+  test('saves an interest I already rated without adding a rating', async () => {
+    // GIVEN the edit form for Dune, which I already rated
+    renderFormAt('/interests/100/edit')
+    await screen.findByDisplayValue('412')
+
+    // WHEN it is saved with the rating field left empty
+    fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
+
+    // THEN only the item is updated
+    expect(await screen.findByText('My rankings page')).toBeInTheDocument()
+    expect(sentWrites(fetchMock).map(([method, path]) => [method, path])).toEqual([['PUT', '/items/100']])
+  })
+
+  test('shows my grade, everyone\'s grade and my ratings newest first', async () => {
+    // GIVEN I rated Dune 9.5 and then 8.5, and another user rated it 6
+    // WHEN the edit form for Dune loads
+    renderFormAt('/interests/100/edit')
+
+    // THEN my grade averages my two ratings and everyone's grade averages each user's grade
+    const history = await screen.findByRole('table', { name: 'My ratings' })
+    expect(screen.getByText('My grade').nextSibling).toHaveTextContent('9.0')
+    expect(screen.getByText('from 2 of my ratings')).toBeInTheDocument()
+    expect(screen.getByText('Everyone\'s grade').nextSibling).toHaveTextContent('7.5')
+    expect(screen.getByText('from 3 ratings')).toBeInTheDocument()
+    const rows = within(history).getAllByRole('row').slice(1)
+    expect(rows.map((row) => within(row).getAllByRole('cell').slice(1, 3).map((cell) => cell.textContent))).toEqual([
+      ['8.5', 'Slower the second time'],
+      ['9.5', 'Reread every year'],
+    ])
+  })
+
+  test('removes one of my ratings and updates the grades', async () => {
+    // GIVEN the edit form for Dune and a confirmed removal
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    renderFormAt('/interests/100/edit')
+    const history = await screen.findByRole('table', { name: 'My ratings' })
+
+    // WHEN my newest rating is removed
+    fireEvent.click(within(history).getAllByRole('button', { name: 'Remove' })[0])
+
+    // THEN only that rating is deleted and my grade falls back to my remaining rating
+    await waitFor(() => expect(screen.getByText('My grade').nextSibling).toHaveTextContent('9.5'))
+    expect(sentWrites(fetchMock)).toEqual([['DELETE', '/ratings/903', null]])
+    expect(screen.getByText('Everyone\'s grade').nextSibling).toHaveTextContent('7.8')
+  })
+
+  test('removes the interest from my list by deleting all my ratings', async () => {
     // GIVEN the edit form for Dune and a confirmed removal
     jest.spyOn(window, 'confirm').mockReturnValue(true)
     renderFormAt('/interests/100/edit')
@@ -178,8 +260,9 @@ describe('InterestFormPage', () => {
     // WHEN it is removed
     fireEvent.click(await screen.findByRole('button', { name: 'Remove from my interests' }))
 
-    // THEN only my rating is deleted, not the shared item
-    await waitFor(() => expect(sentWrites(fetchMock)).toEqual([['DELETE', '/ratings/900', null]]))
+    // THEN both of my ratings are deleted, not the shared item
+    expect(await screen.findByText('My rankings page')).toBeInTheDocument()
+    expect(sentWrites(fetchMock)).toEqual([['DELETE', '/ratings/900', null], ['DELETE', '/ratings/903', null]])
   })
 
   test('shows the API error message when saving fails', async () => {

@@ -18,6 +18,9 @@ export const getRolesFromToken = (token: string | null): UserRole[] => {
   return Array.isArray(roles) ? roles : []
 }
 
+/** Reads the user id from the JWT payload, or null when there is no valid token. */
+export const getUserIdFromToken = (token: string | null): number | null => readTokenPayload(token).id ?? null
+
 /** Reads the username from the JWT payload. */
 export const getUsernameFromToken = (token: string | null): string => readTokenPayload(token).username ?? ''
 

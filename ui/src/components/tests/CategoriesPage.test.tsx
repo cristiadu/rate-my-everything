@@ -125,4 +125,21 @@ describe('CategoriesPage', () => {
     // THEN the API's message is shown
     expect(await screen.findByText('Unknown attribute ids: 99')).toBeInTheDocument()
   })
+
+  test('offers to edit an existing category with a similar name instead of adding a duplicate', async () => {
+    // GIVEN an admin on the new-category form, where Books already exists
+    loginAs([UserRole.ADMIN])
+    renderPage()
+    await screen.findByText('Books')
+
+    // WHEN "book" is typed as the name and the suggested Books is chosen
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'book' } })
+    const warning = await screen.findByRole('status', { name: 'Similar categories' })
+    fireEvent.click(within(warning).getByRole('button', { name: 'Edit Books' }))
+
+    // THEN the lookup asked for names like "book" and Books is loaded for editing
+    expect(fetchMock.mock.calls.map(([url]) => url)).toContain('http://localhost:3000/api/categories/similar?name=book')
+    expect(screen.getByRole('form', { name: 'Edit category' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Name')).toHaveValue('Books')
+  })
 })

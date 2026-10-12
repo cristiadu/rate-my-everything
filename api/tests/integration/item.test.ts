@@ -324,4 +324,115 @@ describe('Item API Integration Tests', async () => {
         .expect(res => { expect(res.body).toEqual({}) })
     })
   })
+
+  describe(`GET ${Endpoints.ITEMS_BASE_PATH}/similar`, () => {
+    let otherCategory: Category
+    let ringsItem: Item
+
+    beforeAll(async () => {
+      const otherCategoryRes = await request(app)
+        .post(Endpoints.CATEGORIES_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ name: `OtherItemCat-${Date.now()}` })
+        .expect(201)
+      otherCategory = otherCategoryRes.body
+
+      const itemsToCreate = [
+        { name: 'The Lord of the Rings', categoryId: testCategory.id },
+        { name: 'Dune', categoryId: testCategory.id },
+        { name: 'Pokémon Red', categoryId: testCategory.id },
+        { name: 'Lord of the Rings', categoryId: otherCategory.id },
+      ]
+      const createdItems: Item[] = []
+      for (const item of itemsToCreate) {
+        const itemRes = await request(app)
+          .post(Endpoints.ITEMS_BASE_PATH)
+          .set('Authorization', `Bearer ${testAuthToken}`)
+          .send({ ...item, description: 'Item for duplicate detection tests' })
+          .expect(201)
+        createdItems.push(itemRes.body)
+      }
+      ringsItem = createdItems[0]
+    })
+
+    it('should return only the items in the category whose name is likely a duplicate', async () => {
+      // GIVEN "The Lord of the Rings", "Dune" and "Pokémon Red" in the test category and "Lord of the Rings" in another one (beforeAll)
+      // WHEN items similar to a misspelled name are requested for the test category
+      // THEN only the matching item of that category is returned, with its category and attribute values
+      await request(app)
+        .get(`${Endpoints.ITEMS_BASE_PATH}/similar`)
+        .query({ name: 'lord of the ring', categoryId: testCategory.id })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .expect(res => {
+          const items = res.body as Item[]
+          expect(items.map((item) => [item.id, item.name, item.category.id, item.attributes]))
+            .toEqual([[ringsItem.id, 'The Lord of the Rings', testCategory.id, []]])
+        })
+    })
+
+    it('should ignore accents and case', async () => {
+      // GIVEN "Pokémon Red" in the test category (beforeAll)
+      // WHEN items similar to the name without its accent are requested
+      // THEN Pokémon Red is returned
+      await request(app)
+        .get(`${Endpoints.ITEMS_BASE_PATH}/similar`)
+        .query({ name: 'POKEMON RED' })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(200)
+        .expect(res => {
+          expect((res.body as Item[]).map((item) => item.name)).toEqual(['Pokémon Red'])
+        })
+    })
+
+    it('should search every category when no categoryId is sent', async () => {
+      // GIVEN the items created in beforeAll
+      // WHEN items similar to "Lord of the Rings!" are requested without a category
+      // THEN both equally similar matches are returned, the oldest first
+      await request(app)
+        .get(`${Endpoints.ITEMS_BASE_PATH}/similar`)
+        .query({ name: 'Lord of the Rings!' })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(200)
+        .expect(res => {
+          const items = res.body as Item[]
+          expect(items.map((item) => item.name)).toEqual(['The Lord of the Rings', 'Lord of the Rings'])
+          expect(items.map((item) => item.category.id).sort()).toEqual([testCategory.id, otherCategory.id].sort())
+        })
+    })
+
+    it('should return an empty list when no item name is similar', async () => {
+      // GIVEN the items created in beforeAll
+      // WHEN items similar to an unrelated name are requested
+      // THEN none are returned
+      await request(app)
+        .get(`${Endpoints.ITEMS_BASE_PATH}/similar`)
+        .query({ name: 'Hyperion' })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(200)
+        .expect(res => { expect(res.body).toEqual([]) })
+    })
+
+    it.each([
+      [{}, 'Invalid value for name: it must be a non-empty text'],
+      [{ name: '  ' }, 'Invalid value for name: it must be a non-empty text'],
+      [{ name: 'Dune', categoryId: 'books' }, 'Invalid value for categoryId: it must be an integer'],
+    ])('should reject the query %j', async (query, message) => {
+      // GIVEN the items created in beforeAll
+      // WHEN the name is missing or blank, or the category is not a number
+      // THEN the request fails validation
+      await request(app)
+        .get(`${Endpoints.ITEMS_BASE_PATH}/similar`)
+        .query(query)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(400)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe(message)
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+        })
+    })
+  })
 })

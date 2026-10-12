@@ -1,5 +1,5 @@
 import {
-  Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn,
+  Entity, PrimaryGeneratedColumn, Column, ManyToOne, JoinColumn, CreateDateColumn, RelationId,
 } from 'typeorm'
 import { Min, Max } from 'class-validator'
 import User from '@/models/User'
@@ -23,6 +23,14 @@ export default class RatedItem {
   @ManyToOne(() => User, (user) => user.ratedItems)
   @JoinColumn({ name: 'user_id' }) // This line names the column as 'user_id'
     user!: User
+
+  /** Id of the user who gave the rating, so clients can group a user's ratings without loading the user. */
+  @RelationId((ratedItem: RatedItem) => ratedItem.user)
+    userId!: number
+
+  /** When the rating was given; a user can rate the same item many times. */
+  @CreateDateColumn({ name: 'rated_at' })
+    ratedAt!: Date
 
   @Column('varchar', { nullable: true })
     notes!: string

@@ -24,14 +24,34 @@ export const duneItem: Item = {
   attributes: [{ id: 500, attribute: pagesAttribute, value: '412' }],
 }
 
-/** The signed-in user's rating of Dune. */
-export const duneRating: RatedItem = { id: 900, rating: 9.5, notes: 'Reread every year', item: duneItem }
+/** Id of the signed-in test user in rating fixtures. */
+const MY_USER_ID = 1
+
+/** Id of another user in rating fixtures. */
+const OTHER_USER_ID = 2
+
+/** The signed-in user's first rating of Dune. */
+export const duneRating: RatedItem = {
+  id: 900, rating: 9.5, notes: 'Reread every year', userId: MY_USER_ID, ratedAt: '2026-09-01T10:00:00.000Z', item: duneItem,
+}
+
+/** The signed-in user's later, second rating of Dune. */
+export const duneRerating: RatedItem = {
+  ...duneRating, id: 903, rating: 8.5, notes: 'Slower the second time', ratedAt: '2026-10-01T10:00:00.000Z',
+}
+
+/** Another user's rating of Dune. */
+export const otherUserDuneRating: RatedItem = {
+  ...duneRating, id: 902, rating: 6, notes: null, userId: OTHER_USER_ID, ratedAt: '2026-09-15T10:00:00.000Z',
+}
 
 /** A movie rated by another user, without an image. */
 export const alienRating: RatedItem = {
   id: 901,
   rating: 7,
   notes: null,
+  userId: OTHER_USER_ID,
+  ratedAt: '2026-09-20T10:00:00.000Z',
   item: {
     id: 101, name: 'Alien', description: 'Space horror', imageUrl: null, category: { id: moviesCategory.id, name: moviesCategory.name },
   },
