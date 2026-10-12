@@ -42,6 +42,7 @@ describe('OverallRankings', () => {
       .toEqual(['Image', 'Name', 'Category', 'My grade', 'Everyone\'s grade', 'Ratings', ''])
     expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.07.53Edit'])
     expect(screen.getAllByRole('link', { name: 'Edit' })[0]).toHaveAttribute('href', '/interests/100/edit')
+    expect(screen.getByRole('link', { name: 'Dune' })).toHaveAttribute('href', '/interests/100')
     expect(screen.getByRole('link', { name: 'Add interest' })).toHaveAttribute('href', '/interests/new')
   })
 
