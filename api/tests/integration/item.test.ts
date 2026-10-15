@@ -418,7 +418,7 @@ describe('Item API Integration Tests', async () => {
     it.each([
       [{}, "Invalid request: name: 'name' is required"],
       [{ name: '  ' }, 'Invalid value for name: it must be a non-empty text'],
-      [{ name: 'Dune', categoryId: 'books' }, 'Invalid request: categoryId: invalid float number'],
+      [{ name: 'Dune', categoryId: 'books' }, 'Invalid request: categoryId: invalid integer number'],
     ])('should reject the query %j', async (query, message) => {
       // GIVEN the items created in beforeAll
       // WHEN the name is missing or blank, or the category is not a number

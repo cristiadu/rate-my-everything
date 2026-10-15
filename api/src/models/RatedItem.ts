@@ -7,16 +7,32 @@ import Item, { ItemSummary } from '@/models/Item'
 import { decimalToNumber } from '@/helpers/DecimalHelper'
 
 /** A rating as the API returns it, with its item and the item's category. */
-export type RatedItemResponse = Omit<RatedItem, 'item' | 'user'> & { item: ItemSummary }
+export interface RatedItemResponse extends Pick<RatedItem, 'id' | 'rating' | 'userId' | 'ratedAt' | 'notes'> {
+  item: ItemSummary
+}
 
 /** Fields accepted when changing a rating. */
-export type RatingInput = Pick<RatedItem, 'rating'> & Partial<Pick<RatedItem, 'notes'>>
+export interface RatingInput extends Pick<RatedItem, 'rating'>, Partial<Pick<RatedItem, 'notes'>> {}
 
 /** Fields accepted when rating an item. */
-export type NewRatingInput = RatingInput & { item_id: number }
+export interface NewRatingInput extends RatingInput {
+  /**
+   * Id of the item being rated.
+   * @isInt
+   * @example 12
+   */
+  item_id: number
+}
+
+/** Fields accepted when changing a rating; fields left out keep their value. */
+export interface RatingUpdate extends Partial<RatingInput> {}
 
 @Entity()
 export default class RatedItem {
+  /**
+   * @isInt
+   * @example 40
+   */
   @PrimaryGeneratedColumn()
     id!: number
 
@@ -24,6 +40,13 @@ export default class RatedItem {
   @JoinColumn({ name: 'item_id' }) // This line names the column as 'item_id '
     item!: Item
 
+  /**
+   * Grade from 0 to 10.
+   * @isDouble
+   * @minimum 0
+   * @maximum 10
+   * @example 8.5
+   */
   @Column({ type: 'decimal', precision: 4, scale: 2, transformer: decimalToNumber })
   @Min(0.0)
   @Max(10.0)
@@ -33,7 +56,11 @@ export default class RatedItem {
   @JoinColumn({ name: 'user_id' }) // This line names the column as 'user_id'
     user!: User
 
-  /** Id of the user who gave the rating, so clients can group a user's ratings without loading the user. */
+  /**
+   * Id of the user who gave the rating, so clients can group a user's ratings without loading the user.
+   * @isInt
+   * @example 5
+   */
   @RelationId((ratedItem: RatedItem) => ratedItem.user)
     userId!: number
 
@@ -41,6 +68,7 @@ export default class RatedItem {
   @CreateDateColumn({ name: 'rated_at' })
     ratedAt!: Date
 
+  /** @example "Slow start, brilliant ending." */
   @Column('varchar', { nullable: true })
     notes!: string | null
 }

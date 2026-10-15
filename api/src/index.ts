@@ -16,6 +16,7 @@ import ChangeRequest from '@/models/ChangeRequest'
 import Comment from '@/models/Comment'
 import { RegisterRoutes } from '@/routes/generated/routes'
 import { addDefaultHeaders, errorHandler, notFoundHandler } from '@/helpers/RequestHandlers'
+import { TOO_MANY_REQUESTS_EXAMPLE } from '@/api/ApiDocumentation'
 import { enableSimilarityExtensions } from '@/helpers/SimilarityHelper'
 import path from 'path'
 import http from 'http'
@@ -53,6 +54,7 @@ let server: http.Server
 const limiter = rateLimit({
   windowMs: RATE_LIMIT_WINDOW_MS,
   max: RATE_LIMIT_MAX_REQUESTS,
+  message: TOO_MANY_REQUESTS_EXAMPLE,
 })
 
 app.use(limiter)

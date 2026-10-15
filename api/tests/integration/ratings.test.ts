@@ -62,7 +62,7 @@ describe('RatedItem API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toContain(`"input.item_id":{"message":"'item_id' is required"}`)
+          expect(apiError.message).toBe("Invalid request: input.item_id: 'item_id' is required")
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
           expect(apiError.status).toBe(400)
         })

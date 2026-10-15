@@ -1,24 +1,34 @@
 import {
-  Body, Controller, Delete, Get, Path, Post, Put, Res, Response, Route, Security, SuccessResponse, Tags,
+  Body, Controller, Delete, Get, Path, Post, Put, Response, Route, Security, SuccessResponse, Tags,
 } from 'tsoa'
-import type { TsoaResponse } from 'tsoa'
 import AttributeService from '@/services/AttributeService'
 import APIError, { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
+import { RequestRejected } from '@/errors/RequestRejected'
 import Attribute from '@/models/Attribute'
-import type { AttributeInput, AttributeResponse } from '@/models/Attribute'
+import type { AttributeInput, AttributeResponse, AttributeUpdate } from '@/models/Attribute'
 import AttributeValue from '@/models/AttributeValue'
 import type { AttributeValueRecordInput, AttributeValueResponse } from '@/models/AttributeValue'
 import UserRole from '@/models/UserRole'
 import { BEARER_AUTH } from '@/helpers/Authentication'
+import {
+  BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE, INTERNAL_ERROR_DESCRIPTION,
+  INTERNAL_ERROR_EXAMPLE, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+  UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE,
+} from '@/api/ApiDocumentation'
+import type { RateLimitHeaders } from '@/api/ApiDocumentation'
+import type { ResourceId } from '@/models/ResourceId'
 
 /** Attributes describe the items of a category; users read them and admins change them. */
 @Route('attributes')
 @Tags('Attributes')
 @Security(BEARER_AUTH, [UserRole.USER, UserRole.ADMIN])
-@Response<APIError>(401, 'The bearer token is missing or invalid')
-@Response<APIError>(403, 'The signed-in user may not call this operation')
-@Response<APIError>(500, 'Something unexpected failed')
+@Response<APIError>(401, UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE)
+@Response<APIError>(403, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE)
+@Response<APIError, { [Header in keyof RateLimitHeaders]: RateLimitHeaders[Header] }>(
+  429, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+)
+@Response<APIError>(500, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE)
 export class AttributeController extends Controller {
   private attributeService = new AttributeService()
 
@@ -34,29 +44,43 @@ export class AttributeController extends Controller {
     return this.attributeService.getAllAttributeValues()
   }
 
-  /** @summary Gets an attribute value */
+  /**
+   * @summary Gets an attribute value
+   * @param id Id of the attribute value
+   */
   @Get('values/{id}')
-  public async getAttributeValue(@Path() id: number, @Res() notFound: TsoaResponse<404, APIError>): Promise<AttributeValueResponse> {
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  public async getAttributeValue(@Path() id: ResourceId): Promise<AttributeValueResponse> {
     const data = await this.attributeService.getAttributeValue(id)
     if (!data) {
-      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
     }
     return data
   }
 
-  /** @summary Gets an attribute */
+  /**
+   * @summary Gets an attribute
+   * @param id Id of the attribute
+   */
   @Get('{id}')
-  public async getAttribute(@Path() id: number, @Res() notFound: TsoaResponse<404, APIError>): Promise<AttributeResponse> {
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  public async getAttribute(@Path() id: ResourceId): Promise<AttributeResponse> {
     const data = await this.attributeService.getAttribute(id)
     if (!data) {
-      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
     }
     return data
   }
 
-  /** @summary Lists the values items hold for an attribute */
+  /**
+   * @summary Lists the values items hold for an attribute
+   * @param id Id of the attribute
+   */
   @Get('{id}/values')
-  public async getAttributeValuesByAttribute(@Path() id: number): Promise<AttributeValueResponse[]> {
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async getAttributeValuesByAttribute(@Path() id: ResourceId): Promise<AttributeValueResponse[]> {
     return this.attributeService.getAllAttributeValuesByAttribute(id)
   }
 
@@ -64,11 +88,10 @@ export class AttributeController extends Controller {
   @Post()
   @Security(BEARER_AUTH, [UserRole.ADMIN])
   @SuccessResponse(201, 'Attribute created')
-  public async createAttribute(
-    @Body() input: AttributeInput, @Res() validationError: TsoaResponse<400, APIError>,
-  ): Promise<AttributeResponse> {
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async createAttribute(@Body() input: AttributeInput): Promise<AttributeResponse> {
     if (!input.name || !input.valueType) {
-      return validationError(400, NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, valueType'))
+      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, valueType'))
     }
     const data = await this.attributeService.createAttribute(input as Attribute)
     this.setStatus(201)
@@ -79,54 +102,69 @@ export class AttributeController extends Controller {
   @Post('values')
   @Security(BEARER_AUTH, [UserRole.ADMIN])
   @SuccessResponse(201, 'Attribute value created')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
   public async createAttributeValue(@Body() input: AttributeValueRecordInput): Promise<AttributeValueResponse> {
     const data = await this.attributeService.createAttributeValue(input as AttributeValue)
     this.setStatus(201)
     return data
   }
 
-  /** @summary Changes the fields sent for an attribute */
+  /**
+   * @summary Changes the fields sent for an attribute
+   * @param id Id of the attribute
+   */
   @Put('{id}')
   @Security(BEARER_AUTH, [UserRole.ADMIN])
-  public async updateAttribute(
-    @Path() id: number,
-    @Body() input: Partial<AttributeInput>,
-    @Res() notFound: TsoaResponse<404, APIError>,
-  ): Promise<AttributeResponse> {
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  public async updateAttribute(@Path() id: ResourceId, @Body() input: AttributeUpdate): Promise<AttributeResponse> {
     const data = await this.attributeService.updateAttribute(id, input as Attribute)
     if (!data) {
-      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
     }
     return data
   }
 
-  /** @summary Changes an attribute value */
+  /**
+   * @summary Changes an attribute value
+   * @param id Id of the attribute value
+   */
   @Put('values/{id}')
   @Security(BEARER_AUTH, [UserRole.ADMIN])
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
   public async updateAttributeValue(
-    @Path() id: number, @Body() input: AttributeValueRecordInput, @Res() notFound: TsoaResponse<404, APIError>,
+    @Path() id: ResourceId, @Body() input: AttributeValueRecordInput,
   ): Promise<AttributeValueResponse> {
     const data = await this.attributeService.updateAttributeValue(id, input as AttributeValue)
     if (!data) {
-      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
     }
     return data
   }
 
-  /** @summary Deletes an attribute */
+  /**
+   * @summary Deletes an attribute
+   * @param id Id of the attribute
+   */
   @Delete('{id}')
   @Security(BEARER_AUTH, [UserRole.ADMIN])
   @SuccessResponse(204, 'Attribute deleted')
-  public async deleteAttribute(@Path() id: number): Promise<void> {
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async deleteAttribute(@Path() id: ResourceId): Promise<void> {
     await this.attributeService.deleteAttribute(id)
     this.setStatus(204)
   }
 
-  /** @summary Deletes an attribute value */
+  /**
+   * @summary Deletes an attribute value
+   * @param id Id of the attribute value
+   */
   @Delete('values/{id}')
   @Security(BEARER_AUTH, [UserRole.ADMIN])
   @SuccessResponse(204, 'Attribute value deleted')
-  public async deleteAttributeValue(@Path() id: number): Promise<void> {
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async deleteAttributeValue(@Path() id: ResourceId): Promise<void> {
     await this.attributeService.deleteAttributeValue(id)
     this.setStatus(204)
   }

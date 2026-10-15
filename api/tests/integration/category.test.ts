@@ -445,7 +445,7 @@ describe('Category API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toContain('"attributeIds.$0":{"message":"invalid float number"')
+          expect(apiError.message).toContain('attributeIds.$0: invalid integer number')
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
         })
     })
