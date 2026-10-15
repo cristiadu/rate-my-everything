@@ -9,53 +9,36 @@ import AttributeValueType from '@/models/AttributeValueType'
 import ErrorCode from '@/errors/ErrorCode'
 import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { cleanupAllItems, cleanupAllCategories } from '@@/testutils/common/DataCleanup'
+import { createTestAttribute } from '@@/testutils/common/Attributes'
+import { createTestItemInCategory } from '@@/testutils/common/Items'
 import { Endpoints } from '@@/testutils/common/constants'
 
 describe('Item API Integration Tests', async () => {
   const app = await appReady
   const testAuthToken = await getAuthTokenFromFile()
   let testCategory: Category
-  let testItem: Item
   let pagesAttribute: Attribute
   let unlinkedAttribute: Attribute
 
   beforeAll(async () => {
-    await cleanupAllItems(app)
     await cleanupAllCategories(app)
 
-    const pagesRes = await request(app)
-      .post(Endpoints.ATTRIBUTES_BASE_PATH)
-      .set('Authorization', `Bearer ${testAuthToken}`)
-      .send({ name: `Pages-${Date.now()}`, valueType: AttributeValueType.NUMBER })
-      .expect(201)
-    pagesAttribute = pagesRes.body
-
-    const unlinkedRes = await request(app)
-      .post(Endpoints.ATTRIBUTES_BASE_PATH)
-      .set('Authorization', `Bearer ${testAuthToken}`)
-      .send({ name: `Unlinked-${Date.now()}`, valueType: AttributeValueType.STRING })
-      .expect(201)
-    unlinkedAttribute = unlinkedRes.body
+    pagesAttribute = await createTestAttribute(app, testAuthToken, `Pages-${Date.now()}`, AttributeValueType.NUMBER)
+    unlinkedAttribute = await createTestAttribute(app, testAuthToken, `Unlinked-${Date.now()}`, AttributeValueType.STRING)
 
     const categoryRes = await request(app)
       .post(Endpoints.CATEGORIES_BASE_PATH)
       .set('Authorization', `Bearer ${testAuthToken}`)
-      .send({ name: `ItemCat-${Date.now()}`, description: 'For item tests', attributeIds: [pagesAttribute.id] })
+      .send({ name: 'Item-Category', description: 'For item tests', attributeIds: [pagesAttribute.id] })
       .expect(201)
     testCategory = categoryRes.body
-  })
-
-  beforeEach(() => {
-    if (!testCategory) {
-      throw new Error('Test category not initialized')
-    }
   })
 
   describe(`POST ${Endpoints.ITEMS_BASE_PATH}`, () => {
     it('should create a new item with its attribute values', async () => {
       // GIVEN an item in the test category with a value for its Pages attribute
       const newItem = {
-        name: `Test-Item-${Date.now()}`,
+        name: 'Created-Item',
         description: 'Item for integration test',
         imageUrl: 'https://example.com/book.png',
         categoryId: testCategory.id,
@@ -72,20 +55,18 @@ describe('Item API Integration Tests', async () => {
         .expect(res => {
           const apiResult = res.body as Item
           expect(apiResult.id).toBeDefined()
-          expect(apiResult.category.name).toBe(testCategory.name)
-          expect(apiResult.name).toBe(newItem.name)
+          expect(apiResult.category.name).toBe('Item-Category')
+          expect(apiResult.name).toBe('Created-Item')
           expect(apiResult.description).toBe('Item for integration test')
           expect(apiResult.imageUrl).toBe('https://example.com/book.png')
           expect(apiResult.attributes.map((value) => [value.attribute.id, value.value])).toEqual([[pagesAttribute.id, '320']])
-          testItem = apiResult
         })
-
-      if (!testItem) {
-        throw new Error('Test item not initialized after creation')
-      }
     })
 
     it('should fail to create an item with missing name', async () => {
+      // GIVEN an item without a name
+      // WHEN it is created
+      // THEN the request fails validation
       await request(app)
         .post(Endpoints.ITEMS_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -124,6 +105,9 @@ describe('Item API Integration Tests', async () => {
     })
 
     it('should reject a category that does not exist', async () => {
+      // GIVEN no category with id 999999
+      // WHEN an item is created in it
+      // THEN the API refuses it as an unknown category
       await request(app)
         .post(Endpoints.ITEMS_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -139,11 +123,15 @@ describe('Item API Integration Tests', async () => {
   })
 
   describe(`GET ${Endpoints.ITEMS_BASE_PATH}`, () => {
-    it('should get all items', async () => {
-      if (!testItem) {
-        throw new Error('Test item not initialized')
-      }
+    beforeAll(async () => {
+      await cleanupAllItems(app)
+      await createTestItemInCategory(app, testAuthToken, testCategory.id, 'Listed-Item', 'Listed in tests')
+    })
 
+    it('should get all items', async () => {
+      // GIVEN exactly the item Listed-Item (beforeAll)
+      // WHEN listing items
+      // THEN only it comes back, with its category
       await request(app)
         .get(Endpoints.ITEMS_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -151,55 +139,44 @@ describe('Item API Integration Tests', async () => {
         .expect(200)
         .expect(res => {
           const items = res.body as Item[]
-          //const categoryNames = items.map(item => item.category?.name)
-          expect(Array.isArray(items)).toBe(true)
-          expect(items.length).toBe(1)
-          for (const item of items) {
-            if (item.id === testItem.id) {
-              expect(item.name).toBe(testItem.name)
-              expect(item.description).toBe(testItem.description)
-              //expect(categoryNames).toContain(testCategory.name)
-             // expect(Array.isArray(item.ratings)).toBe(true)
-             // expect(Array.isArray(item.attributes)).toBe(true)
-            } else {
-              expect(item.id).toBeDefined()
-              expect(item.name).toBeDefined()
-              expect(item.description).toBeDefined()
-              expect(item.category).toBeDefined()
-              //expect(Array.isArray(item.ratings)).toBe(true)
-              //expect(Array.isArray(item.attributes)).toBe(true)
-            }
-          }
+          expect(items.map((item) => [item.name, item.description, item.category.name]))
+            .toEqual([['Listed-Item', 'Listed in tests', 'Item-Category']])
         })
     })
   })
 
   describe(`GET ${Endpoints.ITEMS_BASE_PATH}/:id`, () => {
-    it('should get item by id', async () => {
-      if (!testItem) {
-        throw new Error('Test item not initialized')
-      }
+    let fetchedItem: Item
 
+    beforeAll(async () => {
+      fetchedItem = await createTestItemInCategory(
+        app, testAuthToken, testCategory.id, 'Fetched-Item', 'Read by id', [{ attributeId: pagesAttribute.id, value: '320' }],
+      )
+    })
+
+    it('should get item by id', async () => {
+      // GIVEN the item Fetched-Item with 320 pages (beforeAll)
+      // WHEN getting it by id
+      // THEN its fields, category and attribute values come back
       await request(app)
-        .get(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`)
+        .get(`${Endpoints.ITEMS_BASE_PATH}/${fetchedItem.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
           const item = res.body as Item
-          expect(item).toHaveProperty('id')
-          expect(item.id).toBe(testItem.id)
-          expect(item.name).toBe(testItem.name)
-          expect(item.description).toBe(testItem.description)
-          //expect(item.category.name).toContain(testCategory.name)
-          //expect(Array.isArray(item.ratings)).toBe(true)
-          //expect(item.ratings.length).toBe(0)
-          //expect(Array.isArray(item.attributes)).toBe(true)
-         // expect(item.attributes.length).toBe(0)
+          expect(item.id).toBe(fetchedItem.id)
+          expect(item.name).toBe('Fetched-Item')
+          expect(item.description).toBe('Read by id')
+          expect(item.category.name).toBe('Item-Category')
+          expect(item.attributes.map((value) => value.value)).toEqual(['320'])
         })
     })
 
     it('should fail to get a non-existent item', async () => {
+      // GIVEN no item with id 999999
+      // WHEN getting it by id
+      // THEN it is not found
       await request(app)
         .get(`${Endpoints.ITEMS_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -215,34 +192,41 @@ describe('Item API Integration Tests', async () => {
   })
 
   describe(`PUT ${Endpoints.ITEMS_BASE_PATH}/:id`, () => {
-    it('should update an item', async () => {
-      if (!testItem) {
-        throw new Error('Test item not initialized')
-      }
+    let itemToUpdate: Item
 
-      const updatedDesc = 'Updated item description'
+    beforeEach(async () => {
+      itemToUpdate = await createTestItemInCategory(
+        app, testAuthToken, testCategory.id, `Update-Item-${Date.now()}`, 'Before the update',
+        [{ attributeId: pagesAttribute.id, value: '320' }],
+      )
+    })
+
+    it('should update an item', async () => {
+      // GIVEN an item with 320 pages (beforeEach)
+      // WHEN its description is updated
+      // THEN the new description comes back and its name, category and values stay the same
       await request(app)
-        .put(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`)
+        .put(`${Endpoints.ITEMS_BASE_PATH}/${itemToUpdate.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send({ description: updatedDesc })
+        .send({ description: 'Updated item description' })
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
           const item = res.body as Item
-          expect(item.description).toBe(updatedDesc)
-          expect(item.name).toBe(testItem.name)
-          expect(item.category.name).toBe(testCategory.name)
+          expect(item.description).toBe('Updated item description')
+          expect(item.name).toBe(itemToUpdate.name)
+          expect(item.category.name).toBe('Item-Category')
           expect(item.attributes.map((value) => value.value)).toEqual(['320'])
         })
     })
 
     it('should replace attribute values in place when new ones are sent', async () => {
-      // GIVEN the test item already holds a Pages value
-      const [currentValue] = testItem.attributes
+      // GIVEN an item with 320 pages (beforeEach)
+      const [currentValue] = itemToUpdate.attributes
 
       // WHEN a new Pages value is sent
       await request(app)
-        .put(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`)
+        .put(`${Endpoints.ITEMS_BASE_PATH}/${itemToUpdate.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .send({ attributeValues: [{ attributeId: pagesAttribute.id, value: '412' }] })
         .expect('Content-Type', /json/)
@@ -255,8 +239,11 @@ describe('Item API Integration Tests', async () => {
     })
 
     it('should remove attribute values that are left out', async () => {
+      // GIVEN an item with 320 pages (beforeEach)
+      // WHEN it is updated with no attribute values
+      // THEN it has none left
       await request(app)
-        .put(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`)
+        .put(`${Endpoints.ITEMS_BASE_PATH}/${itemToUpdate.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .send({ attributeValues: [] })
         .expect(200)
@@ -264,6 +251,9 @@ describe('Item API Integration Tests', async () => {
     })
 
     it('should fail to update a non-existent item', async () => {
+      // GIVEN no item with id 999999
+      // WHEN updating it
+      // THEN it is not found
       await request(app)
         .put(`${Endpoints.ITEMS_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -281,16 +271,18 @@ describe('Item API Integration Tests', async () => {
 
   describe('Item permissions for the user role', () => {
     let userToken: string
+    let sharedItem: Item
 
     beforeAll(async () => {
       userToken = await getUserRoleAuthToken(app)
+      sharedItem = await createTestItemInCategory(app, testAuthToken, testCategory.id, 'Shared-Item', 'Changed only by moderators')
     })
 
     it.each([
-      ['PUT', () => request(app).put(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`).send({ description: 'Nope' })],
-      ['DELETE', () => request(app).delete(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`)],
+      ['PUT', () => request(app).put(`${Endpoints.ITEMS_BASE_PATH}/${sharedItem.id}`).send({ description: 'Nope' })],
+      ['DELETE', () => request(app).delete(`${Endpoints.ITEMS_BASE_PATH}/${sharedItem.id}`)],
     ])('should forbid users from %s on an item and point them to change requests', async (_method, buildRequest) => {
-      // GIVEN a user-role token (beforeAll)
+      // GIVEN a user-role token and a shared item (beforeAll)
       // WHEN changing a shared item directly
       // THEN it is forbidden
       await buildRequest()
@@ -306,17 +298,26 @@ describe('Item API Integration Tests', async () => {
 
   describe(`DELETE ${Endpoints.ITEMS_BASE_PATH}/:id`, () => {
     it('should delete an item', async () => {
-      if (!testItem) {
-        throw new Error('Test item not initialized')
-      }
+      // GIVEN an item in the test category
+      const itemToDelete = await createTestItemInCategory(app, testAuthToken, testCategory.id, 'Delete-Item', 'Deleted during tests')
 
+      // WHEN deleting it
       await request(app)
-        .delete(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`)
+        .delete(`${Endpoints.ITEMS_BASE_PATH}/${itemToDelete.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(204)
+
+      // THEN it is gone
+      await request(app)
+        .get(`${Endpoints.ITEMS_BASE_PATH}/${itemToDelete.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(404)
     })
 
-    it('should fail to delete a non-existent item', async () => {
+    it('should not fail when deleting a non-existent item', async () => {
+      // GIVEN no item with id 999999
+      // WHEN deleting it
+      // THEN the delete still succeeds with no body
       await request(app)
         .delete(`${Endpoints.ITEMS_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
