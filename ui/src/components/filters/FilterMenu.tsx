@@ -1,12 +1,30 @@
-import React, { useState } from 'react'
-import {
-  Block, Form, Button, Tag,
-} from 'react-bulma-components'
+import React, { useCallback, useEffect, useState } from 'react'
+import { Block, Tag } from 'react-bulma-components'
 import { slide as SlideMenu } from 'react-burger-menu'
 import Arrow from '@/components/filters/Arrow'
+import ApiConfig from '@/config/ApiConfig'
+import ApiService from '@/config/ApiService'
+import { NO_INTEREST_FILTERS, type Category, type InterestFilters } from '@/components/types'
+import MultiSelectDropdown from '@/components/common/MultiSelectDropdown'
+import AttributeField from '@/components/interests/AttributeField'
+import { MAX_RATING, MIN_RATING } from '@/components/interests/interestForm'
+import { filterAttributes, toAppliedFilters } from '@/components/filters/filterQuery'
+import { useFilters } from '@/components/filters/FilterContext'
+import { useAuth } from '@/components/users/AuthContext'
 
+/**
+ * Collapsible panel with the filters for the interests and rankings pages: name, categories, the chosen categories'
+ * attributes and a grade range. Applying them hands them to the pages, which ask the API for the matching ratings.
+ */
 const FilterMenu = () => {
   const [isOpen, setIsOpen] = useState(false)
+  const { isAuthenticated } = useAuth()
+  const { filters, setFilters } = useFilters()
+  const [draft, setDraft] = useState<InterestFilters>(filters)
+  const [categories, setCategories] = useState<Category[]>([])
+  const [error, setError] = useState('')
+
+  const attributes = filterAttributes(categories, draft.categoryIds)
 
   const styles = {
     bmBurgerButton: {
@@ -17,41 +35,129 @@ const FilterMenu = () => {
     },
   }
 
+  /** Loads the categories, with their attributes, to filter by. */
+  const loadCategories = useCallback(async () => {
+    try {
+      setCategories(await ApiService.get<Category[]>(ApiConfig.ENDPOINTS.CATEGORIES))
+      setError('')
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load the categories')
+    }
+  }, [])
+
+  /** Loads the categories once signed in, and again each time the panel opens or closes so new ones show up. */
+  useEffect(() => {
+    if (isAuthenticated) {
+      loadCategories()
+    }
+  }, [isOpen, isAuthenticated, loadCategories])
+
+  /** Stores the value typed for one of the chosen categories' attributes. */
+  const setAttributeValue = (attributeId: number, value: string) => {
+    setDraft({ ...draft, attributeValues: { ...draft.attributeValues, [attributeId]: value } })
+  }
+
+  /** Applies the typed filters to the listed interests. */
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault()
+    setFilters(toAppliedFilters(draft, attributes))
+  }
+
+  /** Empties the panel and lists every interest again. */
+  const clearFilters = () => {
+    setDraft(NO_INTEREST_FILTERS)
+    setFilters(NO_INTEREST_FILTERS)
+  }
+
   return (
-    <SlideMenu isOpen={isOpen} className="box has-background-danger-dark-invert" styles={styles}>
+    <SlideMenu
+      isOpen={isOpen}
+      onStateChange={(state: { isOpen: boolean }) => setIsOpen(state.isOpen)}
+      className="box has-background-danger-dark-invert"
+      styles={styles}
+    >
       <Block>
         <Arrow isOpen={isOpen} setIsOpen={setIsOpen} />
         <Tag color="danger" backgroundColor="danger-light" size="large">FILTERS</Tag>
-        <Form.Field color="dark" style={{ marginTop: '20px' }}>
-          <Form.Label size="medium">Title</Form.Label>
-          <Form.Control>
-            <Form.Input placeholder="Search by title" />
-          </Form.Control>
-        </Form.Field>
-        <Form.Field color="dark">
-          <Form.Label size="medium">Genre</Form.Label>
-          <Form.Control>
-            <Form.Select>
-              <option value="Action">Action</option>
-              <option value="Comedy">Comedy</option>
-              <option value="Drama">Drama</option>
-              <option value="Horror">Horror</option>
-            </Form.Select>
-          </Form.Control>
-        </Form.Field>
-        <Form.Field color="dark">
-          <Form.Label size="medium">Year</Form.Label>
-          <Form.Control>
-            <Form.Input type="number" placeholder="Search by year" />
-          </Form.Control>
-        </Form.Field>
-        <Form.Field color="dark">
-          <Form.Label size="medium">Rating</Form.Label>
-          <Form.Control>
-            <Form.Input type="number" min="0" max="10" placeholder="Search by rating" />
-          </Form.Control>
-        </Form.Field>
-        <Button color="dark">Submit</Button>
+        <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
+          {error && <p className="help is-danger">{error}</p>}
+          <div className="field">
+            <label className="label" htmlFor="filter-name">Name</label>
+            <div className="control">
+              <input
+                className="input"
+                id="filter-name"
+                placeholder="Search by name"
+                value={draft.name}
+                onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="field">
+            <label className="label" htmlFor="filter-categories">Categories</label>
+            <div className="control">
+              <MultiSelectDropdown
+                id="filter-categories"
+                label="Categories"
+                placeholder="Any category"
+                options={categories.map((category) => ({ value: category.id, label: category.name }))}
+                selected={draft.categoryIds}
+                onChange={(categoryIds) => setDraft({ ...draft, categoryIds })}
+              />
+            </div>
+          </div>
+          {attributes.map((attribute) => (
+            <AttributeField
+              key={attribute.id}
+              attribute={attribute}
+              value={draft.attributeValues[attribute.id] ?? ''}
+              onChange={(value) => setAttributeValue(attribute.id, value)}
+            />
+          ))}
+          <div className="field">
+            <span className="label">{`Grade (${MIN_RATING} to ${MAX_RATING})`}</span>
+            <div className="field-body">
+              <div className="field">
+                <div className="control">
+                  <input
+                    className="input"
+                    type="number"
+                    aria-label="Lowest grade"
+                    placeholder="From"
+                    min={MIN_RATING}
+                    max={MAX_RATING}
+                    step="any"
+                    value={draft.minGrade}
+                    onChange={(e) => setDraft({ ...draft, minGrade: e.target.value })}
+                  />
+                </div>
+              </div>
+              <div className="field">
+                <div className="control">
+                  <input
+                    className="input"
+                    type="number"
+                    aria-label="Highest grade"
+                    placeholder="To"
+                    min={MIN_RATING}
+                    max={MAX_RATING}
+                    step="any"
+                    value={draft.maxGrade}
+                    onChange={(e) => setDraft({ ...draft, maxGrade: e.target.value })}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div className="field is-grouped">
+            <div className="control">
+              <button className="button is-dark" type="submit">Apply</button>
+            </div>
+            <div className="control">
+              <button className="button is-light" type="button" onClick={clearFilters}>Clear</button>
+            </div>
+          </div>
+        </form>
       </Block>
     </SlideMenu>
   )
