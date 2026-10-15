@@ -4,7 +4,7 @@ import { ChangeRequestInput } from '@/models/ChangeRequest'
 import { SessionUser } from '@/models/User'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import { UnknownChangeTarget } from '@/errors/UnknownChangeTarget'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { findChangeRequestError } from '@/helpers/ChangeRequestHelper'
 
 /** Lets signed-in users propose changes to interests and categories and follow their own requests. */
@@ -46,7 +46,7 @@ export default class ChangeRequestController {
       const data = await this.changeRequestService.create(sessionUser.id, changeRequestInput)
       res.status(201).json(data)
     } catch (error) {
-      if (error instanceof UnknownChangeTarget) {
+      if (error instanceof UnknownResource) {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
       console.error(error)

@@ -9,7 +9,7 @@ import BaseService from '@/services/BaseService'
 import CategoryService from '@/services/CategoryService'
 import ItemService from '@/services/ItemService'
 import { pickChanges } from '@/helpers/ChangeRequestHelper'
-import { UnknownChangeTarget } from '@/errors/UnknownChangeTarget'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { ChangeRequestNotPending } from '@/errors/ChangeRequestNotPending'
 
 /** Columns returned with every change request; users are reduced to their id and username. */
@@ -49,7 +49,7 @@ class ChangeRequestService extends BaseService<ChangeRequest> {
       ? await this.itemService.get(targetId as number)
       : await this.categoryService.getById(targetId as number)
     if (!target) {
-      throw new UnknownChangeTarget(targetType, targetId ?? null)
+      throw new UnknownResource(targetType, targetId)
     }
     return target.name
   }
@@ -113,7 +113,7 @@ class ChangeRequestService extends BaseService<ChangeRequest> {
     if (targetType === ChangeRequestTarget.ITEM) {
       const updatedItem = await this.itemService.update(targetId as number, changes as ItemInput)
       if (!updatedItem) {
-        throw new UnknownChangeTarget(targetType, targetId)
+        throw new UnknownResource(targetType, targetId ?? undefined)
       }
       return
     }
@@ -124,7 +124,7 @@ class ChangeRequestService extends BaseService<ChangeRequest> {
     }
     const category = await this.categoryService.getById(targetId as number)
     if (!category) {
-      throw new UnknownChangeTarget(targetType, targetId)
+      throw new UnknownResource(targetType, targetId ?? undefined)
     }
     if (action === ChangeRequestAction.UPDATE) {
       await this.categoryService.update(category.name, changes as CategoryInput)
