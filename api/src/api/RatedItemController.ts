@@ -24,7 +24,6 @@ export default class RatedItemController {
     this.router.post('/', (req, res) => this.create(req, res))
     this.router.put('/:id', (req, res) => this.update(req, res))
     this.router.delete('/:id', (req, res) => this.delete(req, res))
-    // Add more routes as needed
   }
 
   public async getAll(_req: Request, res: Response) {

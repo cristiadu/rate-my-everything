@@ -5,7 +5,7 @@ import express from 'express'
 import rateLimit from 'express-rate-limit'
 import cors from 'cors'
 import bodyParser from 'body-parser'
-import * as dotenv from 'dotenv'
+import dotenv from 'dotenv'
 import RatedItem from '@/models/RatedItem'
 import Item from '@/models/Item'
 import User from '@/models/User'
@@ -20,6 +20,24 @@ import path from 'path'
 import http from 'http'
 import { logger } from '@/helpers/Logger'
 
+/** Window the request rate limit counts over, in milliseconds (15 minutes). */
+const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000
+
+/** Requests one client may make per rate limit window. */
+const RATE_LIMIT_MAX_REQUESTS = 100
+
+/** Postgres port used when neither PGPORT nor DATABASE_PORT is set. */
+const DEFAULT_DATABASE_PORT = 5432
+
+/** How long to wait for a database connection, in milliseconds. */
+const DATABASE_CONNECT_TIMEOUT_MS = 10000
+
+/** Most database connections the pool keeps open. */
+const DATABASE_POOL_SIZE = 10
+
+/** HTTP port used when PORT is not set. */
+const DEFAULT_PORT = 3000
+
 if (process.env.NODE_ENV === 'test') {
   dotenv.config({
     path: path.resolve(__dirname, '../.env.test'),
@@ -32,8 +50,8 @@ if (process.env.NODE_ENV === 'test') {
 const app = express()
 let server: http.Server
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
+  windowMs: RATE_LIMIT_WINDOW_MS,
+  max: RATE_LIMIT_MAX_REQUESTS,
 })
 
 app.use(limiter)
@@ -46,36 +64,43 @@ const DBConnection: DataSource = new DataSource({
   name: 'default',
   type: 'postgres',
   host: process.env.PGHOST || process.env.DATABASE_HOST,
-  port: process.env.PGPORT ? parseInt(process.env.PGPORT) : (process.env.DATABASE_PORT ? parseInt(process.env.DATABASE_PORT) : 5432),
+  port: Number(process.env.PGPORT || process.env.DATABASE_PORT || DEFAULT_DATABASE_PORT),
   username: process.env.PGUSER || process.env.DATABASE_USERNAME,
   password: process.env.PGPASSWORD || process.env.DATABASE_PASSWORD,
   database: process.env.PGDATABASE || process.env.DATABASE_NAME,
   entities: [RatedItem, Item, User, Attribute, AttributeValue, Category, ChangeRequest, Comment],
   synchronize: true,
-  connectTimeoutMS: 10000,
+  connectTimeoutMS: DATABASE_CONNECT_TIMEOUT_MS,
   extra: {
-    max: 10,
-    connectionTimeoutMillis: 10000,
+    max: DATABASE_POOL_SIZE,
+    connectionTimeoutMillis: DATABASE_CONNECT_TIMEOUT_MS,
   }
 })
 
-const appReady: Promise<typeof app> = DBConnection.initialize()
-  .then(async () => {
+/** Connects to the database, enables the similarity extensions and mounts every route. */
+const initializeApp = async (): Promise<typeof app> => {
+  try {
+    await DBConnection.initialize()
     await enableSimilarityExtensions(DBConnection)
-    logger.info('Data Source has been initialized')
-    routes.forEach((route) => app.use(route.path, route.controller()))
-    return app
-  })
-  .catch((err) => {
+  } catch (err) {
     logger.error(err, 'Error during Data Source initialization')
     throw err
-  })
+  }
+  logger.info('Data Source has been initialized')
+  routes.forEach((route) => app.use(route.path, route.controller()))
+  return app
+}
 
-  appReady.then((appInstance) => {
-    const PORT = process.env.PORT || 3000
-    server = appInstance.listen(PORT, () => {
-      logger.info(`Server is running on port ${PORT}`)
-    })
+/** Starts listening for HTTP requests once the app is ready. */
+const startServer = async (): Promise<void> => {
+  const appInstance = await appReady
+  const port = process.env.PORT || DEFAULT_PORT
+  server = appInstance.listen(port, () => {
+    logger.info(`Server is running on port ${port}`)
   })
+}
+
+const appReady = initializeApp()
+startServer()
 
 export { appReady, DBConnection, server }

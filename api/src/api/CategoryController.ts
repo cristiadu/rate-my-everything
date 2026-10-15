@@ -25,7 +25,6 @@ export default class CategoryController {
     this.router.post('/', (req, res) => this.create(req, res))
     this.router.put('/:name', (req, res) => this.update(req, res))
     this.router.delete('/:name', (req, res) => this.delete(req, res))
-    // Add more routes as needed
   }
 
   public async getAll(req: Request, res: Response) {
