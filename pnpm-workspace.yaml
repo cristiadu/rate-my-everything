@@ -8,3 +8,6 @@ allowBuilds:
   unrs-resolver: true
 
 minimumReleaseAge: 4320
+
+# Save new and upgraded dependencies with exact versions instead of ^ ranges
+savePrefix: ""

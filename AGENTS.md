@@ -18,3 +18,8 @@
 
 - Put reusable test setup in shared common files.
 - Use the repository scripts instead of inventing one-off test commands.
+
+## Local API Keys
+
+- Copy `api/.env.example` to `api/.env` for local development and add the required API keys there.
+- Keep real keys and credentials out of tracked files. The API reads `api/.env` in development and uses `api/.env.test` for tests.
