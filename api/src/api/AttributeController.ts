@@ -4,6 +4,7 @@ import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import Attribute from '@/models/Attribute'
 import { INVALID_VALUE_TYPE_MESSAGE, isAttributeValueType } from '@/helpers/AttributeHelper'
+import { logger } from '@/helpers/Logger'
 
 export default class AttributeController {
   public router = Router()
@@ -33,7 +34,7 @@ export default class AttributeController {
       const data = await this.attributeService.getAllAttributes()
       res.status(200).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -43,7 +44,7 @@ export default class AttributeController {
       const data = await this.attributeService.getAllAttributeValues()
       res.status(200).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -53,7 +54,7 @@ export default class AttributeController {
       const data = await this.attributeService.getAllAttributeValuesByAttribute(parseInt(req.params.id, 10))
       res.status(200).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -67,7 +68,7 @@ export default class AttributeController {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
       }
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -81,7 +82,7 @@ export default class AttributeController {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
       }
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -98,7 +99,7 @@ export default class AttributeController {
       const data = await this.attributeService.createAttribute(req.body)
       res.status(201).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -108,7 +109,7 @@ export default class AttributeController {
       const data = await this.attributeService.createAttributeValue(req.body)
       res.status(201).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -126,7 +127,7 @@ export default class AttributeController {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
       }
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -140,7 +141,7 @@ export default class AttributeController {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
       }
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -150,7 +151,7 @@ export default class AttributeController {
       await this.attributeService.deleteAttribute(parseInt(req.params.id, 10))
       res.status(204).json()
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -160,7 +161,7 @@ export default class AttributeController {
       await this.attributeService.deleteAttributeValue(parseInt(req.params.id, 10))
       res.status(204).json()
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }

@@ -7,6 +7,7 @@ import { SessionUser } from '@/models/User'
 import { canModerate } from '@/helpers/RouteHelper'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { isValidSimilarName } from '@/helpers/SimilarityHelper'
+import { logger } from '@/helpers/Logger'
 
 /** Message returned when a user without a moderation role tries to change a shared interest directly. */
 const MODERATION_REQUIRED_MESSAGE = 'Only moderators can change interests directly; send a change request instead'
@@ -36,7 +37,7 @@ export default class ItemController {
       const data = await this.itemService.getAll()
       res.status(200).json(data)
     } catch (error) {
-      console.error((error as Error).stack || error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -46,7 +47,7 @@ export default class ItemController {
       const data = await this.itemService.getAllByCategory(req.params.category)
       res.status(200).json(data)
     } catch (error) {
-      console.error((error as Error).stack || error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -68,7 +69,7 @@ export default class ItemController {
     try {
       res.status(200).json(await this.itemService.getSimilar(name, categoryIdNumber))
     } catch (error) {
-      console.error((error as Error).stack || error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -82,7 +83,7 @@ export default class ItemController {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Item not found'))
       }
     } catch (error) {
-      console.error((error as Error).stack || error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -100,7 +101,7 @@ export default class ItemController {
       if (error instanceof UnknownResource) {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
-      console.error((error as Error).stack || error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -124,7 +125,7 @@ export default class ItemController {
       if (error instanceof UnknownResource) {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
-      console.error((error as Error).stack || error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -138,7 +139,7 @@ export default class ItemController {
       await this.itemService.delete(parseInt(req.params.id, 10))
       res.status(204).json()
     } catch (error) {
-      console.error((error as Error).stack || error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }

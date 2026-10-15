@@ -9,6 +9,7 @@ import { ChangeRequestNotPending } from '@/errors/ChangeRequestNotPending'
 import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { isChangeRequestStatus } from '@/helpers/ChangeRequestHelper'
+import { logger } from '@/helpers/Logger'
 
 /** Lets moderators and admins list change requests and approve or reject them. */
 export default class ModerationController {
@@ -38,7 +39,7 @@ export default class ModerationController {
       const data = await this.changeRequestService.getAll(status)
       res.status(200).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -59,7 +60,7 @@ export default class ModerationController {
       if (error instanceof ResourceAlreadyExists) {
         return res.status(422).json(NewApiError(ErrorCode.RESOURCE_ALREADY_EXISTS, 422, error.message))
       }
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -77,7 +78,7 @@ export default class ModerationController {
       if (error instanceof ChangeRequestNotPending) {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
