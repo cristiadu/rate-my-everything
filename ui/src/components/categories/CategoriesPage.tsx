@@ -245,7 +245,7 @@ const CategoriesPage: React.FC = () => {
               <td>
                 <div className="tags">
                   {category.attributes.map((attribute) => (
-                    <span key={attribute.id} className="tag is-info" title={attribute.valueType}>{attribute.name}</span>
+                    <span key={attribute.id} className="tag is-primary is-light" title={attribute.valueType}>{attribute.name}</span>
                   ))}
                 </div>
               </td>

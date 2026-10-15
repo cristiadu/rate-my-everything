@@ -18,7 +18,7 @@ const Arrow: React.FC<ArrowProps> = ({ setIsOpen, isOpen }) => (
       height: '0',
       borderTop: '30px solid transparent',
       borderBottom: '30px solid transparent',
-      borderLeft: '20px solid #FF6685',
+      borderLeft: '20px solid var(--bulma-primary)',
       cursor: 'pointer',
     }}
   />

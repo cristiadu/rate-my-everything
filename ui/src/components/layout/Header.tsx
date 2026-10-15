@@ -6,13 +6,13 @@ import HeaderMenu from '@/components/layout/HeaderMenu'
 import UserHeaderMenu from '@/components/users/UserHeaderMenu'
 
 const Header = () => (
-  <Hero color="danger" size="small" style={{ width: '100%' }}>
+  <Hero color="primary" size="small" style={{ width: '100%' }}>
     <Hero.Header>
       <UserHeaderMenu />
     </Hero.Header>
-    <Hero.Body className="has-background-danger-light">
+    <Hero.Body className="has-background-primary-light">
       <Container>
-        <Heading textColor="danger">
+        <Heading textColor="primary-dark">
           Rate My Everything
         </Heading>
         <Heading

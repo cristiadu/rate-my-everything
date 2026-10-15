@@ -27,6 +27,7 @@ const createConfig = (_env, argv) => {
           { from: 'public/manifest.json', to: 'manifest.json' },
           { from: 'public/robots.txt', to: 'robots.txt' },
           { from: 'public/favicon.ico', to: 'favicon.ico' },
+          { from: 'public/theme.css', to: 'theme.css' },
         ],
       }),
     ],

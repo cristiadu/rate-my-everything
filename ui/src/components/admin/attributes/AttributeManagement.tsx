@@ -121,7 +121,7 @@ const AttributeManagement: React.FC = () => {
             {attributes.map((attribute) => (
               <tr key={attribute.id}>
                 <td>{attribute.name}</td>
-                <td><span className="tag is-info">{attribute.valueType}</span></td>
+                <td><span className="tag is-primary is-light">{attribute.valueType}</span></td>
                 <td className="has-text-right">
                   <button className="button is-small mr-2" type="button" onClick={() => setEditor({ mode: 'edit', attribute })}>
                     Edit
