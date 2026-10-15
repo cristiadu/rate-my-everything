@@ -3,6 +3,7 @@ export enum Endpoints {
   COMMENTS_BASE_PATH = '/api/comments',
   ATTRIBUTES_BASE_PATH = '/api/attributes',
   HEALTH_BASE_PATH = '/api/health',
+  IMPORTS_BASE_PATH = '/api/imports',
   ITEMS_BASE_PATH = '/api/items',
   LOGIN_BASE_PATH = '/api/login',
   RATINGS_BASE_PATH = '/api/ratings',

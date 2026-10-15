@@ -19,4 +19,4 @@ export const NewApiError = (code: ErrorCode, status: HttpStatusCode, message: st
 export type HttpStatusCode =
     200 | 201 | 202 | 204 | // Success
     400 | 401 | 403 | 404 | 422 | 429 | // Client Errors
-    500; // Server Errors
+    500 | 502 | 503; // Server Errors
