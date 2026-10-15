@@ -17,6 +17,7 @@ import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import { RouteConfig } from '@/models/RouteConfig'
 import { canAccessRoute } from '@/helpers/RouteHelper'
+import { logger } from '@/helpers/Logger'
 
 export const unprotectedRoutes = new Set([
   '/api/login',
@@ -71,7 +72,7 @@ export const authenticationFilter = (req: Request, res: Response, next: NextFunc
 
   const jwtSecret = process.env.JWT_SECRET
   if (!jwtSecret) {
-    console.error('JWT_SECRET environment variable is not defined')
+    logger.error('JWT_SECRET environment variable is not defined')
     return res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'Internal server error'))
   }
 
@@ -93,7 +94,7 @@ export const authenticationFilter = (req: Request, res: Response, next: NextFunc
     res.locals.user = decodedUser
     return next()
   } catch (err) {
-    console.log('JWT verification error:', err)
+    logger.warn(err, 'JWT verification failed')
     return res.status(401).json(NewApiError(ErrorCode.UNAUTHORIZED, 401, 'Invalid token'))
   }
 }

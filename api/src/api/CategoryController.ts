@@ -7,6 +7,7 @@ import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { isValidAttributeIds } from '@/helpers/CategoryHelper'
 import { isValidSimilarName } from '@/helpers/SimilarityHelper'
+import { logger } from '@/helpers/Logger'
 
 export default class CategoryController {
   public router = Router()
@@ -33,7 +34,7 @@ export default class CategoryController {
       res.status(200)
         .json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500)
         .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
@@ -49,7 +50,7 @@ export default class CategoryController {
     try {
       res.status(200).json(await this.categoryService.getSimilar(name))
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -64,7 +65,7 @@ export default class CategoryController {
       res.status(200)
         .json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500)
         .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
@@ -86,7 +87,7 @@ export default class CategoryController {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
 
-      console.error(error)
+      logger.error(error)
       res.status(500)
         .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
@@ -120,7 +121,7 @@ export default class CategoryController {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
       
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -130,7 +131,7 @@ export default class CategoryController {
       await this.categoryService.delete(req.params.name)
       res.status(204).json()
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }

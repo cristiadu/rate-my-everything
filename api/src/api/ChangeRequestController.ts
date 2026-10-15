@@ -6,6 +6,7 @@ import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { findChangeRequestError } from '@/helpers/ChangeRequestHelper'
+import { logger } from '@/helpers/Logger'
 
 /** Lets signed-in users propose changes to interests and categories and follow their own requests. */
 export default class ChangeRequestController {
@@ -29,7 +30,7 @@ export default class ChangeRequestController {
       const data = await this.changeRequestService.getAllByRequester(sessionUser.id)
       res.status(200).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -49,7 +50,7 @@ export default class ChangeRequestController {
       if (error instanceof UnknownResource) {
         return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }

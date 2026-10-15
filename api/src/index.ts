@@ -18,6 +18,7 @@ import { routes, authenticationFilter, addDefaultHeaders } from '@/routes/Router
 import { enableSimilarityExtensions } from '@/helpers/SimilarityHelper'
 import path from 'path'
 import http from 'http'
+import { logger } from '@/helpers/Logger'
 
 if (process.env.NODE_ENV === 'test') {
   dotenv.config({
@@ -61,19 +62,19 @@ const DBConnection: DataSource = new DataSource({
 const appReady: Promise<typeof app> = DBConnection.initialize()
   .then(async () => {
     await enableSimilarityExtensions(DBConnection)
-    console.log('Data Source has been initialized!')
+    logger.info('Data Source has been initialized')
     routes.forEach((route) => app.use(route.path, route.controller()))
     return app
   })
   .catch((err) => {
-    console.error('Error during Data Source initialization', err)
+    logger.error(err, 'Error during Data Source initialization')
     throw err
   })
 
   appReady.then((appInstance) => {
     const PORT = process.env.PORT || 3000
     server = appInstance.listen(PORT, () => {
-      console.log(`Server is running on port ${PORT}`)
+      logger.info(`Server is running on port ${PORT}`)
     })
   })
 

@@ -4,6 +4,7 @@ import User from '@/models/User'
 import { NewApiError } from '@/models/APIError'
 import { InvalidCredentials } from '@/errors/InvalidCredentials'
 import ErrorCode from '@/errors/ErrorCode'
+import { logger } from '@/helpers/Logger'
 
 export default class LoginController {
   public router = Router()
@@ -46,7 +47,7 @@ export default class LoginController {
           .json(NewApiError(ErrorCode.INVALID_CREDENTIALS, 401, 'Invalid username or password'))
       }
 
-      console.error('Exception occurred:', error)
+      logger.error(error, 'Login failed')
       res.status(500)
         .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
@@ -81,7 +82,7 @@ export default class LoginController {
       res.status(201)
         .json(userSafe)
     } catch (error) {
-      console.error('Registration error:', error)
+      logger.error(error, 'Registration failed')
       res.status(500)
         .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
