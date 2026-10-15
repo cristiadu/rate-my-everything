@@ -129,7 +129,7 @@ const UserManagement: React.FC = () => {
                 <td>{user.email}</td>
                 <td>
                   <div className="tags">
-                    {user.roles.map((role) => <span key={role} className="tag is-primary is-light">{role}</span>)}
+                    {user.roles.map((role) => <span key={role} className="tag is-info">{role}</span>)}
                   </div>
                 </td>
                 <td className="has-text-right">

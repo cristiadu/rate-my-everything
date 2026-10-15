@@ -52,7 +52,7 @@ const MultiSelectDropdown: React.FC<MultiSelectDropdownProps> = ({
         >
           <span className="tags mb-0">
             {selectedOptions.length === 0 ? <span className="has-text-grey">{placeholder}</span> : selectedOptions.map((option) => (
-              <span key={option.value} className="tag is-primary is-light mb-0">{option.label}</span>
+              <span key={option.value} className="tag is-info mb-0">{option.label}</span>
             ))}
           </span>
           <span className="icon is-small" aria-hidden="true">▾</span>

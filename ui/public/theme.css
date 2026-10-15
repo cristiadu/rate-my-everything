@@ -1,31 +1,47 @@
-/* Shared palette: primary takes the top menu's danger pink, so is-primary elements match the menu */
+/* Primary is a deep berry that sits next to the menu's pink, used for main buttons */
 :root {
-  --bulma-primary-h: var(--bulma-danger-h);
-  --bulma-primary-s: var(--bulma-danger-s);
-  --bulma-primary-l: var(--bulma-danger-l);
-  --bulma-primary-invert-l: var(--bulma-danger-invert-l);
-  --bulma-primary-light-l: var(--bulma-danger-light-l);
-  --bulma-primary-light-invert-l: var(--bulma-danger-light-invert-l);
-  --bulma-primary-dark-l: var(--bulma-danger-dark-l);
-  --bulma-primary-dark-invert-l: var(--bulma-danger-dark-invert-l);
-  --bulma-primary-on-scheme-l: var(--bulma-danger-on-scheme-l);
+  --bulma-primary-h: 330deg;
+  --bulma-primary-s: 45%;
+  --bulma-primary-l: 38%;
+  --bulma-primary-invert-l: var(--bulma-primary-100-l);
+  --bulma-primary-light-l: var(--bulma-primary-95-l);
+  --bulma-primary-light-invert-l: var(--bulma-primary-30-l);
+  --bulma-primary-dark-l: var(--bulma-primary-25-l);
+  --bulma-primary-dark-invert-l: var(--bulma-primary-95-l);
+  --bulma-primary-on-scheme-l: 38%;
 }
 
-/* Links use the menu's pink at the darker on-white shade Bulma picks for readable text */
+/* Links share the berry so link text stays readable on white */
 :root {
-  --bulma-link-h: var(--bulma-danger-h);
-  --bulma-link-s: var(--bulma-danger-s);
-  --bulma-link-l: var(--bulma-danger-on-scheme-l);
-  --bulma-link-on-scheme-l: var(--bulma-danger-on-scheme-l);
+  --bulma-link-h: var(--bulma-primary-h);
+  --bulma-link-s: var(--bulma-primary-s);
+  --bulma-link-l: var(--bulma-primary-l);
+  --bulma-link-on-scheme-l: var(--bulma-primary-on-scheme-l);
 }
 
-/* Table headers get a menu-pink underline instead of the default grey one */
+/* Info is a soft mint, the complement of the menu's pink, used for tags */
+:root {
+  --bulma-info-h: 168deg;
+  --bulma-info-s: 45%;
+  --bulma-info-l: 80%;
+  --bulma-info-invert-l: var(--bulma-info-20-l);
+  --bulma-info-on-scheme-l: 30%;
+}
+
+/* Table headers get a berry underline instead of the default grey one */
 .table thead th,
 .content table thead th {
-  border-bottom-color: var(--bulma-danger);
+  border-bottom-color: var(--bulma-primary);
 }
 
-/* The footer repeats the header's light pink band so the page is framed by the menu's colors */
+/* Top menu dropdowns get a pink border so they stand apart from the page behind them */
+.navbar-dropdown {
+  border: 1px solid var(--bulma-danger);
+  border-top: 3px solid var(--bulma-danger);
+}
+
+/* The footer uses the user bar's dark slate so the page is framed top and bottom */
 .footer {
-  --bulma-footer-background-color: var(--bulma-danger-light);
+  --bulma-footer-background-color: var(--bulma-dark);
+  color: var(--bulma-dark-invert);
 }
