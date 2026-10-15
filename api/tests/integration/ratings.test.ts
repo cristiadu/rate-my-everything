@@ -3,84 +3,57 @@ import request from 'supertest'
 import { appReady } from '@/index'
 import APIError from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import Category from '@/models/Category'
 import Item from '@/models/Item'
 import RatedItem from '@/models/RatedItem'
 import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
-import { cleanupAllRatedItems, cleanupAllItems, cleanupAllCategories } from '@@/testutils/common/DataCleanup'
+import { cleanupAllCategories, cleanupAllRatedItems } from '@@/testutils/common/DataCleanup'
+import { createTestItem } from '@@/testutils/common/Items'
+import { createTestRating } from '@@/testutils/common/Ratings'
 import { Endpoints } from '@@/testutils/common/constants'
 
 describe('RatedItem API Integration Tests', async () => {
   const app = await appReady
   const testAuthToken = await getAuthTokenFromFile()
-  let testCategory: Category
   let testItem: Item
-  let testRatedItem: RatedItem
 
   beforeAll(async () => {
-    await cleanupAllRatedItems(app)
-    await cleanupAllItems(app)
     await cleanupAllCategories(app)
+    testItem = await createTestItem(app, testAuthToken, 'Rated')
+  })
 
-    const categoryRes = await request(app)
-      .post(Endpoints.CATEGORIES_BASE_PATH)
-      .set('Authorization', `Bearer ${testAuthToken}`)
-      .send({ name: `RatedCat-${Date.now()}`, description: 'For rated item tests' })
-      .expect(201)
-    testCategory = categoryRes.body
-
-    const itemRes = await request(app)
-      .post(Endpoints.ITEMS_BASE_PATH)
-      .set('Authorization', `Bearer ${testAuthToken}`)
-      .send({ name: `RatedItem-${Date.now()}`, description: 'For rated item tests', categoryId: testCategory.id })
-      .expect(201)
-    testItem = itemRes.body
+  beforeEach(async () => {
+    await cleanupAllRatedItems(app)
   })
 
   afterAll(async () => {
-    await cleanupAllRatedItems(app)
-  })
-
-  beforeEach(() => {
-    if (!testCategory) {
-      throw new Error('Test category not initialized')
-    }
-
-    if (!testItem) {
-      throw new Error('Test item not initialized')
-    }
+    await cleanupAllCategories(app)
   })
 
   describe(`POST ${Endpoints.RATINGS_BASE_PATH}`, () => {
     it('should create a new rated item for the signed-in user', async () => {
-      const newRatedItem = {
-        item_id: testItem.id,
-        rating: 5.00,
-        notes: 'Excellent!'
-      }
-
+      // GIVEN the test item (beforeAll)
+      // WHEN the admin rates it 5 with a note
+      // THEN the rating comes back with its item, category, note and grade
       await request(app)
         .post(`${Endpoints.RATINGS_BASE_PATH}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send(newRatedItem)
+        .send({ item_id: testItem.id, rating: 5.00, notes: 'Excellent!' })
         .expect('Content-Type', /json/)
         .expect(201)
         .expect(res => {
           const ratedItem = res.body as RatedItem
           expect(ratedItem.id).toBeDefined()
           expect(ratedItem.item.name).toBe(testItem.name)
-          expect(ratedItem.item.category.name).toBe(testCategory.name)
+          expect(ratedItem.item.category.name).toBe(testItem.category.name)
           expect(ratedItem.notes).toBe('Excellent!')
           expect(ratedItem.rating).toBe(5)
-          testRatedItem = ratedItem
         })
-
-      if (!testRatedItem) {
-        throw new Error('Test rated item not initialized after creation')
-      }
     })
 
     it('should fail to create a rated item with missing itemId', async () => {
+      // GIVEN a rating without an item_id
+      // WHEN it is posted
+      // THEN the request fails validation
       await request(app)
         .post(`${Endpoints.RATINGS_BASE_PATH}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -98,32 +71,30 @@ describe('RatedItem API Integration Tests', async () => {
 
   describe(`PUT ${Endpoints.RATINGS_BASE_PATH}/:id`, () => {
     it('should update a rated item', async () => {
-      if (!testRatedItem) {
-        throw new Error('Test rated item not initialized')
-      }
+      // GIVEN a 5 rating of the test item noted "Excellent!"
+      const ratedItem = await createTestRating(app, testAuthToken, testItem.id, 5, 'Excellent!')
 
-      const updatedComment = 'Updated comment'
+      // WHEN its note is updated
+      // THEN the new note comes back and the grade and item stay the same
       await request(app)
-        .put(`${Endpoints.RATINGS_BASE_PATH}/${testRatedItem.id}`)
+        .put(`${Endpoints.RATINGS_BASE_PATH}/${ratedItem.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send({ notes: updatedComment } as Partial<RatedItem>)
+        .send({ notes: 'Updated comment' } as Partial<RatedItem>)
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
           const updatedRatedItem = res.body as RatedItem
-          expect(updatedRatedItem.notes).toBe(updatedComment)
-          expect(updatedRatedItem.id).toBe(testRatedItem.id)
+          expect(updatedRatedItem.notes).toBe('Updated comment')
+          expect(updatedRatedItem.id).toBe(ratedItem.id)
           expect(updatedRatedItem.rating).toBe(5)
           expect(updatedRatedItem.item.id).toBe(testItem.id)
-          testRatedItem = updatedRatedItem
         })
-
-        if (!testRatedItem) {
-          throw new Error('Test rated item not initialized after update')
-        }
     })
 
     it('should fail to update a non-existent rated item', async () => {
+      // GIVEN no rating with id 999999
+      // WHEN updating it
+      // THEN it is not found
       await request(app)
         .put(`${Endpoints.RATINGS_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -141,9 +112,11 @@ describe('RatedItem API Integration Tests', async () => {
 
   describe(`GET ${Endpoints.RATINGS_BASE_PATH}`, () => {
     it('should get all rated items', async () => {
-      if (!testRatedItem) {
-        throw new Error('Test rated item not initialized')
-      }
+      // GIVEN one 5 rating of the test item noted "Excellent!"
+      const ratedItem = await createTestRating(app, testAuthToken, testItem.id, 5, 'Excellent!')
+
+      // WHEN all ratings are listed
+      // THEN only that rating comes back
       await request(app)
         .get(`${Endpoints.RATINGS_BASE_PATH}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -151,27 +124,19 @@ describe('RatedItem API Integration Tests', async () => {
         .expect(200)
         .expect(res => {
           const ratedItems = res.body as RatedItem[]
-          expect(Array.isArray(ratedItems)).toBe(true)
-          expect(ratedItems.length).toBe(1)
-          for (const item of ratedItems) {
-            if (item.id === testRatedItem.id) {
-              expect(item.notes).toBe(testRatedItem.notes)
-              expect(item.id).toBe(testRatedItem.id)
-              expect(item.rating).toBe(5)
-              expect(item.item.name).toBe(testItem.name)
-            } else {
-              expect(item.notes).toBeDefined()
-              expect(item.id).toBeDefined()
-              expect(item.rating).toBeDefined()
-            }
-          }
+          expect(ratedItems).toHaveLength(1)
+          expect(ratedItems[0].id).toBe(ratedItem.id)
+          expect(ratedItems[0].notes).toBe('Excellent!')
+          expect(ratedItems[0].rating).toBe(5)
+          expect(ratedItems[0].item.name).toBe(testItem.name)
         })
     })
   })
 
   describe(`GET ${Endpoints.RATINGS_BASE_PATH}/mine`, () => {
     it('should list only the ratings of the signed-in user', async () => {
-      // GIVEN the admin test user rated the test item and another user rated nothing
+      // GIVEN the admin rated the test item and another user rated nothing
+      const ratedItem = await createTestRating(app, testAuthToken, testItem.id, 5)
       const otherUserToken = await getUserRoleAuthToken(app)
 
       // WHEN each user lists their own ratings
@@ -185,32 +150,36 @@ describe('RatedItem API Integration Tests', async () => {
         .expect(200)
 
       // THEN only the admin sees the test rating
-      expect((adminRes.body as RatedItem[]).map((rating) => rating.id)).toEqual([testRatedItem.id])
+      expect((adminRes.body as RatedItem[]).map((rating) => rating.id)).toEqual([ratedItem.id])
       expect(otherUserRes.body).toEqual([])
     })
   })
 
   describe(`GET ${Endpoints.RATINGS_BASE_PATH}/:id`, () => {
     it('should get rated item by id', async () => {
-      if (!testRatedItem) {
-        throw new Error('Test rated item not initialized')
-      }
+      // GIVEN a 5 rating of the test item noted "Excellent!"
+      const ratedItem = await createTestRating(app, testAuthToken, testItem.id, 5, 'Excellent!')
 
+      // WHEN getting it by id
+      // THEN its fields come back
       await request(app)
-        .get(`${Endpoints.RATINGS_BASE_PATH}/${testRatedItem.id}`)
+        .get(`${Endpoints.RATINGS_BASE_PATH}/${ratedItem.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
-          const ratedItem = res.body as RatedItem
-          expect(ratedItem.notes).toBe(testRatedItem.notes)
-          expect(ratedItem.id).toBe(testRatedItem.id)
-          expect(ratedItem.rating).toBe(5)
-          expect(ratedItem.item.name).toBe(testItem.name)
+          const fetchedRatedItem = res.body as RatedItem
+          expect(fetchedRatedItem.notes).toBe('Excellent!')
+          expect(fetchedRatedItem.id).toBe(ratedItem.id)
+          expect(fetchedRatedItem.rating).toBe(5)
+          expect(fetchedRatedItem.item.name).toBe(testItem.name)
         })
     })
 
     it('should fail to get a non-existent rated item', async () => {
+      // GIVEN no rating with id 999999
+      // WHEN getting it by id
+      // THEN it is not found
       await request(app)
         .get(`${Endpoints.RATINGS_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -227,15 +196,11 @@ describe('RatedItem API Integration Tests', async () => {
 
   describe(`GET ${Endpoints.RATINGS_BASE_PATH}/item/:item_id`, () => {
     it('should list every rating of the item, keeping each time a user rated it', async () => {
-      // GIVEN another user rated the test item twice
+      // GIVEN the admin rated the test item 5 and another user rated it 6 and then 8
+      const adminRating = await createTestRating(app, testAuthToken, testItem.id, 5)
       const otherUserToken = await getUserRoleAuthToken(app)
-      for (const rating of [6, 8]) {
-        await request(app)
-          .post(Endpoints.RATINGS_BASE_PATH)
-          .set('Authorization', `Bearer ${otherUserToken}`)
-          .send({ item_id: testItem.id, rating })
-          .expect(201)
-      }
+      await createTestRating(app, otherUserToken, testItem.id, 6)
+      await createTestRating(app, otherUserToken, testItem.id, 8)
 
       // WHEN the item's ratings are listed
       const res = await request(app)
@@ -247,8 +212,8 @@ describe('RatedItem API Integration Tests', async () => {
       // THEN the admin's rating and both of the other user's ratings come back, each with its rater and date
       const ratedItems = (res.body as RatedItem[]).sort((a, b) => a.id - b.id)
       expect(ratedItems.map((ratedItem) => ratedItem.rating)).toEqual([5, 6, 8])
-      expect(ratedItems[0].userId).toBe(testRatedItem.userId)
-      expect(ratedItems[1].userId).not.toBe(testRatedItem.userId)
+      expect(ratedItems[0].userId).toBe(adminRating.userId)
+      expect(ratedItems[1].userId).not.toBe(adminRating.userId)
       expect(ratedItems[2].userId).toBe(ratedItems[1].userId)
       expect(Number.isNaN(Date.parse(String(ratedItems[2].ratedAt)))).toBe(false)
     })
@@ -267,16 +232,26 @@ describe('RatedItem API Integration Tests', async () => {
 
   describe(`DELETE ${Endpoints.RATINGS_BASE_PATH}`, () => {
     it('should delete a rated item', async () => {
-      if (!testRatedItem) {
-        throw new Error('Test rated item not initialized')
-      }
+      // GIVEN a rating of the test item
+      const ratedItem = await createTestRating(app, testAuthToken, testItem.id, 5)
+
+      // WHEN deleting it
       await request(app)
-        .delete(`${Endpoints.RATINGS_BASE_PATH}/${testRatedItem.id}`)
+        .delete(`${Endpoints.RATINGS_BASE_PATH}/${ratedItem.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(204)
+
+      // THEN it is gone
+      await request(app)
+        .get(`${Endpoints.RATINGS_BASE_PATH}/${ratedItem.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(404)
     })
 
     it('should not fail when deleting a non-existent rated item', async () => {
+      // GIVEN no rating with id 999999
+      // WHEN deleting it
+      // THEN the delete still succeeds with no body
       await request(app)
         .delete(`${Endpoints.RATINGS_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)

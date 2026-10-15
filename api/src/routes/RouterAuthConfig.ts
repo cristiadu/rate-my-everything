@@ -8,6 +8,7 @@ import CommentController from '@/api/CommentController'
 import UserRole from '@/models/UserRole'
 import LoginController from '@/api/LoginController'
 import HealthController from '@/api/HealthController'
+import ImportController from '@/api/ImportController'
 import { NextFunction, Request, Response } from 'express'
 import { SessionUser } from '@/models/User'
 import { NewApiError } from '@/models/APIError'
@@ -35,6 +36,7 @@ export const routes: RouteConfig[] = [
     roles: [UserRole.USER, UserRole.ADMIN],
     writeRoles: [UserRole.ADMIN],
   },
+  { path: '/api/imports', controller: () => new ImportController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/comments', controller: () => new CommentController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/health', controller: () => new HealthController().router },
   { path: '/api', controller: () => (_req: Request, res: Response) => {
