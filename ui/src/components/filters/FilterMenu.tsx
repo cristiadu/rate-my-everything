@@ -33,6 +33,10 @@ const FilterMenu = () => {
     bmCross: {
       background: '#373a47',
     },
+    // Pins the closed panel to the window's left edge so it slides fully out of view, leaving only its arrow
+    bmMenuWrap: {
+      left: '0',
+    },
   }
 
   /** Loads the categories, with their attributes, to filter by. */
