@@ -6,6 +6,7 @@ import ErrorCode from '@/errors/ErrorCode'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { ImportSourceFailed } from '@/errors/ImportSourceFailed'
 import { ImportSourceNotConfigured } from '@/errors/ImportSourceNotConfigured'
+import { logger } from '@/helpers/Logger'
 
 export default class ImportController {
   public router = Router()
@@ -43,13 +44,13 @@ export default class ImportController {
         return res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, error.message))
       }
       if (error instanceof ImportSourceFailed) {
-        console.error(error.message)
+        logger.error(error)
         return res.status(502).json(NewApiError(ErrorCode.EXTERNAL_SERVICE_ERROR, 502, error.message))
       }
       if (error instanceof ImportSourceNotConfigured) {
         return res.status(503).json(NewApiError(ErrorCode.SERVICE_UNAVAILABLE, 503, error.message))
       }
-      console.error((error as Error).stack || error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }

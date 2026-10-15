@@ -3,6 +3,7 @@ import { runHealthChecks } from '@/services/HealthIndicators'
 import { HealthStatus } from '@/models/Health'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
+import { logger } from '@/helpers/Logger'
 
 export default class HealthController {
   public router = Router()
@@ -28,7 +29,7 @@ export default class HealthController {
         return res.status(500).json(health)
       }
     } catch (error) {
-      console.error('Health check failed:', error)
+      logger.error(error, 'Health check failed')
         res.status(500)
           .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }

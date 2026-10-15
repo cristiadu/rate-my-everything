@@ -4,6 +4,7 @@ import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import RatedItem from '@/models/RatedItem'
 import { SessionUser } from '@/models/User'
+import { logger } from '@/helpers/Logger'
 
 export default class RatedItemController {
   public router = Router()
@@ -31,7 +32,7 @@ export default class RatedItemController {
       const data = await this.ratedItemService.getAll()
       res.status(200).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -41,7 +42,7 @@ export default class RatedItemController {
       const data = await this.ratedItemService.getAllByUserId(parseInt(req.params.user_id, 10))
       res.status(200).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -52,7 +53,7 @@ export default class RatedItemController {
       const data = await this.ratedItemService.getAllByItemId(parseInt(req.params.item_id, 10))
       res.status(200).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -64,7 +65,7 @@ export default class RatedItemController {
       const data = await this.ratedItemService.getAllByUserId(sessionUser.id)
       res.status(200).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -78,7 +79,7 @@ export default class RatedItemController {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
       }
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -94,7 +95,7 @@ export default class RatedItemController {
       const data = await this.ratedItemService.create(item_id, sessionUser.id, rating, notes)
       res.status(201).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -109,7 +110,7 @@ export default class RatedItemController {
         res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
       }
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -119,7 +120,7 @@ export default class RatedItemController {
       await this.ratedItemService.delete(parseInt(req.params.id, 10))
       res.status(204).json()
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }

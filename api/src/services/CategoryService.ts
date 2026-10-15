@@ -4,6 +4,7 @@ import AttributeService from '@/services/AttributeService'
 import BaseService from '@/services/BaseService'
 import { In, Not } from 'typeorm'
 import { findSimilarIds, orderByIds } from '@/helpers/SimilarityHelper'
+import { logger } from '@/helpers/Logger'
 
 class CategoryService extends BaseService<Category> {
   private attributeService = new AttributeService()
@@ -56,7 +57,7 @@ class CategoryService extends BaseService<Category> {
   public async delete(name: string): Promise<void> {
     const category = await this.get(name)
     if (category) {
-      console.log(`Deleting category: ${category.name}`)
+      logger.info(`Deleting category: ${category.name}`)
       await this.repository.delete(category.id)
     }
   }

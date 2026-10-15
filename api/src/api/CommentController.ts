@@ -6,6 +6,7 @@ import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { CommentNotOwned } from '@/errors/CommentNotOwned'
+import { logger } from '@/helpers/Logger'
 
 /** Discussion threads on items: list an item's comments, post one, and delete one. */
 export default class CommentController {
@@ -29,7 +30,7 @@ export default class CommentController {
       const data = await this.commentService.getAllByItemId(parseInt(req.params.item_id, 10))
       res.status(200).json(data)
     } catch (error) {
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -55,7 +56,7 @@ export default class CommentController {
         const resourceName = `${error.resource[0].toUpperCase()}${error.resource.slice(1)}`
         return res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, `${resourceName} not found`))
       }
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
@@ -69,7 +70,7 @@ export default class CommentController {
       if (error instanceof CommentNotOwned) {
         return res.status(403).json(NewApiError(ErrorCode.FORBIDDEN, 403, error.message))
       }
-      console.error(error)
+      logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }
   }
