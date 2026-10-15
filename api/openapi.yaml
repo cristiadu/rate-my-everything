@@ -1,2096 +1,12 @@
-openapi: 3.2.0
-info:
-  title: Rate My Everything API
-  version: 1.0.0
-  description: Rate interests, group them in categories described by attributes, and discuss them.
-servers:
-  - url: /api
-tags:
-  - name: Attributes
-  - name: Categories
-  - name: Comments
-  - name: Health
-  - name: Imports
-  - name: Items
-  - name: Login
-  - name: Ratings
-  - name: Users
-security:
-  - bearerAuth: []
-paths:
-  /login:
-    post:
-      operationId: login
-      summary: Signs in and returns a bearer token
-      tags:
-        - Login
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/LoginInput"
-      responses:
-        "200":
-          description: Signed in
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserTokenResponse"
-        "400":
-          description: Username or password is missing
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: Username or password is wrong
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /login/register:
-    post:
-      operationId: register
-      summary: Creates an account
-      tags:
-        - Login
-      security: []
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RegisterInput"
-      responses:
-        "201":
-          description: Account created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserResponse"
-        "400":
-          description: A required value is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "422":
-          description: The username is taken
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /health:
-    get:
-      operationId: getHealth
-      summary: Reports whether the API and its database work
-      tags:
-        - Health
-      security: []
-      responses:
-        "200":
-          description: Every service is healthy
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Health"
-        "500":
-          description: A service is unhealthy
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/Health"
-  /users:
-    get:
-      operationId: getUsers
-      summary: Lists every user
-      tags:
-        - Users
-      responses:
-        "200":
-          description: Users
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/UserResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    post:
-      operationId: createUser
-      summary: Creates a user
-      tags:
-        - Users
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserInput"
-      responses:
-        "201":
-          description: User created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /users/username/{username}:
-    get:
-      operationId: getUserByUsername
-      summary: Finds a user by username
-      tags:
-        - Users
-      parameters:
-        - name: username
-          in: path
-          description: Username
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: The user
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /users/{id}:
-    get:
-      operationId: getUser
-      summary: Gets a user
-      tags:
-        - Users
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: The user
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    put:
-      operationId: updateUser
-      summary: Changes a user
-      tags:
-        - Users
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/UserInput"
-      responses:
-        "200":
-          description: User changed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/UserResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    delete:
-      operationId: deleteUser
-      summary: Deletes a user
-      tags:
-        - Users
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "204":
-          description: Deleted
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /attributes:
-    get:
-      operationId: getAttributes
-      summary: Lists every attribute
-      tags:
-        - Attributes
-      responses:
-        "200":
-          description: Attributes
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/AttributeResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    post:
-      operationId: createAttribute
-      summary: Creates an attribute
-      tags:
-        - Attributes
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AttributeInput"
-      responses:
-        "201":
-          description: Attribute created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AttributeResponse"
-        "400":
-          description: A required value is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /attributes/values:
-    get:
-      operationId: getAttributeValues
-      summary: Lists every attribute value
-      tags:
-        - Attributes
-      responses:
-        "200":
-          description: Attribute values
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/AttributeValueResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    post:
-      operationId: createAttributeValue
-      summary: Creates an attribute value
-      tags:
-        - Attributes
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AttributeValueRecordInput"
-      responses:
-        "201":
-          description: Attribute value created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AttributeValueResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /attributes/values/{id}:
-    get:
-      operationId: getAttributeValue
-      summary: Gets an attribute value
-      tags:
-        - Attributes
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: The attribute value
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AttributeValueResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    put:
-      operationId: updateAttributeValue
-      summary: Changes an attribute value
-      tags:
-        - Attributes
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AttributeValueRecordInput"
-      responses:
-        "200":
-          description: Attribute value changed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AttributeValueResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    delete:
-      operationId: deleteAttributeValue
-      summary: Deletes an attribute value
-      tags:
-        - Attributes
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "204":
-          description: Deleted
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /attributes/{id}:
-    get:
-      operationId: getAttribute
-      summary: Gets an attribute
-      tags:
-        - Attributes
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: The attribute
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AttributeResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    put:
-      operationId: updateAttribute
-      summary: Changes an attribute
-      tags:
-        - Attributes
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/AttributeInput"
-      responses:
-        "200":
-          description: Attribute changed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/AttributeResponse"
-        "400":
-          description: A required value is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    delete:
-      operationId: deleteAttribute
-      summary: Deletes an attribute
-      tags:
-        - Attributes
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "204":
-          description: Deleted
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /attributes/{id}/values:
-    get:
-      operationId: getAttributeValuesByAttribute
-      summary: Lists the values items hold for an attribute
-      tags:
-        - Attributes
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Attribute values
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/AttributeValueResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /categories:
-    get:
-      operationId: getCategories
-      summary: Lists every category with its attributes
-      tags:
-        - Categories
-      responses:
-        "200":
-          description: Categories
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CategoryResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    post:
-      operationId: createCategory
-      summary: Creates a category
-      tags:
-        - Categories
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CategoryInput"
-      responses:
-        "201":
-          description: Category created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CategoryResponse"
-        "400":
-          description: A required value is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "422":
-          description: The body refers to unknown or conflicting resources
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /categories/similar:
-    get:
-      operationId: getSimilarCategories
-      summary: Lists the categories whose name is likely a duplicate of a name, most similar first
-      tags:
-        - Categories
-      parameters:
-        - name: name
-          in: query
-          description: Name to compare against
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Similar categories
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CategoryResponse"
-        "400":
-          description: A required value is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /categories/{name}:
-    get:
-      operationId: getCategory
-      summary: Gets a category by name
-      tags:
-        - Categories
-      parameters:
-        - name: name
-          in: path
-          description: Name of the category
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: The category
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CategoryResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    put:
-      operationId: updateCategory
-      summary: Changes a category
-      tags:
-        - Categories
-      parameters:
-        - name: name
-          in: path
-          description: Name of the category
-          required: true
-          schema:
-            type: string
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CategoryInput"
-      responses:
-        "200":
-          description: Category changed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CategoryResponse"
-        "400":
-          description: A required value is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "422":
-          description: The body refers to unknown or conflicting resources
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    delete:
-      operationId: deleteCategory
-      summary: Deletes a category
-      tags:
-        - Categories
-      parameters:
-        - name: name
-          in: path
-          description: Name of the category
-          required: true
-          schema:
-            type: string
-      responses:
-        "204":
-          description: Deleted
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /items:
-    get:
-      operationId: getItems
-      summary: Lists every item
-      tags:
-        - Items
-      responses:
-        "200":
-          description: Items
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ItemResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    post:
-      operationId: createItem
-      summary: Creates an item
-      tags:
-        - Items
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ItemInput"
-      responses:
-        "201":
-          description: Item created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ItemResponse"
-        "400":
-          description: A required value is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "422":
-          description: The body refers to unknown or conflicting resources
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /items/category/{category}:
-    get:
-      operationId: getItemsByCategory
-      summary: Lists the items of a category
-      tags:
-        - Items
-      parameters:
-        - name: category
-          in: path
-          description: Name of the category
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Items
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ItemResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /items/similar:
-    get:
-      operationId: getSimilarItems
-      summary: Lists the items whose name is likely a duplicate of a name, most similar first
-      tags:
-        - Items
-      parameters:
-        - name: name
-          in: query
-          description: Name to compare against
-          required: true
-          schema:
-            type: string
-        - name: categoryId
-          in: query
-          description: Only compare against items of this category
-          required: false
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Similar items
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ItemResponse"
-        "400":
-          description: A required value is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /items/{id}:
-    get:
-      operationId: getItem
-      summary: Gets an item
-      tags:
-        - Items
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: The item
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ItemResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    put:
-      operationId: updateItem
-      summary: Changes an item
-      tags:
-        - Items
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/ItemInput"
-      responses:
-        "200":
-          description: Item changed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/ItemResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "422":
-          description: The body refers to unknown or conflicting resources
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    delete:
-      operationId: deleteItem
-      summary: Deletes an item
-      tags:
-        - Items
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "204":
-          description: Deleted
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /ratings:
-    get:
-      operationId: getRatings
-      summary: Lists every rating
-      tags:
-        - Ratings
-      responses:
-        "200":
-          description: Ratings
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RatedItemResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    post:
-      operationId: createRating
-      summary: Rates an item as the signed-in user
-      tags:
-        - Ratings
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/NewRatingInput"
-      responses:
-        "201":
-          description: Rating created
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RatedItemResponse"
-        "400":
-          description: A required value is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /ratings/user/{user_id}:
-    get:
-      operationId: getRatingsByUser
-      summary: Lists the ratings of a user
-      tags:
-        - Ratings
-      parameters:
-        - name: user_id
-          in: path
-          description: Id of the user
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Ratings
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RatedItemResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /ratings/item/{item_id}:
-    get:
-      operationId: getRatingsByItem
-      summary: Lists every rating of an item
-      tags:
-        - Ratings
-      parameters:
-        - name: item_id
-          in: path
-          description: Id of the item
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Ratings
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RatedItemResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /ratings/mine:
-    get:
-      operationId: getMyRatings
-      summary: Lists the signed-in user's ratings
-      tags:
-        - Ratings
-      responses:
-        "200":
-          description: Ratings
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/RatedItemResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /ratings/{id}:
-    get:
-      operationId: getRating
-      summary: Gets a rating
-      tags:
-        - Ratings
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: The rating
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RatedItemResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    put:
-      operationId: updateRating
-      summary: Changes a rating
-      tags:
-        - Ratings
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/RatingInput"
-      responses:
-        "200":
-          description: Rating changed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/RatedItemResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    delete:
-      operationId: deleteRating
-      summary: Deletes a rating
-      tags:
-        - Ratings
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "204":
-          description: Deleted
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /comments/item/{item_id}:
-    get:
-      operationId: getCommentsByItem
-      summary: Lists the discussion of an item, oldest first
-      tags:
-        - Comments
-      parameters:
-        - name: item_id
-          in: path
-          description: Id of the item
-          required: true
-          schema:
-            type: integer
-      responses:
-        "200":
-          description: Comments
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/CommentResponse"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-    post:
-      operationId: createComment
-      summary: Posts a comment to an item as the signed-in user
-      tags:
-        - Comments
-      parameters:
-        - name: item_id
-          in: path
-          description: Id of the item
-          required: true
-          schema:
-            type: integer
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              $ref: "#/components/schemas/CommentInput"
-      responses:
-        "201":
-          description: Comment posted
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/CommentResponse"
-        "400":
-          description: The body is missing or too long
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The resource does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /comments/{id}:
-    delete:
-      operationId: deleteComment
-      summary: Deletes a comment written by the signed-in user, or any comment for admins and moderators
-      tags:
-        - Comments
-      parameters:
-        - name: id
-          in: path
-          description: Id of the resource
-          required: true
-          schema:
-            type: integer
-      responses:
-        "204":
-          description: Deleted
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The comment belongs to someone else
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-  /imports/{source}:
-    get:
-      operationId: findImportItems
-      summary: Lists the items found on an external service, without saving them
-      tags:
-        - Imports
-      parameters:
-        - name: source
-          in: path
-          description: External service to search
-          required: true
-          schema:
-            $ref: "#/components/schemas/ImportSource"
-        - name: query
-          in: query
-          description: A Last.fm username, or a YouTube video or playlist URL
-          required: true
-          schema:
-            type: string
-      responses:
-        "200":
-          description: Items found
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: "#/components/schemas/ImportedItem"
-        "400":
-          description: The source is unknown or the query is missing
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "401":
-          description: The bearer token is missing or invalid
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "403":
-          description: The signed-in user's roles do not allow this operation
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "404":
-          description: The Last.fm user or YouTube video or playlist does not exist
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "500":
-          description: Something unexpected failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "502":
-          description: The external service failed
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
-        "503":
-          description: The source has no API key configured
-          content:
-            application/json:
-              schema:
-                $ref: "#/components/schemas/APIError"
+openapi: 3.1.0
 components:
-  securitySchemes:
-    bearerAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
+  examples: {}
+  headers: {}
+  parameters: {}
+  requestBodies: {}
+  responses: {}
   schemas:
-    APIError:
-      type: object
-      properties:
-        code:
-          $ref: "#/components/schemas/ErrorCode"
-        status:
-          $ref: "#/components/schemas/HttpStatusCode"
-        message:
-          type: string
-      required:
-        - code
-        - status
-        - message
-    AttributeInput:
-      type: object
-      properties:
-        name:
-          type: string
-        valueType:
-          $ref: "#/components/schemas/AttributeValueType"
-      required:
-        - name
-        - valueType
-      description: Fields accepted when creating or updating an attribute.
-    AttributeResponse:
-      type: object
-      properties:
-        id:
-          type: number
-        name:
-          type: string
-        valueType:
-          $ref: "#/components/schemas/AttributeValueType"
-      required:
-        - id
-        - name
-        - valueType
-      description: An attribute as the API returns it, without its categories and values.
-    AttributeValueInput:
-      type: object
-      properties:
-        attributeId:
-          type: number
-        value:
-          type: string
-      required:
-        - attributeId
-        - value
-      description: One value an item holds for an attribute of its category.
-    AttributeValueRecordInput:
-      type: object
-      properties:
-        item:
-          type: object
-          properties:
-            id:
-              type: number
-          required:
-            - id
-          additionalProperties: false
-        attribute:
-          type: object
-          properties:
-            id:
-              type: number
-          required:
-            - id
-          additionalProperties: false
-        value:
-          type: string
-      required:
-        - attribute
-        - item
-        - value
-      description: Fields accepted by the attribute values endpoints, with the item and attribute given by id.
-    AttributeValueResponse:
-      type: object
-      properties:
-        id:
-          type: number
-        value:
-          type: string
-      required:
-        - id
-        - value
-      description: An attribute value as the attribute values endpoints return it, without its item and attribute.
-    AttributeValueType:
-      type: string
-      enum:
-        - string
-        - number
-        - boolean
-        - date
-      description: Kinds of value an attribute holds.
-      x-enum-varnames:
-        - STRING
-        - NUMBER
-        - BOOLEAN
-        - DATE
-    CategoryInput:
-      type: object
-      properties:
-        attributeIds:
-          type: array
-          items:
-            type: number
-        name:
-          type: string
-        description:
-          type:
-            - string
-            - "null"
-      description: Fields accepted when creating or updating a category, with linked attributes given by id.
-    CategoryResponse:
-      type: object
-      properties:
-        attributes:
-          type: array
-          items:
-            $ref: "#/components/schemas/AttributeResponse"
-        id:
-          type: number
-        name:
-          type: string
-        description:
-          type:
-            - string
-            - "null"
-      required:
-        - attributes
-        - id
-        - name
-      description: A category as the API returns it, with its attributes.
-    CategorySummary:
-      type: object
-      properties:
-        id:
-          type: number
-        name:
-          type: string
-        description:
-          type:
-            - string
-            - "null"
-      required:
-        - id
-        - name
-      description: A category without the attributes and items linked to it.
-    CommentAuthor:
-      type: object
-      properties:
-        id:
-          type: number
-        username:
-          type: string
-      required:
-        - id
-        - username
-      description: Author of a comment; only their id and username are returned.
-    CommentInput:
-      type: object
-      properties:
-        body:
-          type: string
-      required:
-        - body
-      additionalProperties: false
-      description: Fields accepted when posting a comment.
-    CommentResponse:
-      type: object
-      properties:
-        item:
-          type: object
-          properties:
-            id:
-              type: number
-          required:
-            - id
-          additionalProperties: false
-        user:
-          $ref: "#/components/schemas/CommentAuthor"
-        id:
-          type: number
-        body:
-          type: string
-        createdAt:
-          type: string
-          format: date-time
-      required:
-        - body
-        - createdAt
-        - id
-        - item
-        - user
-      description: A comment as the API returns it, with the id of its item and its author.
-    ComponentHealth:
-      type: object
-      properties:
-        status:
-          $ref: "#/components/schemas/HealthStatus"
-        message:
-          type: string
-      required:
-        - status
     ErrorCode:
-      type: string
       enum:
         - UNAUTHORIZED
         - FORBIDDEN
@@ -2103,6 +19,7 @@ components:
         - INTERNAL_ERROR
         - EXTERNAL_SERVICE_ERROR
         - SERVICE_UNAVAILABLE
+      type: string
       x-enum-varnames:
         - UNAUTHORIZED
         - FORBIDDEN
@@ -2115,31 +32,6 @@ components:
         - INTERNAL_ERROR
         - EXTERNAL_SERVICE_ERROR
         - SERVICE_UNAVAILABLE
-    Health:
-      type: object
-      properties:
-        status:
-          $ref: "#/components/schemas/HealthStatus"
-        uptime:
-          type: number
-        timestamp:
-          type: string
-        message:
-          type: string
-        services:
-          type: object
-          additionalProperties:
-            $ref: "#/components/schemas/ComponentHealth"
-      required:
-        - status
-        - uptime
-        - timestamp
-    HealthStatus:
-      type: string
-      enum:
-        - healthy
-        - unhealthy
-        - offline
     HttpStatusCode:
       type: number
       enum:
@@ -2156,271 +48,471 @@ components:
         - 500
         - 502
         - 503
-    ImportedItem:
-      type: object
+    APIError:
       properties:
-        type:
-          $ref: "#/components/schemas/ImportedItemType"
+        code:
+          $ref: "#/components/schemas/ErrorCode"
+        status:
+          $ref: "#/components/schemas/HttpStatusCode"
+        message:
+          type: string
+      required:
+        - code
+        - status
+        - message
+      type: object
+      additionalProperties: true
+    Pick_RatedItem.Exclude_keyofRatedItem.item-or-user__:
+      properties:
+        id:
+          type: number
+          format: double
+        rating:
+          type: number
+          format: double
+        userId:
+          type: number
+          format: double
+          description: Id of the user who gave the rating, so clients can group a user's
+            ratings without loading the user.
+        ratedAt:
+          type: string
+          format: date-time
+          description: When the rating was given; a user can rate the same item many times.
+        notes:
+          type: string
+          nullable: true
+      required:
+        - id
+        - rating
+        - userId
+        - ratedAt
+        - notes
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Omit_RatedItem.item-or-user_:
+      $ref: "#/components/schemas/Pick_RatedItem.Exclude_keyofRatedItem.item-or-user_\
+        _"
+      description: Construct a type with the properties of T except for those in type K.
+    Pick_Item.Exclude_keyofItem.category-or-ratings-or-attributes__:
+      properties:
+        id:
+          type: number
+          format: double
         name:
           type: string
         description:
           type: string
         imageUrl:
-          type:
-            - string
-            - "null"
+          type: string
+          nullable: true
           description: Picture shown next to the item in rankings.
       required:
-        - description
+        - id
         - name
-        - type
-      description: An interest found on an external service, with the item fields it fills in.
-    ImportedItemType:
-      type: string
-      description: Provider-specific display label for an imported result, such as Artist, Album, Song, or Video.
-    ImportSource:
-      type: string
-      enum:
-        - lastfm
-        - youtube
-      description: External services that interests can be imported from.
-      x-enum-varnames:
-        - LASTFM
-        - YOUTUBE
-    ItemAttributeValue:
+        - description
       type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Omit_Item.category-or-ratings-or-attributes_:
+      $ref: "#/components/schemas/Pick_Item.Exclude_keyofItem.category-or-ratings-or-\
+        attributes__"
+      description: Construct a type with the properties of T except for those in type K.
+    Pick_Category.Exclude_keyofCategory.attributes-or-items__:
       properties:
-        attribute:
-          $ref: "#/components/schemas/AttributeResponse"
         id:
           type: number
+          format: double
+        name:
+          type: string
+        description:
+          type: string
+          nullable: true
+      required:
+        - id
+        - name
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Omit_Category.attributes-or-items_:
+      $ref: "#/components/schemas/Pick_Category.Exclude_keyofCategory.attributes-or-i\
+        tems__"
+      description: Construct a type with the properties of T except for those in type K.
+    CategorySummary:
+      $ref: "#/components/schemas/Omit_Category.attributes-or-items_"
+      description: A category without the attributes and items linked to it.
+    ItemSummary:
+      allOf:
+        - $ref: "#/components/schemas/Omit_Item.category-or-ratings-or-attributes_"
+        - properties:
+            category:
+              allOf:
+                - $ref: "#/components/schemas/CategorySummary"
+              nullable: true
+          required:
+            - category
+          type: object
+      description: An item as the API returns it with its category, which is null when
+        the item has none.
+    RatedItemResponse:
+      allOf:
+        - $ref: "#/components/schemas/Omit_RatedItem.item-or-user_"
+        - properties:
+            item:
+              $ref: "#/components/schemas/ItemSummary"
+          required:
+            - item
+          type: object
+      description: A rating as the API returns it, with its item and the item's category.
+    Pick_RatedItem.rating_:
+      properties:
+        rating:
+          type: number
+          format: double
+      required:
+        - rating
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Partial_Pick_RatedItem.notes__:
+      properties:
+        notes:
+          type: string
+          nullable: true
+      type: object
+      description: Make all properties in T optional
+    RatingInput:
+      allOf:
+        - $ref: "#/components/schemas/Pick_RatedItem.rating_"
+        - $ref: "#/components/schemas/Partial_Pick_RatedItem.notes__"
+      description: Fields accepted when changing a rating.
+    NewRatingInput:
+      allOf:
+        - $ref: "#/components/schemas/RatingInput"
+        - properties:
+            item_id:
+              type: number
+              format: double
+          required:
+            - item_id
+          type: object
+      description: Fields accepted when rating an item.
+    Partial_RatingInput_:
+      properties:
+        rating:
+          type: number
+          format: double
+        notes:
+          type: string
+          nullable: true
+      type: object
+      description: Make all properties in T optional
+    AttributeValueType:
+      description: Kinds of value an attribute holds.
+      enum:
+        - string
+        - number
+        - boolean
+        - date
+      type: string
+      x-enum-varnames:
+        - STRING
+        - NUMBER
+        - BOOLEAN
+        - DATE
+    Pick_Attribute.Exclude_keyofAttribute.categories-or-values__:
+      properties:
+        id:
+          type: number
+          format: double
+        name:
+          type: string
+        valueType:
+          $ref: "#/components/schemas/AttributeValueType"
+      required:
+        - id
+        - name
+        - valueType
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Omit_Attribute.categories-or-values_:
+      $ref: "#/components/schemas/Pick_Attribute.Exclude_keyofAttribute.categories-or\
+        -values__"
+      description: Construct a type with the properties of T except for those in type K.
+    AttributeResponse:
+      $ref: "#/components/schemas/Omit_Attribute.categories-or-values_"
+      description: An attribute as the API returns it, without its categories and values.
+    Pick_AttributeValue.id-or-value_:
+      properties:
+        id:
+          type: number
+          format: double
         value:
           type: string
       required:
-        - attribute
         - id
         - value
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    AttributeValueResponse:
+      $ref: "#/components/schemas/Pick_AttributeValue.id-or-value_"
+      description: An attribute value as the attribute values endpoints return it,
+        without its item and attribute.
+    Pick_Attribute.name-or-valueType_:
+      properties:
+        name:
+          type: string
+        valueType:
+          $ref: "#/components/schemas/AttributeValueType"
+      required:
+        - name
+        - valueType
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    AttributeInput:
+      $ref: "#/components/schemas/Pick_Attribute.name-or-valueType_"
+      description: Fields accepted when creating or updating an attribute.
+    Pick_AttributeValue.value_:
+      properties:
+        value:
+          type: string
+      required:
+        - value
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Pick_Item.id_:
+      properties:
+        id:
+          type: number
+          format: double
+      required:
+        - id
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Pick_Attribute.id_:
+      properties:
+        id:
+          type: number
+          format: double
+      required:
+        - id
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    AttributeValueRecordInput:
+      allOf:
+        - $ref: "#/components/schemas/Pick_AttributeValue.value_"
+        - properties:
+            attribute:
+              $ref: "#/components/schemas/Pick_Attribute.id_"
+            item:
+              $ref: "#/components/schemas/Pick_Item.id_"
+          required:
+            - attribute
+            - item
+          type: object
+      description: Fields accepted by the attribute values endpoints, with the item
+        and attribute given by id.
+    Partial_AttributeInput_:
+      properties:
+        name:
+          type: string
+        valueType:
+          $ref: "#/components/schemas/AttributeValueType"
+      type: object
+      description: Make all properties in T optional
+    ItemAttributeValue:
+      allOf:
+        - $ref: "#/components/schemas/AttributeValueResponse"
+        - properties:
+            attribute:
+              $ref: "#/components/schemas/AttributeResponse"
+          required:
+            - attribute
+          type: object
       description: A value an item holds for one attribute, returned with that attribute.
-    ItemInput:
-      type: object
-      properties:
-        categoryId:
-          type: number
-        attributeValues:
-          type: array
-          items:
-            $ref: "#/components/schemas/AttributeValueInput"
-        name:
-          type: string
-        description:
-          type: string
-        imageUrl:
-          type:
-            - string
-            - "null"
-          description: Picture shown next to the item in rankings.
-      description: Fields accepted when creating or updating an item; attribute values replace the item's current ones.
     ItemResponse:
-      type: object
+      allOf:
+        - $ref: "#/components/schemas/ItemSummary"
+        - properties:
+            attributes:
+              items:
+                $ref: "#/components/schemas/ItemAttributeValue"
+              type: array
+          required:
+            - attributes
+          type: object
+      description: An item as the API returns it, with its category and the values of
+        that category's attributes.
+    Partial_Pick_Item.name-or-description-or-imageUrl__:
       properties:
-        attributes:
-          type: array
-          items:
-            $ref: "#/components/schemas/ItemAttributeValue"
-        category:
-          anyOf:
-            - $ref: "#/components/schemas/CategorySummary"
-            - type: "null"
-        id:
-          type: number
         name:
           type: string
         description:
           type: string
         imageUrl:
-          type:
-            - string
-            - "null"
+          type: string
+          nullable: true
           description: Picture shown next to the item in rankings.
-      required:
-        - attributes
-        - category
-        - description
-        - id
-        - name
-      description: An item as the API returns it, with its category and the values of that category's attributes.
-    ItemSummary:
       type: object
+      description: Make all properties in T optional
+    AttributeValueInput:
+      description: One value an item holds for an attribute of its category.
       properties:
-        category:
-          anyOf:
-            - $ref: "#/components/schemas/CategorySummary"
-            - type: "null"
-        id:
+        attributeId:
           type: number
+          format: double
+        value:
+          type: string
+      required:
+        - attributeId
+        - value
+      type: object
+      additionalProperties: true
+    ItemInput:
+      allOf:
+        - $ref: "#/components/schemas/Partial_Pick_Item.name-or-description-or-imageUrl__"
+        - properties:
+            attributeValues:
+              items:
+                $ref: "#/components/schemas/AttributeValueInput"
+              type: array
+            categoryId:
+              type: number
+              format: double
+          type: object
+      description: Fields accepted when creating or updating an item; attribute values
+        replace the item's current ones.
+    CategoryResponse:
+      allOf:
+        - $ref: "#/components/schemas/CategorySummary"
+        - properties:
+            attributes:
+              items:
+                $ref: "#/components/schemas/AttributeResponse"
+              type: array
+          required:
+            - attributes
+          type: object
+      description: A category as the API returns it, with its attributes.
+    Partial_Pick_Category.name-or-description__:
+      properties:
         name:
           type: string
         description:
           type: string
-        imageUrl:
-          type:
-            - string
-            - "null"
-          description: Picture shown next to the item in rankings.
-      required:
-        - category
-        - description
-        - id
-        - name
-      description: An item as the API returns it with its category, which is null when the item has none.
-    LoginInput:
+          nullable: true
       type: object
-      properties:
-        username:
-          type: string
-        password:
-          type: string
-      required:
-        - username
-        - password
-      description: Credentials sent to sign in.
-    NewRatingInput:
-      type: object
-      properties:
-        item_id:
-          type: number
-        notes:
-          type:
-            - string
-            - "null"
-        rating:
-          type: number
-      required:
-        - item_id
-        - rating
-      description: Fields accepted when rating an item.
-    RatedItemResponse:
-      type: object
-      properties:
-        item:
-          $ref: "#/components/schemas/ItemSummary"
-        id:
-          type: number
-        rating:
-          type: number
-        userId:
-          type: number
-          description: Id of the user who gave the rating, so clients can group a user's ratings without loading the user.
-        ratedAt:
-          type: string
-          description: When the rating was given; a user can rate the same item many times.
-        notes:
-          type:
-            - string
-            - "null"
-      required:
-        - id
-        - item
-        - notes
-        - ratedAt
-        - rating
-        - userId
-      description: A rating as the API returns it, with its item and the item's category.
-    RatingInput:
-      type: object
-      additionalProperties: false
-      properties:
-        notes:
-          type:
-            - string
-            - "null"
-        rating:
-          type: number
-      required:
-        - rating
-      description: Fields accepted when changing a rating.
-    RegisterInput:
-      type: object
-      properties:
-        roles:
-          type: array
-          items:
-            $ref: "#/components/schemas/UserRole"
-        username:
-          type: string
-        email:
-          type: string
-        password:
-          type: string
-      required:
-        - email
-        - password
-        - username
-      description: Fields accepted when signing up.
-    SessionUser:
-      type: object
+      description: Make all properties in T optional
+    CategoryInput:
+      allOf:
+        - $ref: "#/components/schemas/Partial_Pick_Category.name-or-description__"
+        - properties:
+            attributeIds:
+              items:
+                type: number
+                format: double
+              type: array
+          type: object
+      description: Fields accepted when creating or updating a category, with linked
+        attributes given by id.
+    Pick_Comment.id-or-body-or-createdAt_:
       properties:
         id:
           type: number
-        username:
+          format: double
+        body:
           type: string
-        roles:
-          type: array
-          items:
-            $ref: "#/components/schemas/UserRole"
+        createdAt:
+          type: string
+          format: date-time
       required:
         - id
-        - roles
-        - username
-    UserInput:
+        - body
+        - createdAt
       type: object
-      properties:
-        password:
-          type: string
-        username:
-          type: string
-        email:
-          type: string
-        roles:
-          type: array
-          items:
-            $ref: "#/components/schemas/UserRole"
-      required:
-        - email
-        - roles
-        - username
-      description: Fields accepted when creating or updating a user; without a password, an update keeps the current one.
-    UserResponse:
-      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Pick_User.id-or-username_:
       properties:
         id:
           type: number
+          format: double
         username:
           type: string
-        email:
-          type: string
-        roles:
-          type: array
-          items:
-            $ref: "#/components/schemas/UserRole"
       required:
         - id
         - username
-        - email
-        - roles
-      description: A user as the API returns it, without the password hash.
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    UserSummary:
+      $ref: "#/components/schemas/Pick_User.id-or-username_"
+      description: A user reduced to their id and username, as comments and change
+        requests return them.
+    CommentResponse:
+      allOf:
+        - $ref: "#/components/schemas/Pick_Comment.id-or-body-or-createdAt_"
+        - properties:
+            user:
+              $ref: "#/components/schemas/UserSummary"
+            item:
+              $ref: "#/components/schemas/Pick_Item.id_"
+          required:
+            - user
+            - item
+          type: object
+      description: A comment as the API returns it, with the id of its item and its author.
+    Pick_Comment.body_:
+      properties:
+        body:
+          type: string
+      required:
+        - body
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    CommentInput:
+      $ref: "#/components/schemas/Pick_Comment.body_"
+      description: Fields accepted when posting a comment.
     UserRole:
-      type: string
       enum:
         - admin
         - moderator
         - user
+      type: string
       x-enum-varnames:
         - ADMIN
         - MODERATOR
         - USER
-    UserTokenResponse:
+    Pick_User.Exclude_keyofUser.password-or-ratedItems-or-email__:
+      properties:
+        id:
+          type: number
+          format: double
+        username:
+          type: string
+        roles:
+          items:
+            $ref: "#/components/schemas/UserRole"
+          type: array
+      required:
+        - id
+        - username
+        - roles
       type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    SessionUser:
+      properties:
+        id:
+          type: number
+          format: double
+        username:
+          type: string
+        roles:
+          items:
+            $ref: "#/components/schemas/UserRole"
+          type: array
+      required:
+        - id
+        - username
+        - roles
+      type: object
+      additionalProperties: true
+    UserTokenResponse:
       properties:
         token:
           type: string
@@ -2429,3 +521,2642 @@ components:
       required:
         - token
         - user
+      type: object
+      additionalProperties: true
+    Pick_User.username-or-password_:
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+      required:
+        - username
+        - password
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    LoginInput:
+      $ref: "#/components/schemas/Pick_User.username-or-password_"
+      description: Credentials sent to sign in.
+    Pick_User.Exclude_keyofUser.password-or-ratedItems__:
+      properties:
+        id:
+          type: number
+          format: double
+        username:
+          type: string
+        email:
+          type: string
+        roles:
+          items:
+            $ref: "#/components/schemas/UserRole"
+          type: array
+      required:
+        - id
+        - username
+        - email
+        - roles
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Omit_User.password-or-ratedItems_:
+      $ref: "#/components/schemas/Pick_User.Exclude_keyofUser.password-or-ratedItems_\
+        _"
+      description: Construct a type with the properties of T except for those in type K.
+    UserResponse:
+      $ref: "#/components/schemas/Omit_User.password-or-ratedItems_"
+      description: A user as the API returns it, without the password hash.
+    Pick_User.username-or-email-or-password_:
+      properties:
+        username:
+          type: string
+        password:
+          type: string
+        email:
+          type: string
+      required:
+        - username
+        - password
+        - email
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Partial_Pick_User.roles__:
+      properties:
+        roles:
+          items:
+            $ref: "#/components/schemas/UserRole"
+          type: array
+      type: object
+      description: Make all properties in T optional
+    RegisterInput:
+      allOf:
+        - $ref: "#/components/schemas/Pick_User.username-or-email-or-password_"
+        - $ref: "#/components/schemas/Partial_Pick_User.roles__"
+      description: Fields accepted when signing up.
+    HealthStatus:
+      enum:
+        - healthy
+        - unhealthy
+        - offline
+      type: string
+      x-enum-varnames:
+        - HEALTHY
+        - UNHEALTHY
+        - OFFLLINE
+    ComponentHealth:
+      properties:
+        status:
+          $ref: "#/components/schemas/HealthStatus"
+        message:
+          type: string
+      required:
+        - status
+      type: object
+      additionalProperties: true
+    Health:
+      properties:
+        status:
+          $ref: "#/components/schemas/HealthStatus"
+        uptime:
+          type: number
+          format: double
+        timestamp:
+          type: string
+        message:
+          type: string
+        services:
+          properties: {}
+          additionalProperties:
+            $ref: "#/components/schemas/ComponentHealth"
+          type: object
+      required:
+        - status
+        - uptime
+        - timestamp
+      type: object
+      additionalProperties: true
+    ChangeRequestTarget:
+      description: Kind of shared data a change request proposes to change.
+      enum:
+        - item
+        - category
+      type: string
+      x-enum-varnames:
+        - ITEM
+        - CATEGORY
+    ChangeRequestAction:
+      description: What a change request proposes to do with its target.
+      enum:
+        - create
+        - update
+        - delete
+      type: string
+      x-enum-varnames:
+        - CREATE
+        - UPDATE
+        - DELETE
+    ChangeRequestChanges:
+      anyOf:
+        - $ref: "#/components/schemas/ItemInput"
+        - $ref: "#/components/schemas/CategoryInput"
+      description: Fields a change request proposes, in the same shape the items or
+        categories API accepts.
+    ChangeRequestStatus:
+      description: Where a change request is in moderation.
+      enum:
+        - pending
+        - approved
+        - rejected
+      type: string
+      x-enum-varnames:
+        - PENDING
+        - APPROVED
+        - REJECTED
+    Pick_ChangeRequest.Exclude_keyofChangeRequest.requestedBy-or-reviewedBy__:
+      properties:
+        id:
+          type: number
+          format: double
+        createdAt:
+          type: string
+          format: date-time
+        targetType:
+          $ref: "#/components/schemas/ChangeRequestTarget"
+        action:
+          $ref: "#/components/schemas/ChangeRequestAction"
+        targetId:
+          type: number
+          format: double
+          nullable: true
+          description: Id of the item or category being changed; empty when creating one.
+        targetName:
+          type: string
+          nullable: true
+          description: Name of the target when the request was made, so moderators can
+            tell what it is about.
+        changes:
+          allOf:
+            - $ref: "#/components/schemas/ChangeRequestChanges"
+          nullable: true
+        status:
+          $ref: "#/components/schemas/ChangeRequestStatus"
+        reviewNote:
+          type: string
+          nullable: true
+        reviewedAt:
+          type: string
+          format: date-time
+          nullable: true
+      required:
+        - id
+        - createdAt
+        - targetType
+        - action
+        - targetId
+        - targetName
+        - changes
+        - status
+        - reviewNote
+        - reviewedAt
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Omit_ChangeRequest.requestedBy-or-reviewedBy_:
+      $ref: "#/components/schemas/Pick_ChangeRequest.Exclude_keyofChangeRequest.reque\
+        stedBy-or-reviewedBy__"
+      description: Construct a type with the properties of T except for those in type K.
+    ChangeRequestResponse:
+      allOf:
+        - $ref: "#/components/schemas/Omit_ChangeRequest.requestedBy-or-reviewedBy_"
+        - properties:
+            reviewedBy:
+              allOf:
+                - $ref: "#/components/schemas/UserSummary"
+              nullable: true
+            requestedBy:
+              $ref: "#/components/schemas/UserSummary"
+          required:
+            - reviewedBy
+            - requestedBy
+          type: object
+      description: A change request as the API returns it, with the requester and
+        reviewer reduced to their id and username.
+    ChangeRequestInput:
+      properties:
+        changes:
+          $ref: "#/components/schemas/ChangeRequestChanges"
+        targetId:
+          type: number
+          format: double
+        action:
+          $ref: "#/components/schemas/ChangeRequestAction"
+        targetType:
+          $ref: "#/components/schemas/ChangeRequestTarget"
+      required:
+        - action
+        - targetType
+      type: object
+      description: Fields accepted when a user submits a change request.
+    ChangeRequestReview:
+      properties:
+        reviewNote:
+          type: string
+      type: object
+      description: Fields accepted when a moderator approves or rejects a change request.
+    Pick_Item.name-or-description-or-imageUrl_:
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        imageUrl:
+          type: string
+          nullable: true
+          description: Picture shown next to the item in rankings.
+      required:
+        - name
+        - description
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    ImportedItemType:
+      type: string
+      description: Provider-specific display label for an imported result, such as
+        Artist, Album, Song, or Video.
+    ImportedItem:
+      allOf:
+        - $ref: "#/components/schemas/Pick_Item.name-or-description-or-imageUrl_"
+        - properties:
+            type:
+              $ref: "#/components/schemas/ImportedItemType"
+          required:
+            - type
+          type: object
+      description: An interest found on an external service, with the item fields it
+        fills in.
+    ImportSource:
+      description: External services that interests can be imported from.
+      enum:
+        - lastfm
+        - youtube
+      type: string
+      x-enum-varnames:
+        - LASTFM
+        - YOUTUBE
+    Pick_User.username-or-email-or-roles_:
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        roles:
+          items:
+            $ref: "#/components/schemas/UserRole"
+          type: array
+      required:
+        - username
+        - email
+        - roles
+      type: object
+      description: From T, pick a set of properties whose keys are in the union K
+    Partial_Pick_User.password__:
+      properties:
+        password:
+          type: string
+      type: object
+      description: Make all properties in T optional
+    UserInput:
+      allOf:
+        - $ref: "#/components/schemas/Pick_User.username-or-email-or-roles_"
+        - $ref: "#/components/schemas/Partial_Pick_User.password__"
+      description: Fields accepted when creating or updating a user; without a
+        password, an update keeps the current one.
+    Partial_UserInput_:
+      properties:
+        username:
+          type: string
+        email:
+          type: string
+        roles:
+          items:
+            $ref: "#/components/schemas/UserRole"
+          type: array
+        password:
+          type: string
+      type: object
+      description: Make all properties in T optional
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+info:
+  title: Rate My Everything API
+  version: 1.0.0
+  description: Rate interests, keep personal rankings and discuss them.
+  license:
+    name: ISC
+  contact:
+    name: Cristiano Faustino
+paths:
+  /ratings:
+    get:
+      operationId: getRatings
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/RatedItemResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists every rating
+      tags:
+        - Ratings
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters: []
+    post:
+      operationId: createRating
+      responses:
+        "201":
+          description: Rating created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RatedItemResponse"
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Rates an item as the signed-in user
+      tags:
+        - Ratings
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/NewRatingInput"
+  /ratings/user/{user_id}:
+    get:
+      operationId: getRatingsByUser
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/RatedItemResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists the ratings of a user
+      tags:
+        - Ratings
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: user_id
+          required: true
+          schema:
+            format: double
+            type: number
+  /ratings/item/{item_id}:
+    get:
+      operationId: getRatingsByItem
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/RatedItemResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists every user's ratings of an item, used to work out its collective
+        grade
+      tags:
+        - Ratings
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: item_id
+          required: true
+          schema:
+            format: double
+            type: number
+  /ratings/mine:
+    get:
+      operationId: getMyRatings
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/RatedItemResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists the signed-in user's ratings, each with its item and category
+      tags:
+        - Ratings
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters: []
+  /ratings/{id}:
+    get:
+      operationId: getRating
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RatedItemResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Gets a rating
+      tags:
+        - Ratings
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+    put:
+      operationId: updateRating
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/RatedItemResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Changes a rating
+      tags:
+        - Ratings
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Partial_RatingInput_"
+    delete:
+      operationId: deleteRating
+      responses:
+        "204":
+          description: Rating deleted
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Deletes a rating
+      tags:
+        - Ratings
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+  /attributes:
+    get:
+      operationId: getAttributes
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/AttributeResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists every attribute
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters: []
+    post:
+      operationId: createAttribute
+      responses:
+        "201":
+          description: Attribute created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeResponse"
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Creates an attribute
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - admin
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttributeInput"
+  /attributes/values:
+    get:
+      operationId: getAttributeValues
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/AttributeValueResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists every attribute value
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters: []
+    post:
+      operationId: createAttributeValue
+      responses:
+        "201":
+          description: Attribute value created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeValueResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Creates an attribute value
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - admin
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttributeValueRecordInput"
+  /attributes/values/{id}:
+    get:
+      operationId: getAttributeValue
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeValueResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Gets an attribute value
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+    put:
+      operationId: updateAttributeValue
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeValueResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Changes an attribute value
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/AttributeValueRecordInput"
+    delete:
+      operationId: deleteAttributeValue
+      responses:
+        "204":
+          description: Attribute value deleted
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Deletes an attribute value
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+  /attributes/{id}:
+    get:
+      operationId: getAttribute
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Gets an attribute
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+    put:
+      operationId: updateAttribute
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/AttributeResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Changes the fields sent for an attribute
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Partial_AttributeInput_"
+    delete:
+      operationId: deleteAttribute
+      responses:
+        "204":
+          description: Attribute deleted
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Deletes an attribute
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+  /attributes/{id}/values:
+    get:
+      operationId: getAttributeValuesByAttribute
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/AttributeValueResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists the values items hold for an attribute
+      tags:
+        - Attributes
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+  /items:
+    get:
+      operationId: getItems
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ItemResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists every item
+      tags:
+        - Items
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters: []
+    post:
+      operationId: createItem
+      responses:
+        "201":
+          description: Item created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "422":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Creates an item with its attribute values; 422 for an unknown category
+        or attribute
+      tags:
+        - Items
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemInput"
+  /items/category/{category}:
+    get:
+      operationId: getItemsByCategory
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ItemResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists the items of a category
+      tags:
+        - Items
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - description: Name of the category
+          in: path
+          name: category
+          required: true
+          schema:
+            type: string
+  /items/similar:
+    get:
+      operationId: getSimilarItems
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ItemResponse"
+                type: array
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      description: >-
+        Lists the items whose name is likely a duplicate of `name`, most similar
+        first, only in `categoryId` when sent;
+
+        400 when name is empty or categoryId is not an integer.
+      summary: Lists items with a name similar to the one given
+      tags:
+        - Items
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - description: Name to compare with existing items
+          in: query
+          name: name
+          required: true
+          schema:
+            type: string
+        - description: Only compare with the items of this category
+          in: query
+          name: categoryId
+          required: false
+          schema:
+            format: double
+            type: number
+  /items/{id}:
+    get:
+      operationId: getItem
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Gets an item
+      tags:
+        - Items
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+    put:
+      operationId: updateItem
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ItemResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "422":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Changes the fields sent for an item; 403 for users without a moderation
+        role, 422 for an unknown category or attribute
+      tags:
+        - Items
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ItemInput"
+    delete:
+      operationId: deleteItem
+      responses:
+        "204":
+          description: Item deleted
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Deletes an item; 403 for users without a moderation role
+      tags:
+        - Items
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+  /categories:
+    get:
+      operationId: getCategories
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/CategoryResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists every category with its attributes
+      tags:
+        - Categories
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters: []
+    post:
+      operationId: createCategory
+      responses:
+        "201":
+          description: Category created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "422":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Creates a category; 422 when an attribute does not exist
+      tags:
+        - Categories
+      security:
+        - bearerAuth:
+            - admin
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+  /categories/similar:
+    get:
+      operationId: getSimilarCategories
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/CategoryResponse"
+                type: array
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      description: Lists the categories whose name is likely a duplicate of `name`,
+        most similar first; 400 when name is empty.
+      summary: Lists categories with a name similar to the one given
+      tags:
+        - Categories
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - description: Name to compare with existing categories
+          in: query
+          name: name
+          required: true
+          schema:
+            type: string
+  /categories/{name}:
+    get:
+      operationId: getCategory
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Gets a category by name
+      tags:
+        - Categories
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+    put:
+      operationId: updateCategory
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CategoryResponse"
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "422":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Changes a category; an empty name keeps the current one, 422 when the
+        name is taken or an attribute does not exist
+      tags:
+        - Categories
+      security:
+        - bearerAuth:
+            - admin
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CategoryInput"
+    delete:
+      operationId: deleteCategory
+      responses:
+        "204":
+          description: Category deleted
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Deletes a category
+      tags:
+        - Categories
+      security:
+        - bearerAuth:
+            - admin
+      parameters:
+        - in: path
+          name: name
+          required: true
+          schema:
+            type: string
+  /comments/item/{item_id}:
+    get:
+      operationId: getCommentsByItem
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/CommentResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists the comments on an item, oldest first
+      tags:
+        - Comments
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: item_id
+          required: true
+          schema:
+            format: double
+            type: number
+    post:
+      operationId: createComment
+      responses:
+        "201":
+          description: Comment posted
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CommentResponse"
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Posts a comment to an item as the signed-in user; 400 when the body is
+        missing or too long
+      tags:
+        - Comments
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: item_id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CommentInput"
+  /comments/{id}:
+    delete:
+      operationId: deleteComment
+      responses:
+        "204":
+          description: Comment deleted
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Deletes a comment; 403 unless the signed-in user wrote it or is an
+        admin or moderator
+      tags:
+        - Comments
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+  /login:
+    post:
+      operationId: login
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserTokenResponse"
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      description: Signs in and returns a bearer token for the other endpoints.
+      summary: Signs in and returns a bearer token
+      tags:
+        - Login
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/LoginInput"
+  /login/register:
+    post:
+      operationId: register
+      responses:
+        "201":
+          description: Account created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "422":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      description: Creates an account; 400 when a field is missing and 422 when the
+        username is taken.
+      summary: Creates an account
+      tags:
+        - Login
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/RegisterInput"
+  /health:
+    get:
+      operationId: getHealth
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+        "500":
+          description: A service is unhealthy
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+      description: Reports whether the API and its database work.
+      summary: Reports whether the API and its database work
+      tags:
+        - Health
+      security: []
+      parameters: []
+  /change-requests:
+    get:
+      operationId: getMyChangeRequests
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ChangeRequestResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists the signed-in user's change requests, newest first
+      tags:
+        - Change requests
+      security:
+        - bearerAuth:
+            - user
+            - admin
+            - moderator
+      parameters: []
+    post:
+      operationId: createChangeRequest
+      responses:
+        "201":
+          description: Change request saved as pending
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangeRequestResponse"
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "422":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Proposes a change to an interest or category; 422 when its item or
+        category does not exist
+      tags:
+        - Change requests
+      security:
+        - bearerAuth:
+            - user
+            - admin
+            - moderator
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeRequestInput"
+  /moderation/change-requests:
+    get:
+      operationId: getChangeRequests
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ChangeRequestResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists change requests, newest first
+      tags:
+        - Moderation
+      security:
+        - bearerAuth:
+            - admin
+            - moderator
+      parameters:
+        - description: Only list the change requests with this status
+          in: query
+          name: status
+          required: false
+          schema:
+            $ref: "#/components/schemas/ChangeRequestStatus"
+  /moderation/change-requests/{id}/approve:
+    put:
+      operationId: approveChangeRequest
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangeRequestResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "422":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Applies a pending change request; 422 when it was reviewed or can no
+        longer be applied
+      tags:
+        - Moderation
+      security:
+        - bearerAuth:
+            - admin
+            - moderator
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeRequestReview"
+  /moderation/change-requests/{id}/reject:
+    put:
+      operationId: rejectChangeRequest
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangeRequestResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "422":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Rejects a pending change request; 422 when it was already reviewed
+      tags:
+        - Moderation
+      security:
+        - bearerAuth:
+            - admin
+            - moderator
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/ChangeRequestReview"
+  /imports/{source}:
+    get:
+      operationId: findImportItems
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ImportedItem"
+                type: array
+        "400":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "502":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "503":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      description: >-
+        Lists the items found on an external source for `query`, without saving
+        them.
+
+        404 when the user or playlist does not exist, 502 when the source fails,
+
+        and 503 when the source has no API key configured.
+      summary: Finds items to import from an external source
+      tags:
+        - Imports
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters:
+        - description: Where to look for items
+          in: path
+          name: source
+          required: true
+          schema:
+            $ref: "#/components/schemas/ImportSource"
+        - description: Last.fm username, or YouTube video or playlist URL
+          in: query
+          name: query
+          required: true
+          schema:
+            type: string
+  /users:
+    get:
+      operationId: getUsers
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/UserResponse"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Lists every user
+      tags:
+        - Users
+      security:
+        - bearerAuth:
+            - admin
+      parameters: []
+    post:
+      operationId: createUser
+      responses:
+        "201":
+          description: User created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Creates a user
+      tags:
+        - Users
+      security:
+        - bearerAuth:
+            - admin
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UserInput"
+  /users/username/{username}:
+    get:
+      operationId: getUserByUsername
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Finds a user by username
+      tags:
+        - Users
+      security:
+        - bearerAuth:
+            - admin
+      parameters:
+        - in: path
+          name: username
+          required: true
+          schema:
+            type: string
+  /users/{id}:
+    get:
+      operationId: getUser
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Gets a user
+      tags:
+        - Users
+      security:
+        - bearerAuth:
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+    put:
+      operationId: updateUser
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/UserResponse"
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "404":
+          description: ""
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Changes a user; without a password, the current one is kept
+      tags:
+        - Users
+      security:
+        - bearerAuth:
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Partial_UserInput_"
+    delete:
+      operationId: deleteUser
+      responses:
+        "204":
+          description: User deleted
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "403":
+          description: The signed-in user may not call this operation
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+      summary: Deletes a user
+      tags:
+        - Users
+      security:
+        - bearerAuth:
+            - admin
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            format: double
+            type: number
+servers:
+  - url: /api

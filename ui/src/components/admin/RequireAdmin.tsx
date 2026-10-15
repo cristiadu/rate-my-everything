@@ -1,6 +1,6 @@
 import React from 'react'
 import { useAuth } from '@/components/users/AuthContext'
-import { type TokenPayload, UserRole } from '@/components/types'
+import { MODERATION_ROLES, type TokenPayload, UserRole } from '@/components/types'
 
 /** Reads the user claims from the JWT payload; the API still enforces them on every request. */
 const readTokenPayload = (token: string | null): Partial<TokenPayload> => {
@@ -24,6 +24,12 @@ export const getUserIdFromToken = (token: string | null): number | null => readT
 /** Reads the username from the JWT payload. */
 export const getUsernameFromToken = (token: string | null): string => readTokenPayload(token).username ?? ''
 
+/** Whether the token's roles let its user review change requests and change shared interests directly. */
+export const canModerate = (token: string | null): boolean => {
+  const roles = getRolesFromToken(token)
+  return MODERATION_ROLES.some((role) => roles.includes(role))
+}
+
 /** Renders its children only for logged-in users, and asks everyone else to log in. */
 export const RequireLogin: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const { isAuthenticated } = useAuth()
@@ -45,6 +51,19 @@ const RequireAdmin: React.FC<{ children: React.ReactNode }> = ({ children }) => 
     <RequireLogin>
       {getRolesFromToken(token).includes(UserRole.ADMIN) ? children : (
         <div className="notification is-danger">You do not have permission to access the administration area.</div>
+      )}
+    </RequireLogin>
+  )
+}
+
+/** Renders its children only for logged-in admins and moderators, and an explanation for everyone else. */
+export const RequireModerator: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const { token } = useAuth()
+
+  return (
+    <RequireLogin>
+      {canModerate(token) ? children : (
+        <div className="notification is-danger">You do not have permission to review change requests.</div>
       )}
     </RequireLogin>
   )

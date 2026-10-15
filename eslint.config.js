@@ -40,6 +40,7 @@ export default [
       '**/dist/**',
       '**/build/**',
       '**/coverage/**',
+      'api/src/routes/generated/**',
       'ui/src/api/generated/**',
     ],
   },

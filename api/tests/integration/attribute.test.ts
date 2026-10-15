@@ -4,80 +4,52 @@ import { appReady } from '@/index'
 import APIError from '@/models/APIError'
 import Attribute from '@/models/Attribute'
 import AttributeValueType from '@/models/AttributeValueType'
-import Category from '@/models/Category'
 import ErrorCode from '@/errors/ErrorCode'
-import { getAuthTokenFromFile } from '@@/testutils/common/Auth'
-import { cleanupAllAttributes, cleanupAllCategories } from '@@/testutils/common/DataCleanup'
+import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
+import { cleanupAllAttributes } from '@@/testutils/common/DataCleanup'
+import { createTestAttribute } from '@@/testutils/common/Attributes'
 import { Endpoints } from '@@/testutils/common/constants'
 
 describe('Attribute API Integration Tests', async () => {
   const testAuthToken = await getAuthTokenFromFile()
   const app = await appReady
-  let testCategory: Category
-  let testAttribute: Attribute
 
   beforeAll(async () => {
     await cleanupAllAttributes(app)
-    await cleanupAllCategories(app)
-
-    const categoryRes = await request(app)
-      .post(Endpoints.CATEGORIES_BASE_PATH)
-      .set('Authorization', `Bearer ${testAuthToken}`)
-      .send({ name: `AttrCat-${Date.now()}`, description: 'For attribute tests' })
-    if (categoryRes.status !== 201) {
-      throw new Error(`Failed to create test category: ${categoryRes.status} ${JSON.stringify(categoryRes.body)}`)
-    }
-    testCategory = categoryRes.body
-  })
-
-  beforeEach(() => {
-    if (!testCategory) {
-      throw new Error('Test category not initialized')
-    }
   })
 
   describe(`POST ${Endpoints.ATTRIBUTES_BASE_PATH}`, () => {
     it('should create a new attribute', async () => {
-      const newAttribute = {
-        name: `Test-Attribute-${Date.now()}`,
-        description: 'Attribute for integration test',
-        valueType: AttributeValueType.STRING,
-        values: ['Value1', 'Value2'],
-        categoryId: testCategory.id
-      }
-
+      // GIVEN a new text attribute named Created-Attribute
+      // WHEN an admin creates it
+      // THEN it comes back with an id, its name and its value type
       await request(app)
         .post(Endpoints.ATTRIBUTES_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send(newAttribute)
+        .send({ name: 'Created-Attribute', valueType: AttributeValueType.STRING })
         .expect('Content-Type', /json/)
         .expect(201)
         .expect(res => {
           const apiResult = res.body as Attribute
-          //const categoriesNames = apiResult.categories?.map(cat => cat.name) ?? []
           expect(apiResult.id).toBeDefined()
-          expect(apiResult.name).toBe(newAttribute.name)
-          expect(apiResult.valueType).toBe(newAttribute.valueType)
-          //expect(categoriesNames).toContain(testCategory.name)
-          //expect(apiResult.values).toBe(newAttribute.values)
-          testAttribute = apiResult
+          expect(apiResult.name).toBe('Created-Attribute')
+          expect(apiResult.valueType).toBe(AttributeValueType.STRING)
         })
-
-      if (!testAttribute) {
-        throw new Error('testAttribute was not set properly')
-      }
     })
 
     it('should fail to create an attribute with missing name', async () => {
+      // GIVEN an attribute without a name or value type
+      // WHEN an admin creates it
+      // THEN the request fails validation
       await request(app)
         .post(Endpoints.ATTRIBUTES_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send({ description: 'Missing name', categoryId: testCategory.id })
+        .send({ description: 'Missing name' })
         .expect('Content-Type', /json/)
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Missing required fields: name, valueType')
+          expect(apiError.message).toBe("Invalid request: input.name: 'name' is required; input.valueType: 'valueType' is required")
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
           expect(apiError.status).toBe(400)
         })
@@ -97,72 +69,61 @@ describe('Attribute API Integration Tests', async () => {
       const apiError = res.body as APIError
       expect(res.status).toBe(400)
       expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
-      expect(apiError.message).toBe(`valueType must be one of: ${Object.values(AttributeValueType).join(', ')}`)
+      const allowedValueTypes = Object.values(AttributeValueType).join("','")
+      expect(apiError.message).toBe(`Invalid request: input.valueType: should be one of the following; ['${allowedValueTypes}']`)
     })
   })
 
   describe(`GET ${Endpoints.ATTRIBUTES_BASE_PATH}`, () => {
-    it('should get all attributes', async () => {
-      if (!testAttribute) {
-        throw new Error('testAttribute not initialized')
-      }
+    beforeAll(async () => {
+      await cleanupAllAttributes(app)
+      await createTestAttribute(app, testAuthToken, 'Listed-Attribute', AttributeValueType.NUMBER)
+    })
 
+    it('should get all attributes', async () => {
+      // GIVEN exactly the attribute Listed-Attribute (beforeAll)
+      // WHEN listing attributes
+      // THEN only it comes back
       await request(app)
         .get(Endpoints.ATTRIBUTES_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
-          expect(Array.isArray(res.body)).toBe(true)
-          expect(res.body.length).toBe(1)
-
-          const apiResult = res.body as Attribute[]
-          let foundExpected = false
-          for (const attr of apiResult) {
-            if (attr.id === testAttribute.id) {
-              expect(attr.id).toBe(testAttribute.id)
-              expect(attr.name).toBe(testAttribute.name)
-              //expect(attr.categories?.map(cat => cat.name) ?? []).toContain(testCategory.name)
-              expect(attr.valueType).toBe(testAttribute.valueType)
-              //expect(attr.values).toEqual(testAttribute.values)
-              foundExpected = true
-            } else {
-              expect(attr.id).toBeDefined()
-              expect(attr.name).toBeDefined()
-              expect(attr.categories).toBeDefined()
-              expect(attr.valueType).toBeDefined()
-              expect(attr.values).toBeDefined()
-            }
-          }
-
-          expect(foundExpected).toBe(true)
+          const attributes = res.body as Attribute[]
+          expect(attributes.map((attr) => [attr.name, attr.valueType])).toEqual([['Listed-Attribute', AttributeValueType.NUMBER]])
         })
     })
   })
 
   describe(`GET ${Endpoints.ATTRIBUTES_BASE_PATH}/:id`, () => {
-    it('should get attribute by id', async () => {
-      if (!testAttribute) {
-        throw new Error('testAttribute not initialized')
-      }
+    let fetchedAttribute: Attribute
 
+    beforeAll(async () => {
+      fetchedAttribute = await createTestAttribute(app, testAuthToken, 'Fetched-Attribute', AttributeValueType.STRING)
+    })
+
+    it('should get attribute by id', async () => {
+      // GIVEN the attribute Fetched-Attribute (beforeAll)
+      // WHEN getting it by id
+      // THEN its fields come back
       await request(app)
-        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/${testAttribute.id}`)
+        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/${fetchedAttribute.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
           const apiResult = res.body as Attribute
-          //const categoriesNames = apiResult.categories.map(cat => cat.name)
-          expect(apiResult.id).toBe(testAttribute.id)
-          expect(apiResult.name).toBe(testAttribute.name)
-          expect(apiResult.valueType).toBe(testAttribute.valueType)
-          //expect(categoriesNames).toContain(testCategory.name)
-          //expect(apiResult.values).toEqual(testAttribute.values)
+          expect(apiResult.id).toBe(fetchedAttribute.id)
+          expect(apiResult.name).toBe('Fetched-Attribute')
+          expect(apiResult.valueType).toBe(AttributeValueType.STRING)
         })
     })
 
     it('should fail to get a non-existent attribute', async () => {
+      // GIVEN no attribute with id 999999
+      // WHEN getting it by id
+      // THEN it is not found
       await request(app)
         .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -178,52 +139,51 @@ describe('Attribute API Integration Tests', async () => {
   })
 
   describe(`PUT ${Endpoints.ATTRIBUTES_BASE_PATH}/:id`, () => {
-    it('should update an attribute', async () => {
-      if (!testAttribute) {
-        throw new Error('testAttribute not initialized')
-      }
+    let attributeToUpdate: Attribute
 
-      const updatedValues = ['Updated value 1', 'Updated value 2']
-      const updatedName = 'Updated name'
+    beforeEach(async () => {
+      attributeToUpdate = await createTestAttribute(app, testAuthToken, `Update-Attribute-${Date.now()}`, AttributeValueType.STRING)
+    })
+
+    it('should update an attribute', async () => {
+      // GIVEN a text attribute (beforeEach)
+      // WHEN it is renamed
+      // THEN the new name comes back and the value type stays text
       await request(app)
-        .put(`${Endpoints.ATTRIBUTES_BASE_PATH}/${testAttribute.id}`)
+        .put(`${Endpoints.ATTRIBUTES_BASE_PATH}/${attributeToUpdate.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send({ values: updatedValues, name: updatedName })
+        .send({ name: 'Updated name' })
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
           const apiResult = res.body as Attribute
-          //const categoriesNames = apiResult.categories.map(cat => cat.name)
-          expect(apiResult.id).toBe(testAttribute.id)
-          expect(apiResult.name).toBe(updatedName)
-          expect(apiResult.valueType).toBe(testAttribute.valueType)
-          //expect(categoriesNames).toContain(testCategory.name)
-          //expect(apiResult.values).toEqual(updatedValues)
+          expect(apiResult.id).toBe(attributeToUpdate.id)
+          expect(apiResult.name).toBe('Updated name')
+          expect(apiResult.valueType).toBe(AttributeValueType.STRING)
         })
     })
 
     it('should fail to update an attribute to an unknown value type', async () => {
-      // GIVEN an existing attribute
-      if (!testAttribute) {
-        throw new Error('testAttribute not initialized')
-      }
-
+      // GIVEN a text attribute (beforeEach)
       // WHEN changing its value type to one outside AttributeValueType
       const res = await request(app)
-        .put(`${Endpoints.ATTRIBUTES_BASE_PATH}/${testAttribute.id}`)
+        .put(`${Endpoints.ATTRIBUTES_BASE_PATH}/${attributeToUpdate.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .send({ valueType: 'colour' })
 
-      // THEN it is rejected and the attribute keeps its value type
+      // THEN it is rejected and the attribute stays text
       expect(res.status).toBe(400)
       expect((res.body as APIError).code).toBe(ErrorCode.VALIDATION_ERROR)
       const current = await request(app)
-        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/${testAttribute.id}`)
+        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/${attributeToUpdate.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
-      expect((current.body as Attribute).valueType).toBe(testAttribute.valueType)
+      expect((current.body as Attribute).valueType).toBe(AttributeValueType.STRING)
     })
 
     it('should fail to update a non-existent attribute', async () => {
+      // GIVEN no attribute with id 999999
+      // WHEN updating it
+      // THEN it is not found
       await request(app)
         .put(`${Endpoints.ATTRIBUTES_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -241,22 +201,61 @@ describe('Attribute API Integration Tests', async () => {
 
   describe(`DELETE ${Endpoints.ATTRIBUTES_BASE_PATH}/:id`, () => {
     it('should delete an attribute', async () => {
-      if (!testAttribute) {
-        throw new Error('testAttribute not initialized')
-      }
+      // GIVEN an attribute
+      const attributeToDelete = await createTestAttribute(app, testAuthToken, 'Delete-Attribute', AttributeValueType.STRING)
 
+      // WHEN deleting it
       await request(app)
-        .delete(`${Endpoints.ATTRIBUTES_BASE_PATH}/${testAttribute.id}`)
+        .delete(`${Endpoints.ATTRIBUTES_BASE_PATH}/${attributeToDelete.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(204)
+
+      // THEN it is gone
+      await request(app)
+        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/${attributeToDelete.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(404)
     })
 
-    it('should fail to delete a non-existent attribute', async () => {
+    it('should not fail when deleting a non-existent attribute', async () => {
+      // GIVEN no attribute with id 999999
+      // WHEN deleting it
+      // THEN the delete still succeeds with no body
       await request(app)
         .delete(`${Endpoints.ATTRIBUTES_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(204)
-        .expect(res => { expect(res.body).toEqual({}) })
+        .expect(res => { expect(res.text).toBe('') })
+    })
+  })
+
+  describe('Attribute permissions for the user role', () => {
+    let userToken: string
+
+    beforeAll(async () => {
+      userToken = await getUserRoleAuthToken(app)
+    })
+
+    it('should let users list attributes so they can propose category attributes', async () => {
+      // GIVEN a user-role token (beforeAll)
+      // WHEN listing attributes
+      // THEN the request succeeds
+      await request(app)
+        .get(Endpoints.ATTRIBUTES_BASE_PATH)
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(200)
+    })
+
+    it('should forbid users from creating attributes', async () => {
+      // GIVEN a user-role token (beforeAll)
+      // WHEN creating an attribute
+      // THEN it is forbidden
+      await request(app)
+        .post(Endpoints.ATTRIBUTES_BASE_PATH)
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ name: 'User-Attribute', valueType: AttributeValueType.STRING })
+        .expect(403)
+        .expect(res => expect((res.body as APIError).code).toBe(ErrorCode.FORBIDDEN))
     })
   })
 })

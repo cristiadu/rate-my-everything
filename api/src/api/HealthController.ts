@@ -1,36 +1,21 @@
-import { Request, Response, Router } from 'express'
+import { Controller, Get, Response, Route, Tags } from 'tsoa'
 import { runHealthChecks } from '@/services/HealthIndicators'
-import { HealthStatus } from '@/models/Health'
-import { NewApiError } from '@/models/APIError'
-import ErrorCode from '@/errors/ErrorCode'
+import { Health, HealthStatus } from '@/models/Health'
 
-export default class HealthController {
-  public router = Router()
-
-  constructor() {
-    this.initializeRoutes()
-  }
-
-  public initializeRoutes() {
-    this.router.get('/', (req, res) => {
-      this.getHealth(req, res)
-    })
-  }
-
-  public async getHealth(_req: Request, res: Response) {
-    try {
-      const health = await runHealthChecks()
-      
-      if (health.status === HealthStatus.HEALTHY) {
-          res.status(200)
-            .json(health)
-      } else {
-        return res.status(500).json(health)
-      }
-    } catch (error) {
-      console.error('Health check failed:', error)
-        res.status(500)
-          .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+@Route('health')
+@Tags('Health')
+export class HealthController extends Controller {
+  /**
+   * Reports whether the API and its database work.
+   * @summary Reports whether the API and its database work
+   */
+  @Get()
+  @Response<Health>(500, 'A service is unhealthy')
+  public async getHealth(): Promise<Health> {
+    const health = await runHealthChecks()
+    if (health.status !== HealthStatus.HEALTHY) {
+      this.setStatus(500)
     }
+    return health
   }
 }

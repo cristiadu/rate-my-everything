@@ -1,167 +1,133 @@
-import { Router, Request, Response } from 'express'
+import {
+  Body, Controller, Delete, Get, Path, Post, Put, Res, Response, Route, Security, SuccessResponse, Tags,
+} from 'tsoa'
+import type { TsoaResponse } from 'tsoa'
 import AttributeService from '@/services/AttributeService'
-import { NewApiError } from '@/models/APIError'
+import APIError, { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import Attribute from '@/models/Attribute'
-import { INVALID_VALUE_TYPE_MESSAGE, isAttributeValueType } from '@/helpers/AttributeHelper'
+import type { AttributeInput, AttributeResponse } from '@/models/Attribute'
+import AttributeValue from '@/models/AttributeValue'
+import type { AttributeValueRecordInput, AttributeValueResponse } from '@/models/AttributeValue'
+import UserRole from '@/models/UserRole'
+import { BEARER_AUTH } from '@/helpers/Authentication'
 
-export default class AttributeController {
-  public router = Router()
-
+/** Attributes describe the items of a category; users read them and admins change them. */
+@Route('attributes')
+@Tags('Attributes')
+@Security(BEARER_AUTH, [UserRole.USER, UserRole.ADMIN])
+@Response<APIError>(401, 'The bearer token is missing or invalid')
+@Response<APIError>(403, 'The signed-in user may not call this operation')
+@Response<APIError>(500, 'Something unexpected failed')
+export class AttributeController extends Controller {
   private attributeService = new AttributeService()
 
-  constructor() {
-    this.initializeRoutes()
+  /** @summary Lists every attribute */
+  @Get()
+  public async getAttributes(): Promise<AttributeResponse[]> {
+    return this.attributeService.getAllAttributes()
   }
 
-  public initializeRoutes() {
-    this.router.get('/', (req, res) => this.getAllAttributes(req, res))
-    this.router.get('/values', (req, res) => this.getAllAttributeValues(req, res))
-    this.router.get('/values/:id', (req, res) => this.getAttributeValue(req, res))
-    this.router.get('/:id', (req, res) => this.getAttribute(req, res))
-    this.router.get('/:id/values', (req, res) => this.getAllAttributeValuesByAttribute(req, res))
-    this.router.post('/', (req, res) => this.createAttribute(req, res))
-    this.router.post('/values', (req, res) => this.createAttributeValue(req, res))
-    this.router.put('/:id', (req, res) => this.updateAttribute(req, res))
-    this.router.put('/values/:id', (req, res) => this.updateAttributeValue(req, res))
-    this.router.delete('/:id', (req, res) => this.deleteAttribute(req, res))
-    this.router.delete('/values/:id', (req, res) => this.deleteAttributeValue(req, res))
+  /** @summary Lists every attribute value */
+  @Get('values')
+  public async getAttributeValues(): Promise<AttributeValueResponse[]> {
+    return this.attributeService.getAllAttributeValues()
   }
 
-  public async getAllAttributes(req: Request, res: Response) {
-    try {
-      const data = await this.attributeService.getAllAttributes()
-      res.status(200).json(data)
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Gets an attribute value */
+  @Get('values/{id}')
+  public async getAttributeValue(@Path() id: number, @Res() notFound: TsoaResponse<404, APIError>): Promise<AttributeValueResponse> {
+    const data = await this.attributeService.getAttributeValue(id)
+    if (!data) {
+      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
     }
+    return data
   }
 
-  public async getAllAttributeValues(req: Request, res: Response) {
-    try {
-      const data = await this.attributeService.getAllAttributeValues()
-      res.status(200).json(data)
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Gets an attribute */
+  @Get('{id}')
+  public async getAttribute(@Path() id: number, @Res() notFound: TsoaResponse<404, APIError>): Promise<AttributeResponse> {
+    const data = await this.attributeService.getAttribute(id)
+    if (!data) {
+      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
     }
+    return data
   }
 
-  public async getAllAttributeValuesByAttribute(req: Request, res: Response) {
-    try {
-      const data = await this.attributeService.getAllAttributeValuesByAttribute(parseInt(req.params.id, 10))
-      res.status(200).json(data)
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /** @summary Lists the values items hold for an attribute */
+  @Get('{id}/values')
+  public async getAttributeValuesByAttribute(@Path() id: number): Promise<AttributeValueResponse[]> {
+    return this.attributeService.getAllAttributeValuesByAttribute(id)
   }
 
-  public async getAttribute(req: Request, res: Response) {
-    try {
-      const data = await this.attributeService.getAttribute(parseInt(req.params.id, 10))
-      if (data) {
-        res.status(200).json(data)
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
-      }
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Creates an attribute */
+  @Post()
+  @Security(BEARER_AUTH, [UserRole.ADMIN])
+  @SuccessResponse(201, 'Attribute created')
+  public async createAttribute(
+    @Body() input: AttributeInput, @Res() validationError: TsoaResponse<400, APIError>,
+  ): Promise<AttributeResponse> {
+    if (!input.name || !input.valueType) {
+      return validationError(400, NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, valueType'))
     }
+    const data = await this.attributeService.createAttribute(input as Attribute)
+    this.setStatus(201)
+    return data
   }
 
-  public async getAttributeValue(req: Request, res: Response) {
-    try {
-      const data = await this.attributeService.getAttributeValue(parseInt(req.params.id, 10))
-      if (data) {
-        res.status(200).json(data)
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
-      }
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /** @summary Creates an attribute value */
+  @Post('values')
+  @Security(BEARER_AUTH, [UserRole.ADMIN])
+  @SuccessResponse(201, 'Attribute value created')
+  public async createAttributeValue(@Body() input: AttributeValueRecordInput): Promise<AttributeValueResponse> {
+    const data = await this.attributeService.createAttributeValue(input as AttributeValue)
+    this.setStatus(201)
+    return data
   }
 
-  public async createAttribute(req: Request, res: Response) {
-    try {
-      const { name, valueType } = req.body
-      if (!name || !valueType) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, valueType'))
-      }
-      if (!isAttributeValueType(valueType)) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, INVALID_VALUE_TYPE_MESSAGE))
-      }
-      const data = await this.attributeService.createAttribute(req.body)
-      res.status(201).json(data)
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Changes the fields sent for an attribute */
+  @Put('{id}')
+  @Security(BEARER_AUTH, [UserRole.ADMIN])
+  public async updateAttribute(
+    @Path() id: number,
+    @Body() input: Partial<AttributeInput>,
+    @Res() notFound: TsoaResponse<404, APIError>,
+  ): Promise<AttributeResponse> {
+    const data = await this.attributeService.updateAttribute(id, input as Attribute)
+    if (!data) {
+      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
     }
+    return data
   }
 
-  public async createAttributeValue(req: Request, res: Response) {
-    try {
-      const data = await this.attributeService.createAttributeValue(req.body)
-      res.status(201).json(data)
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Changes an attribute value */
+  @Put('values/{id}')
+  @Security(BEARER_AUTH, [UserRole.ADMIN])
+  public async updateAttributeValue(
+    @Path() id: number, @Body() input: AttributeValueRecordInput, @Res() notFound: TsoaResponse<404, APIError>,
+  ): Promise<AttributeValueResponse> {
+    const data = await this.attributeService.updateAttributeValue(id, input as AttributeValue)
+    if (!data) {
+      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
     }
+    return data
   }
 
-  public async updateAttribute(req: Request, res: Response) {
-    try {
-      const attributeBody = req.body as Attribute
-      if (attributeBody.valueType !== undefined && !isAttributeValueType(attributeBody.valueType)) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, INVALID_VALUE_TYPE_MESSAGE))
-      }
-      const data = await this.attributeService.updateAttribute(parseInt(req.params.id, 10), attributeBody)
-      if (data) {
-        res.status(200).json(data)
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute not found'))
-      }
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /** @summary Deletes an attribute */
+  @Delete('{id}')
+  @Security(BEARER_AUTH, [UserRole.ADMIN])
+  @SuccessResponse(204, 'Attribute deleted')
+  public async deleteAttribute(@Path() id: number): Promise<void> {
+    await this.attributeService.deleteAttribute(id)
+    this.setStatus(204)
   }
 
-  public async updateAttributeValue(req: Request, res: Response) {
-    try {
-      const data = await this.attributeService.updateAttributeValue(parseInt(req.params.id, 10), req.body)
-      if (data) {
-        res.status(200).json(data)
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Attribute value not found'))
-      }
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
-  }
-
-  public async deleteAttribute(req: Request, res: Response) {
-    try {
-      await this.attributeService.deleteAttribute(parseInt(req.params.id, 10))
-      res.status(204).json()
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
-  }
-
-  public async deleteAttributeValue(req: Request, res: Response) {
-    try {
-      await this.attributeService.deleteAttributeValue(parseInt(req.params.id, 10))
-      res.status(204).json()
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /** @summary Deletes an attribute value */
+  @Delete('values/{id}')
+  @Security(BEARER_AUTH, [UserRole.ADMIN])
+  @SuccessResponse(204, 'Attribute value deleted')
+  public async deleteAttributeValue(@Path() id: number): Promise<void> {
+    await this.attributeService.deleteAttributeValue(id)
+    this.setStatus(204)
   }
 }

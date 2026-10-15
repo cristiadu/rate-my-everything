@@ -15,6 +15,9 @@ export class SessionUser implements Omit<User, 'password' | 'ratedItems' | 'emai
     roles!: UserRole[]
 }
 
+/** A user reduced to their id and username, as comments and change requests return them. */
+export type UserSummary = Pick<User, 'id' | 'username'>
+
 /** A user as the API returns it, without the password hash. */
 export type UserResponse = Omit<User, 'password' | 'ratedItems'>
 

@@ -64,14 +64,14 @@ Signed-in users open **Import interests** in the top menu, pick a source, and se
 - **Services:** Business logic in `src/services/`
 - **Models:** Shared types in `src/models/`
 - **Routing/Auth:** Config in `src/routes/`
-- **OpenAPI:** `src/routes/ApiOperations.ts` lists every operation; `pnpm openapi` writes `openapi.yaml` from it and from the request and response types in `src/models/`
+- **OpenAPI:** controllers in `src/api/` use [tsoa](https://tsoa-community.github.io/docs/) decorators (`@Route`, `@Get`, `@Body`, `@Security`...) on the request and response types in `src/models/`; `pnpm openapi` (also run on `pnpm install`) generates `openapi.yaml` and the Express routes in `src/routes/generated/` from them, configured in `tsoa.json`
 - **Error handling:** Use `APIError.ts` in controllers
 - **Testing:** Vitest; integration tests in `src/tests/integration/`
 
 ## Integration & Patterns
 
 - API endpoints defined in `api/src/api/*Controller.ts`
-- The API contract is `api/openapi.yaml` (OpenAPI 3.2). A test fails when a route is missing from `ApiOperations.ts`, and the spec is regenerated and committed on every push to `main` that changes the API
+- The API contract is `api/openapi.yaml` (OpenAPI 3.1), generated from the decorated controllers, so a route cannot exist without being documented. tsoa validates request bodies, paths and queries against it, and the spec is regenerated and committed on every push to `main` that changes the API
 - Frontend API calls use the client generated from that spec
 - Authentication managed via frontend context and backend controller
 - Linting and code analysis required before merging (see CI/CD)

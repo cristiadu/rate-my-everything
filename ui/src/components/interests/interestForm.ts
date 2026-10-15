@@ -46,3 +46,9 @@ export const toRatingInput = (form: InterestForm): RatingInput => ({
   rating: Number(form.rating),
   notes: form.notes,
 })
+
+/** Whether the item fields in the form differ from the item as it was loaded, ignoring the rating and notes. */
+export const hasItemChanges = (form: InterestForm, loadedForm: InterestForm, category: Category): boolean => (
+  form.categoryId !== loadedForm.categoryId
+  || JSON.stringify(toItemInput(form, category)) !== JSON.stringify(toItemInput(loadedForm, category))
+)

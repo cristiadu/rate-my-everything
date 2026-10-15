@@ -38,7 +38,7 @@ const sentWrites = (fetchMock: jest.MockedFunction<typeof fetch>) => fetchMock.m
   .filter(([, init]) => init?.method !== 'GET')
   .map(([url, init]) => [init?.method, String(url).replace(API_URL, ''), JSON.parse(String(init?.body ?? 'null'))])
 
-/** Renders the form routes at the given path, with a stand-in for the rankings page it returns to. */
+/** Renders the form routes at the given path, with stand-ins for the pages it returns to. */
 const renderFormAt = (path: string) => render(
   <AuthProvider>
     <MemoryRouter initialEntries={[path]}>
@@ -46,6 +46,7 @@ const renderFormAt = (path: string) => render(
         <Route path="/interests/new" element={<InterestFormPage />} />
         <Route path="/interests/:itemId/edit" element={<InterestFormPage />} />
         <Route path="/rankings" element={<p>My rankings page</p>} />
+        <Route path="/change-requests" element={<p>My change requests page</p>} />
       </Routes>
     </MemoryRouter>
   </AuthProvider>,
@@ -132,8 +133,9 @@ describe('InterestFormPage', () => {
     expect(screen.queryByText('Movies details')).not.toBeInTheDocument()
   })
 
-  test('edits an interest and rates it again', async () => {
-    // GIVEN the edit form for Dune, filled from the API, with an empty rating field
+  test('lets moderators edit an interest and rate it again', async () => {
+    // GIVEN a moderator on the edit form for Dune
+    loginAs([UserRole.USER, UserRole.MODERATOR])
     renderFormAt('/interests/100/edit')
     expect(await screen.findByDisplayValue('412')).toBeInTheDocument()
     expect(screen.getByLabelText('Rate it again (0 to 10)')).toHaveValue(null)
@@ -158,6 +160,49 @@ describe('InterestFormPage', () => {
     ])
   })
 
+  test('sends a user\'s edit of an interest for approval and adds their new rating', async () => {
+    // GIVEN a user without a moderation role on the edit form for Dune
+    renderFormAt('/interests/100/edit')
+    await screen.findByDisplayValue('412')
+
+    // WHEN the page count and rating change and are saved
+    fireEvent.change(screen.getByLabelText('Pages'), { target: { value: '420' } })
+    fireEvent.change(screen.getByLabelText('Rate it again (0 to 10)'), { target: { value: '9' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
+
+    // THEN the item edit becomes a change request, my rating is added, and I land on my change requests
+    expect(await screen.findByText('My change requests page')).toBeInTheDocument()
+    expect(sentWrites(fetchMock)).toEqual([
+      ['POST', '/change-requests', {
+        targetType: 'item',
+        action: 'update',
+        targetId: 100,
+        changes: {
+          name: 'Dune',
+          description: 'Desert planet epic',
+          imageUrl: 'https://example.com/dune.png',
+          categoryId: 10,
+          attributeValues: [{ attributeId: 2, value: '420' }],
+        },
+      }],
+      ['POST', '/ratings', { item_id: 100, rating: 9, notes: '' }],
+    ])
+  })
+
+  test('adds a rating without requesting an unchanged interest', async () => {
+    // GIVEN a user without a moderation role on the edit form for Dune
+    renderFormAt('/interests/100/edit')
+    await screen.findByDisplayValue('412')
+
+    // WHEN only the rating changes and is saved
+    fireEvent.change(screen.getByLabelText('Rate it again (0 to 10)'), { target: { value: '8' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
+
+    // THEN only the rating is added
+    expect(await screen.findByText('My rankings page')).toBeInTheDocument()
+    expect(sentWrites(fetchMock)).toEqual([['POST', '/ratings', { item_id: 100, rating: 8, notes: '' }]])
+  })
+
   test('saves an interest I already rated without adding a rating', async () => {
     // GIVEN the edit form for Dune, which I already rated
     renderFormAt('/interests/100/edit')
@@ -166,9 +211,9 @@ describe('InterestFormPage', () => {
     // WHEN it is saved with the rating field left empty
     fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
 
-    // THEN only the item is updated
+    // THEN no writes are sent
     expect(await screen.findByText('My rankings page')).toBeInTheDocument()
-    expect(sentWrites(fetchMock).map(([method, path]) => [method, path])).toEqual([['PUT', '/items/100']])
+    expect(sentWrites(fetchMock)).toEqual([])
   })
 
   test('shows my grade, everyone\'s grade and my ratings newest first', async () => {
@@ -219,6 +264,7 @@ describe('InterestFormPage', () => {
 
   test('shows the API error message when saving fails', async () => {
     // GIVEN the API rejects the item update
+    loginAs([UserRole.USER, UserRole.MODERATOR])
     fetchMock.mockImplementation(async (url, init) => (init?.method === 'PUT'
       ? jsonResponse({ message: 'Unknown attribute ids: 9' }, 422)
       : respond(url, init)))

@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { Navbar } from 'react-bulma-components'
 import { useAuth } from '@/components/users/AuthContext'
-import { getRolesFromToken } from '@/components/admin/RequireAdmin'
+import { canModerate, getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { UserRole } from '@/components/types'
 
 const HeaderMenu = () => {
@@ -62,8 +62,18 @@ const HeaderMenu = () => {
             </>
           )}
           {isAuthenticated && (
-            <Navbar.Item renderAs="a" href="/categories">
-              Categories
+            <>
+              <Navbar.Item renderAs="a" href="/categories">
+                Categories
+              </Navbar.Item>
+              <Navbar.Item renderAs="a" href="/change-requests">
+                My change requests
+              </Navbar.Item>
+            </>
+          )}
+          {canModerate(token) && (
+            <Navbar.Item renderAs="a" href="/moderation">
+              Moderation
             </Navbar.Item>
           )}
           {getRolesFromToken(token).includes(UserRole.ADMIN) && (

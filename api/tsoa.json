@@ -1,0 +1,41 @@
+{
+  "entryFile": "src/index.ts",
+  "controllerPathGlobs": [
+    "src/api/*Controller.ts"
+  ],
+  "noImplicitAdditionalProperties": "ignore",
+  "spec": {
+    "outputDirectory": ".",
+    "specFileBaseName": "openapi",
+    "specVersion": 3.1,
+    "yaml": true,
+    "basePath": "/api",
+    "name": "Rate My Everything API",
+    "description": "Rate interests, keep personal rankings and discuss them.",
+    "securityDefinitions": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    },
+    "operationIdTemplate": "{{method.name}}",
+    "xEnumVarnames": true
+  },
+  "routes": {
+    "routesDir": "src/routes/generated",
+    "authenticationModule": "src/helpers/Authentication.ts"
+  },
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ]
+    },
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "strict": true,
+    "esModuleInterop": true
+  }
+}

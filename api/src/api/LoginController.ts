@@ -1,89 +1,68 @@
-import { Request, Response, Router } from 'express'
+import { Body, Controller, Post, Res, Response, Route, SuccessResponse, Tags } from 'tsoa'
+import type { TsoaResponse } from 'tsoa'
 import UserService from '@/services/UserService'
-import User from '@/models/User'
-import { NewApiError } from '@/models/APIError'
+import User, { UserTokenResponse } from '@/models/User'
+import type { LoginInput, RegisterInput, UserResponse } from '@/models/User'
+import APIError, { NewApiError } from '@/models/APIError'
 import { InvalidCredentials } from '@/errors/InvalidCredentials'
 import ErrorCode from '@/errors/ErrorCode'
 
-export default class LoginController {
-  public router = Router()
-
+@Route('login')
+@Tags('Login')
+@Response<APIError>(500, 'Something unexpected failed')
+export class LoginController extends Controller {
   private userService = new UserService()
 
-  constructor() {
-    this.initializeRoutes()
-  }
+  /**
+   * Signs in and returns a bearer token for the other endpoints.
+   * @summary Signs in and returns a bearer token
+   */
+  @Post()
+  public async login(
+    @Body() credentials: LoginInput,
+    @Res() missingCredentials: TsoaResponse<400, APIError>,
+    @Res() invalidCredentials: TsoaResponse<401, APIError>,
+  ): Promise<UserTokenResponse> {
+    const { username, password } = credentials
+    if (!username || !password) {
+      return missingCredentials(400, NewApiError(ErrorCode.MISSING_CREDENTIALS, 400, 'Username and password are required'))
+    }
 
-  public initializeRoutes() {
-    this.router.post('/', (req, res) => {
-      this.login(req, res)
-    })
-    this.router.post('/register', (req, res) => {
-      this.register(req, res)
-    })
-  }
-
-  public async login(req: Request, res: Response) {
     try {
-      const { username, password } = req.body
-
-      if (!username || !password) {
-        return res.status(400)
-          .json(NewApiError(ErrorCode.MISSING_CREDENTIALS, 400, 'Username and password are required'))
-      }
-
-      const result = await this.userService.login(username, password)
-      if (result) {
-        res.status(200)
-          .json(result)
-      } else {
-        res.status(401)
-          .json(NewApiError(ErrorCode.INVALID_CREDENTIALS, 401, 'Invalid username or password'))
-      }
+      return await this.userService.login(username, password)
     } catch (error) {
       if (error instanceof InvalidCredentials) {
-        return res.status(401)
-          .json(NewApiError(ErrorCode.INVALID_CREDENTIALS, 401, 'Invalid username or password'))
+        return invalidCredentials(401, NewApiError(ErrorCode.INVALID_CREDENTIALS, 401, 'Invalid username or password'))
       }
-
-      console.error('Exception occurred:', error)
-      res.status(500)
-        .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+      throw error
     }
   }
 
-  public async register(req: Request, res: Response) {
-    try {
-      const { username, email, password, roles } = req.body
-      if (!username || !email || !password) {
-        return res.status(400)
-          .json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields'))
-      }
-
-      const existingUser = await this.userService.getByUsername(username)
-      if (existingUser) {
-        return res.status(422)
-          .json(NewApiError(ErrorCode.RESOURCE_ALREADY_EXISTS, 422, 'Username already exists'))
-      }
-
-      const userObj = {
-        username,
-        email,
-        password,
-        roles: roles || [],
-        ratedItems: []
-      } as Partial<User>
-
-      const user = await this.userService.create(userObj as Omit<User, 'id'>)
-
-      // Never return password - destructure to omit password from response
-      const userSafe = { ...user, password: undefined }
-      res.status(201)
-        .json(userSafe)
-    } catch (error) {
-      console.error('Registration error:', error)
-      res.status(500)
-        .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /**
+   * Creates an account; 400 when a field is missing and 422 when the username is taken.
+   * @summary Creates an account
+   */
+  @Post('register')
+  @SuccessResponse(201, 'Account created')
+  public async register(
+    @Body() input: RegisterInput,
+    @Res() validationError: TsoaResponse<400, APIError>,
+    @Res() usernameTaken: TsoaResponse<422, APIError>,
+  ): Promise<UserResponse> {
+    const { username, email, password, roles } = input
+    if (!username || !email || !password) {
+      return validationError(400, NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields'))
     }
+
+    const existingUser = await this.userService.getByUsername(username)
+    if (existingUser) {
+      return usernameTaken(422, NewApiError(ErrorCode.RESOURCE_ALREADY_EXISTS, 422, 'Username already exists'))
+    }
+
+    const user = await this.userService.create({ username, email, password, roles: roles || [], ratedItems: [] } as Omit<User, 'id'>)
+
+    // Never return password - destructure to omit password from response
+    this.setStatus(201)
+    return { ...user, password: undefined } as UserResponse
   }
 }

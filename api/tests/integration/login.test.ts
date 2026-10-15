@@ -12,6 +12,9 @@ describe('Login API Integration Tests', async () => {
 
   describe(`POST ${Endpoints.LOGIN_BASE_PATH}`, () => {
     it('should return a token when credentials are valid', async () => {
+      // GIVEN the admin test user's email and password
+      // WHEN logging in
+      // THEN a token and the admin user come back
       await request(testApp)
         .post(Endpoints.LOGIN_BASE_PATH)
         .send({
@@ -31,6 +34,9 @@ describe('Login API Integration Tests', async () => {
     })
 
     it('should reject invalid credentials', async () => {
+      // GIVEN the admin test user's email with a wrong password
+      // WHEN logging in
+      // THEN the login is rejected
       await request(testApp)
         .post(Endpoints.LOGIN_BASE_PATH)
         .send({
@@ -48,18 +54,20 @@ describe('Login API Integration Tests', async () => {
     })
 
     it('should reject missing credentials', async () => {
+      // GIVEN the admin test user's email and no password
+      // WHEN logging in
+      // THEN the login fails validation
       await request(testApp)
         .post(Endpoints.LOGIN_BASE_PATH)
         .send({
           username: TEST_USER.email
-          // Missing password
         })
         .expect('Content-Type', /json/)
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Username and password are required')
-          expect(apiError.code).toBe(ErrorCode.MISSING_CREDENTIALS)
+          expect(apiError.message).toBe("Invalid request: credentials.password: 'password' is required")
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
           expect(apiError.status).toBe(400)
         })
     })

@@ -1,7 +1,7 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import RequireAdmin, {
-  getRolesFromToken, getUserIdFromToken, getUsernameFromToken, RequireLogin,
+  canModerate, getRolesFromToken, getUserIdFromToken, getUsernameFromToken, RequireLogin, RequireModerator,
 } from '@/components/admin/RequireAdmin'
 import { AuthProvider } from '@/components/users/AuthContext'
 import { UserRole } from '@/components/types'
@@ -123,5 +123,28 @@ describe('RequireLogin', () => {
 
     // THEN the content is shown
     expect(screen.getByText('account content')).toBeInTheDocument()
+  })
+
+  test('lets admins and moderators moderate', () => {
+    // GIVEN tokens for each role
+    const tokens = [[UserRole.ADMIN], [UserRole.MODERATOR], [UserRole.USER]].map(makeTestToken)
+
+    // WHEN checking who may moderate
+    const allowed = [...tokens, null].map(canModerate)
+
+    // THEN only admins and moderators may
+    expect(allowed).toEqual([true, true, false, false])
+  })
+
+  test('shows moderation content to moderators and blocks regular users', () => {
+    // GIVEN a regular user is logged in
+    loginAs([UserRole.USER])
+
+    // WHEN moderator-only content renders
+    render(<AuthProvider><RequireModerator><p>moderation content</p></RequireModerator></AuthProvider>)
+
+    // THEN an explanation replaces it
+    expect(screen.getByText('You do not have permission to review change requests.')).toBeInTheDocument()
+    expect(screen.queryByText('moderation content')).not.toBeInTheDocument()
   })
 })

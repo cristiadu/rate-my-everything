@@ -24,7 +24,7 @@ export default defineConfig({
       output: {
         entryFileNames: '[name].js',
       },
-      external: ['typeorm', 'pg', 'bcrypt', 'jsonwebtoken', 'express', /node:.*/],
+      external: ['typeorm', 'pg', 'bcrypt', 'jsonwebtoken', 'express', 'pino', /node:.*/],
     },
 
   },

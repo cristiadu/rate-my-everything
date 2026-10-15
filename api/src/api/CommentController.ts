@@ -1,76 +1,80 @@
-import { Request, Response, Router } from 'express'
+import {
+  Body, Controller, Delete, Get, Path, Post, Request, Res, Response, Route, Security, SuccessResponse, Tags,
+} from 'tsoa'
+import type { TsoaResponse } from 'tsoa'
 import CommentService from '@/services/CommentService'
 import { MAX_COMMENT_LENGTH } from '@/models/Comment'
-import { SessionUser } from '@/models/User'
-import { NewApiError } from '@/models/APIError'
+import type { CommentInput, CommentResponse } from '@/models/Comment'
+import APIError, { NewApiError } from '@/models/APIError'
+import UserRole from '@/models/UserRole'
 import ErrorCode from '@/errors/ErrorCode'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { CommentNotOwned } from '@/errors/CommentNotOwned'
+import { BEARER_AUTH } from '@/helpers/Authentication'
+import type { AuthenticatedRequest } from '@/helpers/Authentication'
 
 /** Discussion threads on items: list an item's comments, post one, and delete one. */
-export default class CommentController {
-  public router = Router()
-
+@Route('comments')
+@Tags('Comments')
+@Security(BEARER_AUTH, [UserRole.USER, UserRole.ADMIN])
+@Response<APIError>(401, 'The bearer token is missing or invalid')
+@Response<APIError>(403, 'The signed-in user may not call this operation')
+@Response<APIError>(500, 'Something unexpected failed')
+export class CommentController extends Controller {
   private commentService = new CommentService()
 
-  constructor() {
-    this.initializeRoutes()
+  /** @summary Lists the comments on an item, oldest first */
+  @Get('item/{item_id}')
+  public async getCommentsByItem(@Path('item_id') itemId: number): Promise<CommentResponse[]> {
+    return this.commentService.getAllByItemId(itemId)
   }
 
-  public initializeRoutes() {
-    this.router.get('/item/:item_id', (req, res) => this.getAllByItemId(req, res))
-    this.router.post('/item/:item_id', (req, res) => this.create(req, res))
-    this.router.delete('/:id', (req, res) => this.delete(req, res))
-  }
-
-  /** Lists the comments on an item, oldest first. */
-  public async getAllByItemId(req: Request, res: Response) {
-    try {
-      const data = await this.commentService.getAllByItemId(parseInt(req.params.item_id, 10))
-      res.status(200).json(data)
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Posts a comment to an item as the signed-in user; 400 when the body is missing or too long */
+  @Post('item/{item_id}')
+  @SuccessResponse(201, 'Comment posted')
+  public async createComment(
+    @Request() request: AuthenticatedRequest,
+    @Path('item_id') itemId: number,
+    @Body() input: CommentInput,
+    @Res() validationError: TsoaResponse<400, APIError>,
+    @Res() notFound: TsoaResponse<404, APIError>,
+  ): Promise<CommentResponse> {
+    const trimmedBody = typeof input.body === 'string' ? input.body.trim() : ''
+    if (!Number.isInteger(itemId) || itemId <= 0 || !trimmedBody) {
+      return validationError(400, NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: item_id, body'))
     }
-  }
+    if (trimmedBody.length > MAX_COMMENT_LENGTH) {
+      const message = `Comment body must be at most ${MAX_COMMENT_LENGTH} characters`
+      return validationError(400, NewApiError(ErrorCode.VALIDATION_ERROR, 400, message))
+    }
 
-  /** Posts a comment to an item by the signed-in user; 400 when the body is missing or too long, 404 for an unknown item. */
-  public async create(req: Request, res: Response) {
     try {
-      const itemId = parseInt(req.params.item_id, 10)
-      const { body } = req.body
-      const trimmedBody = typeof body === 'string' ? body.trim() : ''
-      if (!Number.isInteger(itemId) || itemId <= 0 || !trimmedBody) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: item_id, body'))
-      }
-      if (trimmedBody.length > MAX_COMMENT_LENGTH) {
-        const message = `Comment body must be at most ${MAX_COMMENT_LENGTH} characters`
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, message))
-      }
-      const sessionUser = res.locals.user as SessionUser
-      const data = await this.commentService.create(itemId, sessionUser.id, trimmedBody)
-      res.status(201).json(data)
+      const data = await this.commentService.create(itemId, request.user.id, trimmedBody)
+      this.setStatus(201)
+      return data
     } catch (error) {
       if (error instanceof UnknownResource) {
         const resourceName = `${error.resource[0].toUpperCase()}${error.resource.slice(1)}`
-        return res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, `${resourceName} not found`))
+        return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, `${resourceName} not found`))
       }
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+      throw error
     }
   }
 
-  /** Deletes a comment; 403 unless the signed-in user wrote it or is an admin or moderator. */
-  public async delete(req: Request, res: Response) {
+  /** @summary Deletes a comment; 403 unless the signed-in user wrote it or is an admin or moderator */
+  @Delete('{id}')
+  @SuccessResponse(204, 'Comment deleted')
+  public async deleteComment(
+    @Request() request: AuthenticatedRequest, @Path() id: number, @Res() notOwned: TsoaResponse<403, APIError>,
+  ): Promise<void> {
     try {
-      await this.commentService.delete(parseInt(req.params.id, 10), res.locals.user as SessionUser)
-      res.status(204).json()
+      await this.commentService.delete(id, request.user)
+      this.setStatus(204)
     } catch (error) {
       if (error instanceof CommentNotOwned) {
-        return res.status(403).json(NewApiError(ErrorCode.FORBIDDEN, 403, error.message))
+        return notOwned(403, NewApiError(ErrorCode.FORBIDDEN, 403, error.message))
       }
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+      throw error
     }
   }
 }

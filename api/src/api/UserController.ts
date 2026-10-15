@@ -1,101 +1,80 @@
-import { Request, Response, Router } from 'express'
+import {
+  Body, Controller, Delete, Get, Path, Post, Put, Res, Response, Route, Security, SuccessResponse, Tags,
+} from 'tsoa'
+import type { TsoaResponse } from 'tsoa'
 import UserService from '@/services/UserService'
-import { NewApiError } from '@/models/APIError'
+import APIError, { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import User from '@/models/User'
+import type { UserInput, UserResponse } from '@/models/User'
+import UserRole from '@/models/UserRole'
+import { BEARER_AUTH } from '@/helpers/Authentication'
 
 /** Removes the password hash so it is never sent in an API response. */
-const withoutPassword = (user: User) => ({ ...user, password: undefined })
+const withoutPassword = (user: User) => ({ ...user, password: undefined }) as UserResponse
 
-export default class UserController {
-  public router = Router()
-
+@Route('users')
+@Tags('Users')
+@Security(BEARER_AUTH, [UserRole.ADMIN])
+@Response<APIError>(401, 'The bearer token is missing or invalid')
+@Response<APIError>(403, 'The signed-in user may not call this operation')
+@Response<APIError>(500, 'Something unexpected failed')
+export class UserController extends Controller {
   private userService = new UserService()
 
-  constructor() {
-    this.initializeRoutes()
+  /** @summary Lists every user */
+  @Get()
+  public async getUsers(): Promise<UserResponse[]> {
+    const data = await this.userService.getAll()
+    return data.map(withoutPassword)
   }
 
-  public initializeRoutes() {
-    this.router.get('/', (req, res) => this.getAll(req, res))
-    this.router.get('/username/:username', (req, res) => this.getByUsername(req, res))
-    this.router.get('/:id', (req, res) => this.getById(req, res))
-    this.router.post('/', (req, res) => this.create(req, res))
-    this.router.put('/:id', (req, res) => this.update(req, res))
-    this.router.delete('/:id', (req, res) => this.delete(req, res))
-    // Add more routes as needed
-  }
-
-  public async getAll(req: Request, res: Response) {
-    // Implement the logic for getting all users
-    try {
-      const data = await this.userService.getAll()
-      res.status(200).json(data.map(withoutPassword))
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Finds a user by username */
+  @Get('username/{username}')
+  public async getUserByUsername(@Path() username: string, @Res() notFound: TsoaResponse<404, APIError>): Promise<UserResponse> {
+    const data = await this.userService.getByUsername(username)
+    if (!data) {
+      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
     }
+    return withoutPassword(data)
   }
 
-  public async getByUsername(req: Request, res: Response) {
-    try {
-      const data = await this.userService.getByUsername(req.params.username)
-      if (data) {
-        res.status(200).json(withoutPassword(data))
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
-      }
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Gets a user */
+  @Get('{id}')
+  public async getUser(@Path() id: number, @Res() notFound: TsoaResponse<404, APIError>): Promise<UserResponse> {
+    const data = await this.userService.getById(id)
+    if (!data) {
+      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
     }
+    return withoutPassword(data)
   }
 
-  public async getById(req: Request, res: Response) {
-    try {
-      const data = await this.userService.getById(parseInt(req.params.id, 10))
-      if (data) {
-        res.status(200).json(withoutPassword(data))
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
-      }
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /** @summary Creates a user */
+  @Post()
+  @SuccessResponse(201, 'User created')
+  public async createUser(@Body() input: UserInput): Promise<UserResponse> {
+    const data = await this.userService.create(input as Omit<User, 'id'>)
+    this.setStatus(201)
+    return withoutPassword(data)
   }
 
-  public async create(req: Request, res: Response) {
-    try {
-      const data = await this.userService.create(req.body)
-      res.status(201).json(withoutPassword(data))
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Changes a user; without a password, the current one is kept */
+  @Put('{id}')
+  public async updateUser(
+    @Path() id: number, @Body() input: Partial<UserInput>, @Res() notFound: TsoaResponse<404, APIError>,
+  ): Promise<UserResponse> {
+    const data = await this.userService.update(id, input)
+    if (!data) {
+      return notFound(404, NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
     }
+    return withoutPassword(data)
   }
 
-  public async update(req: Request, res: Response) {
-    try {
-      const data = await this.userService.update(parseInt(req.params.id, 10), req.body)
-      if (data) {
-        res.status(200).json(withoutPassword(data))
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
-      }
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
-  }
-
-  public async delete(req: Request, res: Response) {
-    try {
-      await this.userService.delete(parseInt(req.params.id, 10))
-      res.status(204).json()
-    } catch (error) {
-      console.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /** @summary Deletes a user */
+  @Delete('{id}')
+  @SuccessResponse(204, 'User deleted')
+  public async deleteUser(@Path() id: number): Promise<void> {
+    await this.userService.delete(id)
+    this.setStatus(204)
   }
 }

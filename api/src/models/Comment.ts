@@ -2,16 +2,13 @@ import {
   Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn,
 } from 'typeorm'
 import Item from '@/models/Item'
-import User from '@/models/User'
+import User, { UserSummary } from '@/models/User'
 
 /** Longest comment body accepted, in characters. */
 export const MAX_COMMENT_LENGTH = 2000
 
-/** Author of a comment; only their id and username are returned. */
-export type CommentAuthor = Pick<User, 'id' | 'username'>
-
 /** A comment as the API returns it, with the id of its item and its author. */
-export type CommentResponse = Pick<Comment, 'id' | 'body' | 'createdAt'> & { item: Pick<Item, 'id'>, user: CommentAuthor }
+export type CommentResponse = Pick<Comment, 'id' | 'body' | 'createdAt'> & { item: Pick<Item, 'id'>, user: UserSummary }
 
 /** Fields accepted when posting a comment. */
 export type CommentInput = Pick<Comment, 'body'>

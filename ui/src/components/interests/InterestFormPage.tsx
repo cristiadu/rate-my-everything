@@ -2,33 +2,40 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Box, Message } from 'react-bulma-components'
 import {
-  createItem, createRating, deleteRating, getCategories, getItem, getRatingsByItem, getSimilarItems, updateItem,
+  createChangeRequest, createItem, createRating, deleteRating, getCategories, getItem, getRatingsByItem, getSimilarItems, updateItem,
 } from '@/api/generated/api'
-import type {
-  Category, InterestForm, RatedItem,
+import {
+  type Category, ChangeRequestAction, ChangeRequestTarget, type InterestForm, type RatedItem,
 } from '@/components/types'
+import { useAuth } from '@/components/users/AuthContext'
+import { canModerate, getUserIdFromToken } from '@/components/admin/RequireAdmin'
 import AttributeField from '@/components/interests/AttributeField'
 import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
-import { useAuth } from '@/components/users/AuthContext'
-import { getUserIdFromToken } from '@/components/admin/RequireAdmin'
 import RatingHistory from '@/components/interests/RatingHistory'
 import {
-  MAX_RATING, MIN_RATING, emptyInterestForm, toInterestForm, toItemInput, toRatingInput,
+  MAX_RATING, MIN_RATING, emptyInterestForm, hasItemChanges, toInterestForm, toItemInput, toRatingInput,
 } from '@/components/interests/interestForm'
 
 /** Page the form returns to after saving or removing an interest. */
 const MY_RANKINGS_PATH = '/rankings'
 
-/** Screen to add an interest, or edit one and rate it again, with its category's attributes and grades. */
+/** Page users go to after their edit of a shared interest is sent for approval. */
+const MY_CHANGE_REQUESTS_PATH = '/change-requests'
+
+/**
+ * Screen to add an interest, or edit one and the signed-in user's rating of it, with its category's attributes.
+ * Edits to an existing interest by users without a moderation role are sent to the moderators as a change request.
+ */
 const InterestFormPage: React.FC = () => {
   const { itemId } = useParams()
   const navigate = useNavigate()
   const { token } = useAuth()
-  /** Id of the signed-in user, used to pick their ratings out of everyone's. */
-  const userId = getUserIdFromToken(token)
   const editingItemId = itemId === undefined ? null : Number(itemId)
   const [categories, setCategories] = useState<Category[]>([])
   const [formFields, setFormFields] = useState<InterestForm>(emptyInterestForm)
+  const [loadedForm, setLoadedForm] = useState<InterestForm>(emptyInterestForm)
+  /** Id of the signed-in user, used to pick their ratings out of everyone's. */
+  const userId = getUserIdFromToken(token)
   const [itemRatings, setItemRatings] = useState<RatedItem[]>([])
   const [error, setError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
@@ -48,12 +55,15 @@ const InterestFormPage: React.FC = () => {
       }
 
       const item = await getItem(editingItemId)
-      setFormFields(toInterestForm(item))
-      setItemRatings(await getRatingsByItem(editingItemId))
+      const ratings = await getRatingsByItem(editingItemId)
+      setItemRatings(ratings)
+      const itemForm = toInterestForm(item)
+      setFormFields(itemForm)
+      setLoadedForm(itemForm)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load the interest')
     }
-  }, [editingItemId])
+  }, [editingItemId, userId])
 
   useEffect(() => {
     loadForm()
@@ -76,14 +86,22 @@ const InterestFormPage: React.FC = () => {
     setError('')
     try {
       const itemInput = toItemInput(formFields, selectedCategory)
-      const item = editingItemId === null
-        ? await createItem(itemInput)
-        : await updateItem(editingItemId, itemInput)
+      const isProposingChange = editingItemId !== null && !canModerate(token) && hasItemChanges(formFields, loadedForm, selectedCategory)
+      let savedItemId = editingItemId
+      if (editingItemId === null) {
+        savedItemId = (await createItem(itemInput)).id
+      } else if (isProposingChange) {
+        await createChangeRequest({
+          targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.UPDATE, targetId: editingItemId, changes: itemInput,
+        })
+      } else if (canModerate(token)) {
+        await updateItem(editingItemId, itemInput)
+      }
 
       if (formFields.rating !== '') {
-        await createRating({ item_id: item.id, ...toRatingInput(formFields) })
+        await createRating({ item_id: savedItemId as number, ...toRatingInput(formFields) })
       }
-      navigate(MY_RANKINGS_PATH)
+      navigate(isProposingChange ? MY_CHANGE_REQUESTS_PATH : MY_RANKINGS_PATH)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to save the interest')
     } finally {

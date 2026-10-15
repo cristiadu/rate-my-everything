@@ -1,9 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import {
-  createCategory, deleteCategory, getAttributes, getCategories, getSimilarCategories, updateCategory,
+  createCategory, createChangeRequest, deleteCategory, getAttributes, getCategories, getSimilarCategories, updateCategory,
 } from '@/api/generated/api'
 import {
-  type Attribute, type Category, type CategoryFormValues, type StatusMessage, UserRole,
+  type Attribute, type Category, type CategoryFormValues, ChangeRequestAction, type ChangeRequestInput,
+  ChangeRequestTarget, type StatusMessage, UserRole,
 } from '@/components/types'
 import { getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
@@ -13,7 +14,13 @@ import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
 /** Form values for a new category. */
 const emptyForm: CategoryFormValues = { name: '', description: '', attributeIds: [] }
 
-/** Lists categories for every user; admins can also create, edit and delete them and link attributes. */
+/** Message shown after a user's proposed change to a category is saved for moderators. */
+const SENT_FOR_APPROVAL_MESSAGE = 'Your change was sent to the moderators for approval.'
+
+/**
+ * Lists categories for every user. Admins create, edit and delete them and link attributes directly;
+ * other users propose the same changes as change requests for moderators to approve.
+ */
 const CategoriesPage: React.FC = () => {
   const { token } = useAuth()
   const isAdmin = getRolesFromToken(token).includes(UserRole.ADMIN)
@@ -38,7 +45,7 @@ const CategoriesPage: React.FC = () => {
     loadCategories()
   }, [loadCategories])
 
-  /** Fetches the attributes an admin can link to a category. */
+  /** Fetches the attributes that can be linked to a category. */
   const loadAttributes = useCallback(async () => {
     try {
       setAttributes(await getAttributes())
@@ -48,11 +55,8 @@ const CategoriesPage: React.FC = () => {
   }, [])
 
   useEffect(() => {
-    // Only admins can change categories or list attributes, so other users just browse
-    if (isAdmin) {
-      loadAttributes()
-    }
-  }, [isAdmin, loadAttributes])
+    loadAttributes()
+  }, [loadAttributes])
 
   /** Clears the form back to a new category. */
   const resetForm = () => {
@@ -60,14 +64,25 @@ const CategoriesPage: React.FC = () => {
     setEditingName(null)
   }
 
-  /** Creates or updates the category in the form, then reloads the list. */
+  /** Sends a user's proposed category change to the moderators. */
+  const proposeChange = async (changeRequestInput: ChangeRequestInput) => {
+    await createChangeRequest(changeRequestInput)
+    setStatus({ message: SENT_FOR_APPROVAL_MESSAGE, isSuccess: true })
+  }
+
+  /** Creates or updates the category in the form, then reloads the list; non-admins propose the change instead. */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setIsSaving(true)
     setStatus(null)
 
     try {
-      if (editingName === null) {
+      if (!isAdmin) {
+        const editingId = categories.find((category) => category.name === editingName)?.id
+        await proposeChange(editingId === undefined
+          ? { targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.CREATE, changes: formFields }
+          : { targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.UPDATE, targetId: editingId, changes: formFields })
+      } else if (editingName === null) {
         await createCategory(formFields)
         setStatus({ message: `Category ${formFields.name} created.`, isSuccess: true })
       } else {
@@ -93,14 +108,18 @@ const CategoriesPage: React.FC = () => {
     setEditingName(category.name)
   }
 
-  /** Deletes the category after the admin confirms, then reloads the list. */
+  /** Deletes the category after the admin confirms, then reloads the list; non-admins propose the removal instead. */
   const handleDelete = async (category: Category) => {
-    if (!window.confirm(`Delete category ${category.name}?`)) {
+    if (!window.confirm(`${isAdmin ? 'Delete' : 'Suggest removing'} category ${category.name}?`)) {
       return
     }
 
     setStatus(null)
     try {
+      if (!isAdmin) {
+        await proposeChange({ targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.DELETE, targetId: category.id })
+        return
+      }
       await deleteCategory(encodeURIComponent(category.name))
       setStatus({ message: `Category ${category.name} deleted.`, isSuccess: true })
       if (editingName === category.name) {
@@ -112,6 +131,11 @@ const CategoriesPage: React.FC = () => {
     }
   }
 
+  const formTitle = isAdmin
+    ? (editingName === null ? 'New category' : `Edit ${editingName}`)
+    : (editingName === null ? 'Suggest a new category' : `Suggest changes to ${editingName}`)
+  const submitLabel = isAdmin ? (editingName === null ? 'Create category' : 'Save changes') : 'Send for approval'
+
   return (
     <div className="box">
       <h2 className="title is-4">Categories</h2>
@@ -122,22 +146,58 @@ const CategoriesPage: React.FC = () => {
         </div>
       )}
 
-      {isAdmin && (
-        <div className="box">
-          <form onSubmit={handleSubmit} aria-label={editingName === null ? 'Create category' : 'Edit category'}>
-            <h3 className="title is-5">{editingName === null ? 'New category' : `Edit ${editingName}`}</h3>
-            <div className="field">
-              <label className="label" htmlFor="category-name">Name</label>
+      <div className="box">
+        <form onSubmit={handleSubmit} aria-label={editingName === null ? 'Create category' : 'Edit category'}>
+          <h3 className="title is-5">{formTitle}</h3>
+          <div className="field">
+            <label className="label" htmlFor="category-name">Name</label>
+            <div className="control">
+              <input
+                className="input"
+                id="category-name"
+                name="name"
+                value={formFields.name}
+                onChange={(e) => setFormFields({ ...formFields, name: e.target.value })}
+                required
+              />
+            </div>
+          </div>
+          <div className="field">
+            <label className="label" htmlFor="category-description">Description</label>
+            <div className="control">
+              <textarea
+                className="textarea"
+                id="category-description"
+                name="description"
+                value={formFields.description}
+                onChange={(e) => setFormFields({ ...formFields, description: e.target.value })}
+              />
+            </div>
+          </div>
+          <div className="field">
+            <label className="label" htmlFor="category-attributes">Attributes</label>
+            {attributes.length === 0 ? (
+              <p className="is-size-7">
+                No attributes yet.{isAdmin && <> Create them on the <a href="/admin/attributes">attributes page</a>.</>}
+              </p>
+            ) : (
               <div className="control">
-                <input
-                  className="input"
-                  id="category-name"
-                  name="name"
-                  value={formFields.name}
-                  onChange={(e) => setFormFields({ ...formFields, name: e.target.value })}
-                  required
+                <MultiSelectDropdown
+                  id="category-attributes"
+                  label="Attributes"
+                  placeholder="Select attributes"
+                  options={attributes.map((attribute) => ({ value: attribute.id, label: `${attribute.name} (${attribute.valueType})` }))}
+                  selected={formFields.attributeIds}
+                  onChange={(attributeIds) => setFormFields({ ...formFields, attributeIds })}
                 />
               </div>
+            )}
+          </div>
+          <div className="field is-grouped">
+            <div className="control">
+              <button className={`button is-primary ${isSaving ? 'is-loading' : ''}`} type="submit" disabled={isSaving}>
+                {submitLabel}
+              </button>
               <SimilarRecordsWarning
                 findSimilar={getSimilarCategories}
                 name={formFields.name}
@@ -151,50 +211,14 @@ const CategoriesPage: React.FC = () => {
                 )}
               />
             </div>
-            <div className="field">
-              <label className="label" htmlFor="category-description">Description</label>
+            {editingName !== null && (
               <div className="control">
-                <textarea
-                  className="textarea"
-                  id="category-description"
-                  name="description"
-                  value={formFields.description}
-                  onChange={(e) => setFormFields({ ...formFields, description: e.target.value })}
-                />
+                <button className="button is-light" type="button" onClick={resetForm}>Cancel</button>
               </div>
-            </div>
-            <div className="field">
-              <label className="label" htmlFor="category-attributes">Attributes</label>
-              {attributes.length === 0 ? (
-                <p className="is-size-7">No attributes yet. Create them on the <a href="/admin/attributes">attributes page</a>.</p>
-              ) : (
-                <div className="control">
-                  <MultiSelectDropdown
-                    id="category-attributes"
-                    label="Attributes"
-                    placeholder="Select attributes"
-                    options={attributes.map((attribute) => ({ value: attribute.id, label: `${attribute.name} (${attribute.valueType})` }))}
-                    selected={formFields.attributeIds}
-                    onChange={(attributeIds) => setFormFields({ ...formFields, attributeIds })}
-                  />
-                </div>
-              )}
-            </div>
-            <div className="field is-grouped">
-              <div className="control">
-                <button className={`button is-primary ${isSaving ? 'is-loading' : ''}`} type="submit" disabled={isSaving}>
-                  {editingName === null ? 'Create category' : 'Save changes'}
-                </button>
-              </div>
-              {editingName !== null && (
-                <div className="control">
-                  <button className="button is-light" type="button" onClick={resetForm}>Cancel</button>
-                </div>
-              )}
-            </div>
-          </form>
-        </div>
-      )}
+            )}
+          </div>
+        </form>
+      </div>
 
       <table className="table is-fullwidth is-striped is-hoverable">
         <thead>
@@ -202,13 +226,13 @@ const CategoriesPage: React.FC = () => {
             <th>Name</th>
             <th>Description</th>
             <th>Attributes</th>
-            {isAdmin && <th aria-label="Actions" />}
+            <th aria-label="Actions" />
           </tr>
         </thead>
         <tbody>
           {categories.length === 0 && (
             <tr>
-              <td colSpan={isAdmin ? 4 : 3}>No categories yet.</td>
+              <td colSpan={4}>No categories yet.</td>
             </tr>
           )}
           {categories.map((category) => (
@@ -222,16 +246,14 @@ const CategoriesPage: React.FC = () => {
                   ))}
                 </div>
               </td>
-              {isAdmin && (
-                <td className="has-text-right">
-                  <button className="button is-small mr-2" type="button" onClick={() => handleEdit(category)}>
-                    Edit
-                  </button>
-                  <button className="button is-small is-danger" type="button" onClick={() => handleDelete(category)}>
-                    Delete
-                  </button>
-                </td>
-              )}
+              <td className="has-text-right">
+                <button className="button is-small mr-2" type="button" onClick={() => handleEdit(category)}>
+                  {isAdmin ? 'Edit' : 'Suggest edit'}
+                </button>
+                <button className="button is-small is-danger" type="button" onClick={() => handleDelete(category)}>
+                  {isAdmin ? 'Delete' : 'Suggest removal'}
+                </button>
+              </td>
             </tr>
           ))}
         </tbody>

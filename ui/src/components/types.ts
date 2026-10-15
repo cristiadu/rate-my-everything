@@ -1,10 +1,17 @@
-import { AttributeValueType, ImportSource, UserRole } from '@/api/generated/api'
+import {
+    AttributeValueType, ChangeRequestStatus, ImportSource, UserRole,
+} from '@/api/generated/api'
 import type {
-    AttributeResponse, CategoryResponse, CommentResponse, ItemAttributeValue, ItemResponse, RatedItemResponse, SessionUser, UserResponse,
+    AttributeResponse, CategoryResponse, ChangeRequestResponse, CommentResponse, ItemAttributeValue, ItemResponse, RatedItemResponse,
+    SessionUser, UserResponse, UserSummary,
 } from '@/api/generated/api'
 
-export { AttributeValueType, ImportSource, UserRole } from '@/api/generated/api'
-export type { ImportedItem, ItemInput, RatingInput, UserInput } from '@/api/generated/api'
+export {
+    AttributeValueType, ChangeRequestAction, ChangeRequestStatus, ChangeRequestTarget, ImportSource, UserRole,
+} from '@/api/generated/api'
+export type {
+    ChangeRequestChanges, ChangeRequestInput, ImportedItem, ItemInput, RatingInput, UserInput,
+} from '@/api/generated/api'
 
 /** One row of a rankings table. */
 export interface RankingItem {
@@ -25,6 +32,9 @@ export enum RankingScope {
     MINE = 'mine',
     ALL = 'all',
 }
+
+/** Roles that may review change requests and change shared interests directly; mirrors the API's MODERATION_ROLES. */
+export const MODERATION_ROLES = [UserRole.ADMIN, UserRole.MODERATOR]
 
 /** A user as returned by the admin users API, without a password. */
 export type AdminUser = UserResponse
@@ -97,6 +107,9 @@ export interface InterestForm {
     attributeValues: Record<number, string>;
 }
 
+/** The user who submitted or reviewed a change request. */
+export type ChangeRequestUser = UserSummary
+
 /** How each import source is named, and what its search box asks for. */
 export const IMPORT_SOURCES: Record<ImportSource, { label: string, queryLabel: string }> = {
     [ImportSource.LASTFM]: { label: 'Last.fm artists and albums', queryLabel: 'Last.fm username' },
@@ -105,6 +118,18 @@ export const IMPORT_SOURCES: Record<ImportSource, { label: string, queryLabel: s
 
 /** Longest comment body the comments API accepts, in characters. */
 export const MAX_COMMENT_LENGTH = 2000
+
+/** A user's proposed change to an interest or category, applied once a moderator approves it. */
+export type ChangeRequest = ChangeRequestResponse
+
+/** Categories and attributes used to show change requests with names instead of ids. */
+export type ChangeRequestLookups = {
+    categories: Category[];
+    attributes: Attribute[];
+}
+
+/** A moderator's decision on a pending change request. */
+export type ReviewDecision = ChangeRequestStatus.APPROVED | ChangeRequestStatus.REJECTED
 
 /** One message in the discussion thread of an interest. */
 export type Comment = CommentResponse

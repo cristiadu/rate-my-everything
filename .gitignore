@@ -39,5 +39,6 @@ dist/
 temp/
 tmp/
 
-# Client generated from api/openapi.yaml on install (pnpm openapi)
+# Generated on install (pnpm openapi): the API's tsoa routes and the UI client built from api/openapi.yaml
+api/src/routes/generated/
 ui/src/api/generated/
