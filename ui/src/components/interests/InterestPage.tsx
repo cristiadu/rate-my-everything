@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Message } from 'react-bulma-components'
-import { getItem, getRatingsByItem } from '@/api/generated/api'
-import type { Item, RatedItem } from '@/components/types'
+import { getItem, getRatingsByItem, type ItemResponse, type RatedItemResponse } from '@/api/generated/api'
 import InterestDiscussion from '@/components/interests/InterestDiscussion'
 import InterestDetails from '@/components/interests/InterestDetails'
 import RatingHistory from '@/components/interests/RatingHistory'
@@ -15,8 +14,8 @@ const InterestPage: React.FC = () => {
   const viewedItemId = Number(itemId)
   const { token } = useAuth()
   const userId = getUserIdFromToken(token)
-  const [item, setItem] = useState<Item | null>(null)
-  const [itemRatings, setItemRatings] = useState<RatedItem[]>([])
+  const [item, setItem] = useState<ItemResponse | null>(null)
+  const [itemRatings, setItemRatings] = useState<RatedItemResponse[]>([])
   const [error, setError] = useState('')
 
   const loadItem = useCallback(async () => {

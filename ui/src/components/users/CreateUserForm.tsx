@@ -3,17 +3,15 @@ import {
   Form, Button,
   Message,
 } from 'react-bulma-components'
-import { createUser, updateUser } from '@/api/generated/api'
-import {
-  type AdminUser, MIN_PASSWORD_LENGTH, type StatusMessage, type UserFormValues, type UserInput, UserRole,
-} from '@/components/types'
+import { UserRole, createUser, updateUser, type UserInput, type UserResponse } from '@/api/generated/api'
+import { MIN_PASSWORD_LENGTH, type StatusMessage, type UserFormValues } from '@/components/types'
 
 /**
  * Props for the user form; pass a user to edit it, or none to create one.
  * Without onSubmit the form saves through the API itself; with onSubmit the parent saves the values.
  */
 interface CreateUserFormProps {
-  user?: AdminUser;
+  user?: UserResponse;
   isSaving?: boolean;
   onSubmit?: (values: UserFormValues) => void;
   onCancel?: () => void;

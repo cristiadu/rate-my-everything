@@ -2,11 +2,10 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Box, Message } from 'react-bulma-components'
 import {
-  createChangeRequest, createItem, createRating, deleteRating, getCategories, getItem, getRatingsByItem, getSimilarItems, updateItem,
+  ChangeRequestAction, ChangeRequestTarget, createChangeRequest, createItem, createRating, deleteRating, getCategories,
+  getItem, getRatingsByItem, getSimilarItems, updateItem, type CategoryResponse, type RatedItemResponse,
 } from '@/api/generated/api'
-import {
-  type Category, ChangeRequestAction, ChangeRequestTarget, type InterestForm, type RatedItem,
-} from '@/components/types'
+import type { InterestForm } from '@/components/types'
 import { useAuth } from '@/components/users/AuthContext'
 import { canModerate, getUserIdFromToken } from '@/components/admin/RequireAdmin'
 import AttributeField from '@/components/interests/AttributeField'
@@ -31,12 +30,12 @@ const InterestFormPage: React.FC = () => {
   const navigate = useNavigate()
   const { token } = useAuth()
   const editingItemId = itemId === undefined ? null : Number(itemId)
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<CategoryResponse[]>([])
   const [formFields, setFormFields] = useState<InterestForm>(emptyInterestForm)
   const [loadedForm, setLoadedForm] = useState<InterestForm>(emptyInterestForm)
   /** Id of the signed-in user, used to pick their ratings out of everyone's. */
   const userId = getUserIdFromToken(token)
-  const [itemRatings, setItemRatings] = useState<RatedItem[]>([])
+  const [itemRatings, setItemRatings] = useState<RatedItemResponse[]>([])
   const [error, setError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
@@ -99,7 +98,7 @@ const InterestFormPage: React.FC = () => {
       }
 
       if (formFields.rating !== '') {
-        await createRating({ item_id: savedItemId as number, ...toRatingInput(formFields) })
+        await createRating(toRatingInput(formFields, savedItemId as number))
       }
       navigate(isProposingChange ? MY_CHANGE_REQUESTS_PATH : MY_RANKINGS_PATH)
     } catch (err) {
@@ -127,7 +126,7 @@ const InterestFormPage: React.FC = () => {
   }
 
   /** Deletes one of the signed-in user's ratings after confirming, and updates the grades without reloading. */
-  const handleRemoveRating = async (ratedItem: RatedItem) => {
+  const handleRemoveRating = async (ratedItem: RatedItemResponse) => {
     if (!window.confirm(`Remove your ${ratedItem.rating.toFixed(1)} rating of "${formFields.name}"?`)) {
       return
     }

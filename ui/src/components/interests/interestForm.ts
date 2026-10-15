@@ -1,6 +1,5 @@
-import type {
-  Category, InterestForm, Item, ItemInput, RatedItem, RatingInput,
-} from '@/components/types'
+import type { CategoryResponse, ItemInput, ItemResponse, NewRatingInput, RatedItemResponse } from '@/api/generated/api'
+import type { InterestForm } from '@/components/types'
 
 /** Lowest rating a user can give, inclusive. */
 export const MIN_RATING = 0
@@ -20,7 +19,7 @@ export const emptyInterestForm: InterestForm = {
 }
 
 /** Fills the form from an existing item and, when the user rated it, their rating. */
-export const toInterestForm = (item: Item, ratedItem?: RatedItem): InterestForm => ({
+export const toInterestForm = (item: ItemResponse, ratedItem?: RatedItemResponse): InterestForm => ({
   name: item.name,
   description: item.description,
   imageUrl: item.imageUrl ?? '',
@@ -31,7 +30,7 @@ export const toInterestForm = (item: Item, ratedItem?: RatedItem): InterestForm 
 })
 
 /** Builds the items API body, keeping only the filled-in values of the chosen category's attributes. */
-export const toItemInput = (form: InterestForm, category: Category): ItemInput => ({
+export const toItemInput = (form: InterestForm, category: CategoryResponse): ItemInput => ({
   name: form.name,
   description: form.description,
   imageUrl: form.imageUrl || null,
@@ -41,14 +40,15 @@ export const toItemInput = (form: InterestForm, category: Category): ItemInput =
     .map((attribute) => ({ attributeId: attribute.id, value: form.attributeValues[attribute.id] })),
 })
 
-/** Builds the ratings API body. */
-export const toRatingInput = (form: InterestForm): RatingInput => ({
+/** Builds the ratings API body that rates the item with id `itemId`. */
+export const toRatingInput = (form: InterestForm, itemId: number): NewRatingInput => ({
+  item_id: itemId,
   rating: Number(form.rating),
   notes: form.notes,
 })
 
 /** Whether the item fields in the form differ from the item as it was loaded, ignoring the rating and notes. */
-export const hasItemChanges = (form: InterestForm, loadedForm: InterestForm, category: Category): boolean => (
+export const hasItemChanges = (form: InterestForm, loadedForm: InterestForm, category: CategoryResponse): boolean => (
   form.categoryId !== loadedForm.categoryId
   || JSON.stringify(toItemInput(form, category)) !== JSON.stringify(toItemInput(loadedForm, category))
 )

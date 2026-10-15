@@ -1,9 +1,7 @@
-import {
-  type ChangeRequest, ChangeRequestAction, ChangeRequestStatus, ChangeRequestTarget,
-} from '@/components/types'
+import { ChangeRequestAction, ChangeRequestStatus, ChangeRequestTarget, type ChangeRequestResponse } from '@/api/generated/api'
 
 /** A pending edit of Dune's page count, sent by alice. */
-export const pendingItemChange: ChangeRequest = {
+export const pendingItemChange: ChangeRequestResponse = {
   id: 1,
   targetType: ChangeRequestTarget.ITEM,
   action: ChangeRequestAction.UPDATE,
@@ -19,7 +17,7 @@ export const pendingItemChange: ChangeRequest = {
 }
 
 /** alice's proposed Games category, rejected by a moderator with a note. */
-export const rejectedCategoryChange: ChangeRequest = {
+export const rejectedCategoryChange: ChangeRequestResponse = {
   id: 2,
   targetType: ChangeRequestTarget.CATEGORY,
   action: ChangeRequestAction.CREATE,

@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import {
-  createCategory, createChangeRequest, deleteCategory, getAttributes, getCategories, getSimilarCategories, updateCategory,
+  ChangeRequestAction, ChangeRequestTarget, UserRole, createCategory, createChangeRequest, deleteCategory,
+  getAttributes, getCategories, getSimilarCategories, updateCategory, type AttributeResponse, type CategoryResponse,
+  type ChangeRequestInput,
 } from '@/api/generated/api'
-import {
-  type Attribute, type Category, type CategoryFormValues, ChangeRequestAction, type ChangeRequestInput,
-  ChangeRequestTarget, type StatusMessage, UserRole,
-} from '@/components/types'
+import type { CategoryFormValues, StatusMessage } from '@/components/types'
 import { getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
 import MultiSelectDropdown from '@/components/common/MultiSelectDropdown'
@@ -24,8 +23,8 @@ const SENT_FOR_APPROVAL_MESSAGE = 'Your change was sent to the moderators for ap
 const CategoriesPage: React.FC = () => {
   const { token } = useAuth()
   const isAdmin = getRolesFromToken(token).includes(UserRole.ADMIN)
-  const [categories, setCategories] = useState<Category[]>([])
-  const [attributes, setAttributes] = useState<Attribute[]>([])
+  const [categories, setCategories] = useState<CategoryResponse[]>([])
+  const [attributes, setAttributes] = useState<AttributeResponse[]>([])
   const [formFields, setFormFields] = useState<CategoryFormValues>(emptyForm)
   // Categories are addressed by name in the API, so keep the name the category had before editing
   const [editingName, setEditingName] = useState<string | null>(null)
@@ -99,7 +98,7 @@ const CategoriesPage: React.FC = () => {
   }
 
   /** Loads a category into the form for editing. */
-  const handleEdit = (category: Category) => {
+  const handleEdit = (category: CategoryResponse) => {
     setFormFields({
       name: category.name,
       description: category.description ?? '',
@@ -109,7 +108,7 @@ const CategoriesPage: React.FC = () => {
   }
 
   /** Deletes the category after the admin confirms, then reloads the list; non-admins propose the removal instead. */
-  const handleDelete = async (category: Category) => {
+  const handleDelete = async (category: CategoryResponse) => {
     if (!window.confirm(`${isAdmin ? 'Delete' : 'Suggest removing'} category ${category.name}?`)) {
       return
     }

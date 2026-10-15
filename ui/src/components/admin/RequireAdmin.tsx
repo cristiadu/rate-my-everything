@@ -1,9 +1,10 @@
 import React from 'react'
 import { useAuth } from '@/components/users/AuthContext'
-import { MODERATION_ROLES, type TokenPayload, UserRole } from '@/components/types'
+import { UserRole, type SessionUser } from '@/api/generated/api'
+import { MODERATION_ROLES } from '@/components/types'
 
 /** Reads the user claims from the JWT payload; the API still enforces them on every request. */
-const readTokenPayload = (token: string | null): Partial<TokenPayload> => {
+const readTokenPayload = (token: string | null): Partial<SessionUser> => {
   if (!token) return {}
   try {
     return JSON.parse(atob(token.split('.')[1].replace(/-/g, '+').replace(/_/g, '/')))

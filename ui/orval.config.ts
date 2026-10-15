@@ -9,7 +9,7 @@ export default defineConfig({
       client: 'fetch',
       mode: 'single',
       override: {
-        mutator: { path: 'src/config/ApiService.ts', name: 'apiFetch' },
+        mutator: { path: 'src/api/apiFetch.ts', name: 'apiFetch' },
         fetch: { includeHttpResponseReturnType: false },
         enumGenerationType: 'enum',
       },

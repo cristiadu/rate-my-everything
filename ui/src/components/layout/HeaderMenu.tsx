@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { Navbar } from 'react-bulma-components'
 import { useAuth } from '@/components/users/AuthContext'
 import { canModerate, getRolesFromToken } from '@/components/admin/RequireAdmin'
-import { UserRole } from '@/components/types'
+import { UserRole } from '@/api/generated/api'
 
 const HeaderMenu = () => {
   const [isActive, setActive] = useState(false)

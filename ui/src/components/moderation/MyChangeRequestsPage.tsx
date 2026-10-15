@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { getMyChangeRequests } from '@/api/generated/api'
-import type { ChangeRequest } from '@/components/types'
+import { getMyChangeRequests, type ChangeRequestResponse } from '@/api/generated/api'
 import ChangeRequestList from '@/components/moderation/ChangeRequestList'
 import { useChangeRequestLookups } from '@/components/moderation/useChangeRequestLookups'
 
 /** Screen where users follow the changes they proposed and see what moderators decided. */
 const MyChangeRequestsPage: React.FC = () => {
   const lookups = useChangeRequestLookups()
-  const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([])
+  const [changeRequests, setChangeRequests] = useState<ChangeRequestResponse[]>([])
   const [error, setError] = useState('')
 
   /** Fetches the signed-in user's change requests. */

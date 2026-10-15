@@ -3,10 +3,9 @@ import {
   fireEvent, render, screen, waitFor,
 } from '@testing-library/react'
 import ApiConfig from '@/config/ApiConfig'
-import { getGetCommentsByItemUrl } from '@/api/generated/api'
+import { UserRole, getGetCommentsByItemUrl, type CommentResponse } from '@/api/generated/api'
 import InterestDiscussion from '@/components/interests/InterestDiscussion'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { UserRole, type Comment } from '@/components/types'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import { myComment, otherUserComment } from '@/components/tests/common/Comments'
@@ -16,7 +15,7 @@ import { duneItem } from '@/components/tests/common/Interests'
 const DUNE_COMMENTS_URL = `${ApiConfig.API_URL}${getGetCommentsByItemUrl(duneItem.id)}`
 
 /** Answers the mocked discussion with the given comments, and every write with 201 or 204. */
-const respondWith = (comments: Comment[]) => async (_url: RequestInfo | URL, init?: RequestInit) => {
+const respondWith = (comments: CommentResponse[]) => async (_url: RequestInfo | URL, init?: RequestInit) => {
   if (init?.method === 'POST') return jsonResponse(myComment, 201)
   if (init?.method === 'DELETE') return jsonResponse({}, 204)
   return jsonResponse(comments)

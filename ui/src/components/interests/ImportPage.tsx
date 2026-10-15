@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Box, Message } from 'react-bulma-components'
-import { createItem, findImportItems, getCategories } from '@/api/generated/api'
 import {
-  IMPORT_SOURCES, ImportSource, type Category, type ImportedItem, type Item, type ItemInput,
-} from '@/components/types'
+  ImportSource, createItem, findImportItems, getCategories, type CategoryResponse, type ImportedItem, type ItemInput,
+  type ItemResponse,
+} from '@/api/generated/api'
+import { IMPORT_SOURCES } from '@/components/types'
 
 /** Side length, in pixels, of the pictures shown next to found interests. */
 const IMPORTED_IMAGE_SIZE = 48
@@ -18,9 +19,9 @@ const ImportPage: React.FC = () => {
   const [query, setQuery] = useState('')
   const [foundItems, setFoundItems] = useState<ImportedItem[]>([])
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<CategoryResponse[]>([])
   const [categoryId, setCategoryId] = useState('')
-  const [importedItems, setImportedItems] = useState<Item[]>([])
+  const [importedItems, setImportedItems] = useState<ItemResponse[]>([])
   const [error, setError] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [isImporting, setIsImporting] = useState(false)

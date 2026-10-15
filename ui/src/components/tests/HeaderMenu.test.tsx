@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import HeaderMenu from '@/components/layout/HeaderMenu'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { UserRole } from '@/components/types'
+import { UserRole } from '@/api/generated/api'
 import { loginAs } from '@/components/tests/common/Auth'
 
 /** Renders the top menu inside the auth provider. */

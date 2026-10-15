@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { approveChangeRequest, getChangeRequests, rejectChangeRequest } from '@/api/generated/api'
 import {
-  type ChangeRequest, ChangeRequestStatus, type ReviewDecision, type StatusMessage,
-} from '@/components/types'
+  ChangeRequestStatus, approveChangeRequest, getChangeRequests, rejectChangeRequest, type ChangeRequestResponse,
+} from '@/api/generated/api'
+import type { ReviewDecision, StatusMessage } from '@/components/types'
 import ChangeRequestList from '@/components/moderation/ChangeRequestList'
 import { describeChangeRequest } from '@/components/moderation/changeRequestText'
 import { useChangeRequestLookups } from '@/components/moderation/useChangeRequestLookups'
@@ -13,7 +13,7 @@ const ALL_STATUSES = 'all'
 /** Screen where admins and moderators review the changes users proposed to interests and categories. */
 const ModerationPage: React.FC = () => {
   const lookups = useChangeRequestLookups()
-  const [changeRequests, setChangeRequests] = useState<ChangeRequest[]>([])
+  const [changeRequests, setChangeRequests] = useState<ChangeRequestResponse[]>([])
   const [statusFilter, setStatusFilter] = useState<string>(ChangeRequestStatus.PENDING)
   const [status, setStatus] = useState<StatusMessage>(null)
 
@@ -32,7 +32,7 @@ const ModerationPage: React.FC = () => {
   }, [loadChangeRequests])
 
   /** Approves or rejects a request with an optional note for its author, then reloads the list. */
-  const handleReview = async (changeRequest: ChangeRequest, decision: ReviewDecision) => {
+  const handleReview = async (changeRequest: ChangeRequestResponse, decision: ReviewDecision) => {
     const verb = decision === ChangeRequestStatus.APPROVED ? 'Approve' : 'Reject'
     const reviewNote = window.prompt(
       `${verb} ${describeChangeRequest(changeRequest)}? Add an optional note for ${changeRequest.requestedBy.username}.`,

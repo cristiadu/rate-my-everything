@@ -1,13 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { createAttribute, deleteAttribute, getAttributes, updateAttribute } from '@/api/generated/api'
-import type {
-  Attribute, AttributeEditorState, AttributeFormValues, StatusMessage,
-} from '@/components/types'
+import {
+  createAttribute, deleteAttribute, getAttributes, updateAttribute, type AttributeResponse,
+} from '@/api/generated/api'
+import type { AttributeEditorState, AttributeFormValues, StatusMessage } from '@/components/types'
 import AttributeForm from '@/components/admin/attributes/AttributeForm'
 
 /** Admin screen to list, create, edit and delete the attributes categories can use. */
 const AttributeManagement: React.FC = () => {
-  const [attributes, setAttributes] = useState<Attribute[]>([])
+  const [attributes, setAttributes] = useState<AttributeResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [editor, setEditor] = useState<AttributeEditorState>(null)
@@ -53,7 +53,7 @@ const AttributeManagement: React.FC = () => {
   }
 
   /** Deletes the attribute after the admin confirms, then reloads the list. */
-  const handleDelete = async (attribute: Attribute) => {
+  const handleDelete = async (attribute: AttributeResponse) => {
     if (!window.confirm(`Delete attribute ${attribute.name}? It will be removed from every category that uses it.`)) return
     setStatus(null)
 

@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Message } from 'react-bulma-components'
-import { createComment, deleteComment, getCommentsByItem } from '@/api/generated/api'
-import { MAX_COMMENT_LENGTH, UserRole, type Comment } from '@/components/types'
+import { UserRole, createComment, deleteComment, getCommentsByItem, type CommentResponse } from '@/api/generated/api'
+import { MAX_COMMENT_LENGTH } from '@/components/types'
 import { getRolesFromToken, getUsernameFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
 
@@ -18,7 +18,7 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
   const { token } = useAuth()
   const username = getUsernameFromToken(token)
   const isModerator = getRolesFromToken(token).some((role) => MODERATING_ROLES.includes(role))
-  const [comments, setComments] = useState<Comment[] | null>(null)
+  const [comments, setComments] = useState<CommentResponse[] | null>(null)
   const [draft, setDraft] = useState('')
   const [error, setError] = useState('')
   const [isPosting, setIsPosting] = useState(false)
@@ -50,7 +50,7 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
     }
   }
 
-  const handleDelete = async (comment: Comment) => {
+  const handleDelete = async (comment: CommentResponse) => {
     if (!window.confirm('Delete this comment?')) {
       return
     }

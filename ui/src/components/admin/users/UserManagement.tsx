@@ -1,13 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { createUser, deleteUser, getUsers, updateUser } from '@/api/generated/api'
-import type {
-  AdminUser, StatusMessage, UserEditorState, UserFormValues, UserInput,
-} from '@/components/types'
+import { createUser, deleteUser, getUsers, updateUser, type UserInput, type UserResponse } from '@/api/generated/api'
+import type { StatusMessage, UserEditorState, UserFormValues } from '@/components/types'
 import CreateUserForm from '@/components/users/CreateUserForm'
 
 /** Admin screen to list, create, edit and delete users. */
 const UserManagement: React.FC = () => {
-  const [users, setUsers] = useState<AdminUser[]>([])
+  const [users, setUsers] = useState<UserResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [editor, setEditor] = useState<UserEditorState>(null)
@@ -57,7 +55,7 @@ const UserManagement: React.FC = () => {
   }
 
   /** Deletes the user after the admin confirms, then reloads the list. */
-  const handleDelete = async (user: AdminUser) => {
+  const handleDelete = async (user: UserResponse) => {
     if (!window.confirm(`Delete user ${user.username}? This cannot be undone.`)) return
     setStatus(null)
 
