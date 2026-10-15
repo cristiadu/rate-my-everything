@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Block, Tag } from 'react-bulma-components'
 import { slide as SlideMenu } from 'react-burger-menu'
-import Arrow from '@/components/filters/Arrow'
+import Arrow, { FILTER_PANEL_ACCENT, FILTER_PANEL_WIDTH } from '@/components/filters/Arrow'
 import ApiConfig from '@/config/ApiConfig'
 import ApiService from '@/config/ApiService'
 import { NO_INTEREST_FILTERS, type Category, type InterestFilters } from '@/components/types'
@@ -42,8 +42,16 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
     // Pins the panel to the window's left edge right under the top menu, so the closed panel slides fully out of view
     bmMenuWrap: {
       left: '0',
+      width: `${FILTER_PANEL_WIDTH}px`,
       top: `${topOffset}px`,
       height: `calc(100% - ${topOffset}px)`,
+    },
+    // Outlines the panel so it stands apart from the top menu of the same color
+    bmMenu: {
+      padding: '3rem 1.5rem 1.5rem',
+      borderTop: `3px solid ${FILTER_PANEL_ACCENT}`,
+      borderRight: `3px solid ${FILTER_PANEL_ACCENT}`,
+      boxShadow: '4px 0 12px rgba(0, 0, 0, 0.15)',
     },
     // Dims only the page below the top menu while the panel is open
     bmOverlay: {
@@ -86,98 +94,100 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
   }
 
   return (
-    <SlideMenu
-      // react-burger-menu only applies new styles when it opens or closes, so it is remounted when the header height changes
-      key={topOffset}
-      isOpen={isOpen}
-      onStateChange={(state: { isOpen: boolean }) => setIsOpen(state.isOpen)}
-      className="box has-background-danger"
-      styles={styles}
-    >
-      <Block>
-        <Arrow isOpen={isOpen} setIsOpen={setIsOpen} />
-        <Tag color="danger" backgroundColor="danger-light" textColor="danger-dark" size="large">FILTERS</Tag>
-        <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
-          {error && <p className="help is-danger">{error}</p>}
-          <div className="field">
-            <label className="label" htmlFor="filter-name">Name</label>
-            <div className="control">
-              <input
-                className="input"
-                id="filter-name"
-                placeholder="Search by name"
-                value={draft.name}
-                onChange={(e) => setDraft({ ...draft, name: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="field">
-            <label className="label" htmlFor="filter-categories">Categories</label>
-            <div className="control">
-              <MultiSelectDropdown
-                id="filter-categories"
-                label="Categories"
-                placeholder="Any category"
-                options={categories.map((category) => ({ value: category.id, label: category.name }))}
-                selected={draft.categoryIds}
-                onChange={(categoryIds) => setDraft({ ...draft, categoryIds })}
-              />
-            </div>
-          </div>
-          {attributes.map((attribute) => (
-            <AttributeField
-              key={attribute.id}
-              attribute={attribute}
-              value={draft.attributeValues[attribute.id] ?? ''}
-              onChange={(value) => setAttributeValue(attribute.id, value)}
-            />
-          ))}
-          <div className="field">
-            <span className="label">{`Grade (${MIN_RATING} to ${MAX_RATING})`}</span>
-            <div className="field-body">
-              <div className="field">
-                <div className="control">
-                  <input
-                    className="input"
-                    type="number"
-                    aria-label="Lowest grade"
-                    placeholder="From"
-                    min={MIN_RATING}
-                    max={MAX_RATING}
-                    step="any"
-                    value={draft.minGrade}
-                    onChange={(e) => setDraft({ ...draft, minGrade: e.target.value })}
-                  />
-                </div>
-              </div>
-              <div className="field">
-                <div className="control">
-                  <input
-                    className="input"
-                    type="number"
-                    aria-label="Highest grade"
-                    placeholder="To"
-                    min={MIN_RATING}
-                    max={MAX_RATING}
-                    step="any"
-                    value={draft.maxGrade}
-                    onChange={(e) => setDraft({ ...draft, maxGrade: e.target.value })}
-                  />
-                </div>
+    <>
+      <Arrow isOpen={isOpen} setIsOpen={setIsOpen} top={topOffset} />
+      <SlideMenu
+        // react-burger-menu only applies new styles when it opens or closes, so it is remounted when the header height changes
+        key={topOffset}
+        isOpen={isOpen}
+        onStateChange={(state: { isOpen: boolean }) => setIsOpen(state.isOpen)}
+        className="has-background-danger"
+        styles={styles}
+      >
+        <Block>
+          <Tag color="danger" backgroundColor="danger-light" textColor="danger-dark" size="large">FILTERS</Tag>
+          <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
+            {error && <p className="help is-danger">{error}</p>}
+            <div className="field">
+              <label className="label" htmlFor="filter-name">Name</label>
+              <div className="control">
+                <input
+                  className="input"
+                  id="filter-name"
+                  placeholder="Search by name"
+                  value={draft.name}
+                  onChange={(e) => setDraft({ ...draft, name: e.target.value })}
+                />
               </div>
             </div>
-          </div>
-          <div className="field is-grouped">
-            <div className="control">
-              <button className="button is-dark" type="submit">Apply</button>
+            <div className="field">
+              <label className="label" htmlFor="filter-categories">Categories</label>
+              <div className="control">
+                <MultiSelectDropdown
+                  id="filter-categories"
+                  label="Categories"
+                  placeholder="Any category"
+                  options={categories.map((category) => ({ value: category.id, label: category.name }))}
+                  selected={draft.categoryIds}
+                  onChange={(categoryIds) => setDraft({ ...draft, categoryIds })}
+                />
+              </div>
             </div>
-            <div className="control">
-              <button className="button is-light" type="button" onClick={clearFilters}>Clear</button>
+            {attributes.map((attribute) => (
+              <AttributeField
+                key={attribute.id}
+                attribute={attribute}
+                value={draft.attributeValues[attribute.id] ?? ''}
+                onChange={(value) => setAttributeValue(attribute.id, value)}
+              />
+            ))}
+            <div className="field">
+              <span className="label">{`Grade (${MIN_RATING} to ${MAX_RATING})`}</span>
+              <div className="field-body">
+                <div className="field">
+                  <div className="control">
+                    <input
+                      className="input"
+                      type="number"
+                      aria-label="Lowest grade"
+                      placeholder="From"
+                      min={MIN_RATING}
+                      max={MAX_RATING}
+                      step="any"
+                      value={draft.minGrade}
+                      onChange={(e) => setDraft({ ...draft, minGrade: e.target.value })}
+                    />
+                  </div>
+                </div>
+                <div className="field">
+                  <div className="control">
+                    <input
+                      className="input"
+                      type="number"
+                      aria-label="Highest grade"
+                      placeholder="To"
+                      min={MIN_RATING}
+                      max={MAX_RATING}
+                      step="any"
+                      value={draft.maxGrade}
+                      onChange={(e) => setDraft({ ...draft, maxGrade: e.target.value })}
+                    />
+                  </div>
+                </div>
+              </div>
             </div>
-          </div>
-        </form>
-      </Block>
-    </SlideMenu>
+            <div className="field is-grouped">
+              <div className="control">
+                <button className="button is-dark" type="submit">Apply</button>
+              </div>
+              <div className="control">
+                <button className="button is-light" type="button" onClick={clearFilters}>Clear</button>
+              </div>
+            </div>
+          </form>
+        </Block>
+      </SlideMenu>
+    </>
   )
 }
 
