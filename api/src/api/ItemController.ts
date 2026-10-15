@@ -5,11 +5,11 @@ import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import { SessionUser } from '@/models/User'
 import { canModerate } from '@/helpers/RouteHelper'
+import { UnknownResource } from '@/errors/UnknownResource'
+import { isValidSimilarName } from '@/helpers/SimilarityHelper'
 
 /** Message returned when a user without a moderation role tries to change a shared interest directly. */
 const MODERATION_REQUIRED_MESSAGE = 'Only moderators can change interests directly; send a change request instead'
-import { UnknownResource } from '@/errors/UnknownResource'
-import { isValidSimilarName } from '@/helpers/SimilarityHelper'
 
 export default class ItemController {
   public router = Router()
