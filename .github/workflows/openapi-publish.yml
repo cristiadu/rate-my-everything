@@ -1,0 +1,40 @@
+name: Publish OpenAPI spec
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'api/src/**'
+      - 'api/scripts/**'
+      - 'api/package.json'
+permissions:
+  contents: write
+jobs:
+  publish-openapi:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - name: Setup PNPM
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # 6.1.0
+        with:
+          package_json_file: package.json
+          run_install: false
+
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 #7.0.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Set git user
+        run: |
+          git config --global user.name "$(git log -1 --pretty=format:'%an')"
+          git config --global user.email "$(git log -1 --pretty=format:'%ae')"
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Generate OpenAPI spec
+        run: pnpm --filter @cristiadu/rate-my-everything-api openapi
+      - name: Commit the spec when it changed
+        run: |
+          git add api/openapi.yaml
+          git diff --cached --quiet || (git commit -m "docs(api): regenerate OpenAPI spec" && git push)

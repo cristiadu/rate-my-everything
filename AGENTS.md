@@ -6,6 +6,7 @@
 - Install dependencies with `pnpm install`.
 - Run CI checks with `pnpm lint`, `pnpm test`, `pnpm build`, and `pnpm knip`.
 - Upgrade dependencies with `pnpm upgrade-dependencies`; this project chooses latest available versions.
+- After changing API routes or request and response types, document them in `api/src/routes/ApiOperations.ts` and run `pnpm openapi` to regenerate `api/openapi.yaml` and the UI client.
 
 ## Code Style
 

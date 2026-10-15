@@ -3,8 +3,17 @@ import {
 } from 'typeorm'
 import { Min, Max } from 'class-validator'
 import User from '@/models/User'
-import Item from '@/models/Item'
+import Item, { ItemSummary } from '@/models/Item'
 import { decimalToNumber } from '@/helpers/DecimalHelper'
+
+/** A rating as the API returns it, with its item and the item's category. */
+export type RatedItemResponse = Omit<RatedItem, 'item' | 'user'> & { item: ItemSummary }
+
+/** Fields accepted when changing a rating. */
+export type RatingInput = Pick<RatedItem, 'rating'> & Partial<Pick<RatedItem, 'notes'>>
+
+/** Fields accepted when rating an item. */
+export type NewRatingInput = RatingInput & { item_id: number }
 
 @Entity()
 export default class RatedItem {
@@ -33,5 +42,5 @@ export default class RatedItem {
     ratedAt!: Date
 
   @Column('varchar', { nullable: true })
-    notes!: string
+    notes!: string | null
 }
