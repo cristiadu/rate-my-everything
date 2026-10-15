@@ -205,7 +205,7 @@ describe('Change request and moderation API Integration Tests', async () => {
       const changeRequest = res.body as ChangeRequest
       expect(changeRequest.status).toBe(ChangeRequestStatus.APPROVED)
       expect(changeRequest.reviewNote).toBe('Correct title')
-      expect(changeRequest.reviewedBy?.username).toMatch(/^user-moderator-/)
+      expect(changeRequest.reviewedBy?.username).toMatch(/^plain-user-moderator-/)
       expect(changeRequest.reviewedAt).not.toBeNull()
 
       // AND the interest now has the new name
