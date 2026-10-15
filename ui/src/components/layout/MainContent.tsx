@@ -14,6 +14,7 @@ import AttributeManagement from '@/components/admin/attributes/AttributeManageme
 import InterestFormPage from '@/components/interests/InterestFormPage'
 import ModerationPage from '@/components/moderation/ModerationPage'
 import MyChangeRequestsPage from '@/components/moderation/MyChangeRequestsPage'
+import ImportPage from '@/components/interests/ImportPage'
 import InterestPage from '@/components/interests/InterestPage'
 import { RankingScope } from '@/components/types'
 
@@ -29,6 +30,7 @@ const MainContent = () => (
         <Route path="/rankings" element={<RequireLogin><OverallRankings scope={RankingScope.MINE} /></RequireLogin>} />
         <Route path="/all_rankings" element={<RequireLogin><OverallRankings scope={RankingScope.ALL} /></RequireLogin>} />
         <Route path="/interests/new" element={<RequireLogin><InterestFormPage /></RequireLogin>} />
+        <Route path="/interests/import" element={<RequireLogin><ImportPage /></RequireLogin>} />
         <Route path="/interests/:itemId" element={<RequireLogin><InterestPage /></RequireLogin>} />
         <Route path="/interests/:itemId/edit" element={<RequireLogin><InterestFormPage /></RequireLogin>} />
         <Route path="/categories" element={<RequireLogin><CategoriesPage /></RequireLogin>} />

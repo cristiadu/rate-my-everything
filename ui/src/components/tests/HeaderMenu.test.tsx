@@ -37,8 +37,9 @@ describe('HeaderMenu', () => {
     // WHEN the menu renders
     renderMenu()
 
-    // THEN the admin and moderation links are hidden
+    // THEN the admin and moderation links are hidden and the import screen is linked
     expect(screen.getByText('My Account')).toBeInTheDocument()
+    expect(screen.getByText('Import interests').closest('a')).toHaveAttribute('href', '/interests/import')
     expect(screen.queryByText('Admin')).not.toBeInTheDocument()
     expect(screen.queryByText('Moderation')).not.toBeInTheDocument()
   })

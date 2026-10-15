@@ -10,6 +10,7 @@ import LoginController from '@/api/LoginController'
 import HealthController from '@/api/HealthController'
 import ChangeRequestController from '@/api/ChangeRequestController'
 import ModerationController from '@/api/ModerationController'
+import ImportController from '@/api/ImportController'
 import { NextFunction, Request, Response } from 'express'
 import { SessionUser } from '@/models/User'
 import { NewApiError } from '@/models/APIError'
@@ -48,6 +49,7 @@ export const routes: RouteConfig[] = [
     roles: [UserRole.USER, ...MODERATION_ROLES],
   },
   { path: '/api/moderation', controller: () => new ModerationController().router, roles: MODERATION_ROLES },
+  { path: '/api/imports', controller: () => new ImportController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/comments', controller: () => new CommentController().router, roles: [UserRole.USER, UserRole.ADMIN] },
   { path: '/api/health', controller: () => new HealthController().router },
   { path: '/api', controller: () => (_req: Request, res: Response) => {
