@@ -5,6 +5,8 @@ import ErrorCode from '@/errors/ErrorCode'
 import RatedItem from '@/models/RatedItem'
 import { SessionUser } from '@/models/User'
 import { logger } from '@/helpers/Logger'
+import { parseRatingFilters } from '@/helpers/RatingFilterHelper'
+import { InvalidQueryParameter } from '@/errors/InvalidQueryParameter'
 
 export default class RatedItemController {
   public router = Router()
@@ -26,11 +28,19 @@ export default class RatedItemController {
     this.router.delete('/:id', (req, res) => this.delete(req, res))
   }
 
-  public async getAll(_req: Request, res: Response) {
+  /**
+   * Lists every rating of the items matching the filters in the query (see parseRatingFilters), each with its item
+   * and category; 400 when a filter has a value it cannot use.
+   */
+  public async getAll(req: Request, res: Response) {
     try {
-      const data = await this.ratedItemService.getAll()
+      const sessionUser = res.locals.user as SessionUser
+      const data = await this.ratedItemService.getAll(parseRatingFilters(req.query), sessionUser.id)
       res.status(200).json(data)
     } catch (error) {
+      if (error instanceof InvalidQueryParameter) {
+        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, error.message))
+      }
       logger.error(error)
       res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
     }

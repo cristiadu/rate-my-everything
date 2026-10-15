@@ -5,6 +5,33 @@ import { Min, Max } from 'class-validator'
 import User from '@/models/User'
 import Item from '@/models/Item'
 import { decimalToNumber } from '@/helpers/DecimalHelper'
+import RankingScope from '@/models/RankingScope'
+
+/** Lowest grade a rating can give. */
+export const MIN_GRADE = 0
+
+/** Highest grade a rating can give. */
+export const MAX_GRADE = 10
+
+/** An attribute value an item must hold: text attributes match when they contain the value, others when equal to it. */
+export interface AttributeFilter {
+  attributeId: number
+  value: string
+}
+
+/**
+ * Filters for listing ratings. Every rating of an item is kept when the item matches, so its grades stay complete.
+ * The grade range applies to the signed-in user's personal grade for the MINE scope, which also keeps only the items
+ * they rated, and to the collective grade for the ALL scope.
+ */
+export interface RatingFilters {
+  name?: string
+  categoryIds: number[]
+  attributes: AttributeFilter[]
+  minGrade?: number
+  maxGrade?: number
+  scope: RankingScope
+}
 
 @Entity()
 export default class RatedItem {
@@ -16,8 +43,8 @@ export default class RatedItem {
     item!: Item
 
   @Column({ type: 'decimal', precision: 4, scale: 2, transformer: decimalToNumber })
-  @Min(0.0)
-  @Max(10.0)
+  @Min(MIN_GRADE)
+  @Max(MAX_GRADE)
     rating!: number
 
   @ManyToOne(() => User, (user) => user.ratedItems)
