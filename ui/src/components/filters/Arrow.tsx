@@ -1,8 +1,5 @@
 import React from 'react'
 
-/** Darker shade of the top menu's pink that outlines the filter panel and colors its tab. */
-export const FILTER_PANEL_ACCENT = 'hsl(var(--bulma-danger-h), var(--bulma-danger-s), var(--bulma-danger-40-l))'
-
 /** Width of the open filter panel, in pixels, border included. */
 export const FILTER_PANEL_WIDTH = 300
 
@@ -24,7 +21,7 @@ const Arrow: React.FC<ArrowProps> = ({ setIsOpen, isOpen, top }) => (
     role="button"
     tabIndex={0}
     aria-label={isOpen ? 'Close filters' : 'Open filters'}
-    className="has-text-white has-text-weight-bold is-flex is-align-items-center is-justify-content-center"
+    className="has-background-danger has-text-white has-text-weight-bold is-flex is-align-items-center is-justify-content-center"
     style={{
       position: 'fixed',
       top: `calc(${top}px + 3rem)`,
@@ -35,8 +32,8 @@ const Arrow: React.FC<ArrowProps> = ({ setIsOpen, isOpen, top }) => (
       width: '28px',
       height: '40px',
       borderRadius: '0 8px 8px 0',
-      background: FILTER_PANEL_ACCENT,
-      boxShadow: '2px 0 6px rgba(0, 0, 0, 0.2)',
+      // Same shadow as the panel, so the tab reads as part of it
+      boxShadow: '6px 0 12px rgba(0, 0, 0, 0.18)',
       cursor: 'pointer',
       fontSize: '1.25rem',
     }}
