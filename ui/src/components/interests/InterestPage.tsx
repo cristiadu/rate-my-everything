@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { Message } from 'react-bulma-components'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
+import { getItem, getRatingsByItem } from '@/api/generated/api'
 import type { Item, RatedItem } from '@/components/types'
 import InterestDiscussion from '@/components/interests/InterestDiscussion'
 import InterestDetails from '@/components/interests/InterestDetails'
@@ -22,8 +21,8 @@ const InterestPage: React.FC = () => {
 
   const loadItem = useCallback(async () => {
     try {
-      setItem(await ApiService.get<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${viewedItemId}`))
-      setItemRatings(await ApiService.get<RatedItem[]>(`${ApiConfig.ENDPOINTS.RATINGS}/item/${viewedItemId}`))
+      setItem(await getItem(viewedItemId))
+      setItemRatings(await getRatingsByItem(viewedItemId))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load the interest')
     }

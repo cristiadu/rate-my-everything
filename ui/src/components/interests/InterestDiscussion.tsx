@@ -1,7 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Message } from 'react-bulma-components'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
+import { createComment, deleteComment, getCommentsByItem } from '@/api/generated/api'
 import { MAX_COMMENT_LENGTH, UserRole, type Comment } from '@/components/types'
 import { getRolesFromToken, getUsernameFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
@@ -26,7 +25,7 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
 
   const loadComments = useCallback(async () => {
     try {
-      setComments(await ApiService.get<Comment[]>(`${ApiConfig.ENDPOINTS.COMMENTS}/item/${itemId}`))
+      setComments(await getCommentsByItem(itemId))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load the discussion')
     }
@@ -41,7 +40,7 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
     setIsPosting(true)
     setError('')
     try {
-      await ApiService.post<Comment>(`${ApiConfig.ENDPOINTS.COMMENTS}/item/${itemId}`, { body: draft })
+      await createComment(itemId, { body: draft })
       setDraft('')
       await loadComments()
     } catch (err) {
@@ -58,7 +57,7 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
 
     setError('')
     try {
-      await ApiService.delete(`${ApiConfig.ENDPOINTS.COMMENTS}/${comment.id}`)
+      await deleteComment(comment.id)
       await loadComments()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete the comment')

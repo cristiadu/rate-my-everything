@@ -38,3 +38,6 @@ package-lock.json
 dist/
 temp/
 tmp/
+
+# Client generated from api/openapi.yaml on install (pnpm openapi)
+ui/src/api/generated/

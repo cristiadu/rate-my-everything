@@ -1,9 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Block, Message } from 'react-bulma-components'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
-import { RankingScope, type RankingItem, type RatedItem } from '@/components/types'
+import { getRatings } from '@/api/generated/api'
+import { RankingScope, type RankingItem } from '@/components/types'
 import RankingTable from '@/components/rankings/RankingTable'
 import { toMyRankings, toOverallRankings } from '@/components/rankings/rankingData'
 import { useAuth } from '@/components/users/AuthContext'
@@ -24,7 +23,7 @@ const OverallRankings: React.FC<OverallRankingsProps> = ({ scope }) => {
 
   const loadRankings = useCallback(async () => {
     try {
-      const ratings = await ApiService.get<RatedItem[]>(ApiConfig.ENDPOINTS.RATINGS)
+      const ratings = await getRatings()
       setRankings(isMine ? toMyRankings(ratings, userId) : toOverallRankings(ratings, userId))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load rankings')

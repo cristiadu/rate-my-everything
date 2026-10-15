@@ -19,6 +19,7 @@
     "lint:fix": "eslint . --fix",
     "upgrade-dependencies": "pnpm up --latest && pnpm --parallel -r upgrade-dependencies",
     "knip": "knip -c knip.config.ts",
+    "openapi": "pnpm --filter @cristiadu/rate-my-everything-api openapi && pnpm --filter @cristiadu/rate-my-everything-ui openapi",
     "knip:fix": "knip -c knip.config.ts --fix"
   },
   "devDependencies": {

@@ -40,6 +40,7 @@ export default [
       '**/dist/**',
       '**/build/**',
       '**/coverage/**',
+      'ui/src/api/generated/**',
     ],
   },
   {

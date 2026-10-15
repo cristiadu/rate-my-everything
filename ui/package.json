@@ -9,6 +9,8 @@
         "release": "echo \"Release UI\"",
         "test": "jest",
         "lint": "eslint --ext .js,.jsx,.ts,.tsx src/",
+        "openapi": "orval --config orval.config.ts",
+        "postinstall": "pnpm openapi",
         "upgrade-dependencies": "pnpm up --latest"
     },
     "dependencies": {
@@ -36,6 +38,7 @@
         "html-webpack-plugin": "^5.6.8",
         "jest": "^30.5.2",
         "jest-environment-jsdom": "30.5.2",
+        "orval": "8.41.0",
         "ts-jest": "^29.4.14",
         "tsconfig-paths-webpack-plugin": "^4.2.0",
         "webpack": "5.111.1",

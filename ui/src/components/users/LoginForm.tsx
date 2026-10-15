@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import ApiConfig from '../../config/ApiConfig'
+import { login } from '@/api/generated/api'
 
 interface LoginFormProps {
   onSuccess: (token: string) => void;
@@ -17,22 +17,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
     setError('')
 
     try {
-      const response = await fetch(`${ApiConfig.API_URL}${ApiConfig.ENDPOINTS.LOGIN}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to login')
-      }
-
-      localStorage.setItem('authToken', data.token)
-      onSuccess(data.token)
+      const { token } = await login({ username, password })
+      localStorage.setItem('authToken', token)
+      onSuccess(token)
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'An error occurred during login'
       setError(errorMessage)

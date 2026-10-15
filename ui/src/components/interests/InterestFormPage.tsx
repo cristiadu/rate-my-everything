@@ -1,10 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Box, Message } from 'react-bulma-components'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
+import {
+  createItem, createRating, deleteRating, getCategories, getItem, getRatingsByItem, getSimilarItems, updateItem,
+} from '@/api/generated/api'
 import type {
-  Category, InterestForm, Item, RatedItem,
+  Category, InterestForm, RatedItem,
 } from '@/components/types'
 import AttributeField from '@/components/interests/AttributeField'
 import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
@@ -41,14 +42,14 @@ const InterestFormPage: React.FC = () => {
   /** Loads the categories and, when editing, the item and everyone's ratings of it. */
   const loadForm = useCallback(async () => {
     try {
-      setCategories(await ApiService.get<Category[]>(ApiConfig.ENDPOINTS.CATEGORIES))
+      setCategories(await getCategories())
       if (editingItemId === null) {
         return
       }
 
-      const item = await ApiService.get<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${editingItemId}`)
+      const item = await getItem(editingItemId)
       setFormFields(toInterestForm(item))
-      setItemRatings(await ApiService.get<RatedItem[]>(`${ApiConfig.ENDPOINTS.RATINGS}/item/${editingItemId}`))
+      setItemRatings(await getRatingsByItem(editingItemId))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load the interest')
     }
@@ -76,11 +77,11 @@ const InterestFormPage: React.FC = () => {
     try {
       const itemInput = toItemInput(formFields, selectedCategory)
       const item = editingItemId === null
-        ? await ApiService.post<Item>(ApiConfig.ENDPOINTS.ITEMS, itemInput)
-        : await ApiService.put<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${editingItemId}`, itemInput)
+        ? await createItem(itemInput)
+        : await updateItem(editingItemId, itemInput)
 
       if (formFields.rating !== '') {
-        await ApiService.post<RatedItem>(ApiConfig.ENDPOINTS.RATINGS, { item_id: item.id, ...toRatingInput(formFields) })
+        await createRating({ item_id: item.id, ...toRatingInput(formFields) })
       }
       navigate(MY_RANKINGS_PATH)
     } catch (err) {
@@ -99,7 +100,7 @@ const InterestFormPage: React.FC = () => {
     setError('')
     try {
       for (const ratedItem of myRatings) {
-        await ApiService.delete(`${ApiConfig.ENDPOINTS.RATINGS}/${ratedItem.id}`)
+        await deleteRating(ratedItem.id)
       }
       navigate(MY_RANKINGS_PATH)
     } catch (err) {
@@ -115,7 +116,7 @@ const InterestFormPage: React.FC = () => {
 
     setError('')
     try {
-      await ApiService.delete(`${ApiConfig.ENDPOINTS.RATINGS}/${ratedItem.id}`)
+      await deleteRating(ratedItem.id)
       setItemRatings(itemRatings.filter((rating) => rating.id !== ratedItem.id))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove the rating')
@@ -162,11 +163,11 @@ const InterestFormPage: React.FC = () => {
                 required
               />
             </div>
-            <SimilarRecordsWarning<Item>
-              endpoint={`${ApiConfig.ENDPOINTS.ITEMS}/similar`}
+            <SimilarRecordsWarning
+              findSimilar={getSimilarItems}
               name={formFields.name}
               isEnabled={editingItemId === null}
-              filters={formFields.categoryId ? { categoryId: formFields.categoryId } : {}}
+              filters={formFields.categoryId ? { categoryId: Number(formFields.categoryId) } : {}}
               label="Similar interests"
               message="Similar interests already exist. Rate one of them instead of adding a duplicate:"
               renderRecord={(item) => (

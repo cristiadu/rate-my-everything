@@ -1,9 +1,9 @@
 import ApiConfig from './ApiConfig'
-import type { JsonObject } from '@/components/types'
 
 interface ApiOptions {
-  method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
-  body?: JsonObject;
+  method?: string;
+  /** Request body, already serialized as JSON. */
+  body?: string | null;
   includeAuth?: boolean;
 }
 
@@ -29,7 +29,7 @@ export default class ApiService {
     const config: RequestInit = {
       method,
       headers,
-      body: body ? JSON.stringify(body) : null,
+      body,
     }
 
     const url = `${ApiConfig.API_URL}${endpoint}`
@@ -59,20 +59,13 @@ export default class ApiService {
 
     return data as T
   }
-
-  static get<T>(endpoint: string, includeAuth = true): Promise<T> {
-    return this.request<T>(endpoint, { method: 'GET', includeAuth })
-  }
-
-  static post<T>(endpoint: string, body: JsonObject, includeAuth = true): Promise<T> {
-    return this.request<T>(endpoint, { method: 'POST', body, includeAuth })
-  }
-
-  static put<T>(endpoint: string, body: JsonObject, includeAuth = true): Promise<T> {
-    return this.request<T>(endpoint, { method: 'PUT', body, includeAuth })
-  }
-
-  static delete<T>(endpoint: string, includeAuth = true): Promise<T> {
-    return this.request<T>(endpoint, { method: 'DELETE', includeAuth })
-  }
 }
+
+/**
+ * Sends a request built by the generated API client through `ApiService.request`, so every call carries the user's token
+ * and fails with the API's error message.
+ */
+export const apiFetch = <T,>(endpoint: string, init: RequestInit): Promise<T> => ApiService.request<T>(endpoint, {
+  method: init.method,
+  body: typeof init.body === 'string' ? init.body : null,
+})

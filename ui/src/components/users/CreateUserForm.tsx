@@ -3,10 +3,9 @@ import {
   Form, Button,
   Message,
 } from 'react-bulma-components'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
+import { createUser, updateUser } from '@/api/generated/api'
 import {
-  type AdminUser, MIN_PASSWORD_LENGTH, type StatusMessage, type UserFormValues, UserRole,
+  type AdminUser, MIN_PASSWORD_LENGTH, type StatusMessage, type UserFormValues, type UserInput, UserRole,
 } from '@/components/types'
 
 /**
@@ -65,13 +64,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
     // Only send a password when one was typed, so editing keeps the current one
     const { password, ...rest } = formFields
-    const body: Partial<UserFormValues> = password ? formFields : rest
+    const body: UserInput = password ? formFields : rest
 
     try {
       if (isEditing) {
-        await ApiService.put<AdminUser>(`${ApiConfig.ENDPOINTS.USERS}/${user.id}`, body)
+        await updateUser(user.id, body)
       } else {
-        await ApiService.post<AdminUser>(ApiConfig.ENDPOINTS.USERS, body)
+        await createUser(body)
       }
       setSubmitStatus({
         message: isEditing ? 'User updated successfully!' : 'User created successfully!',

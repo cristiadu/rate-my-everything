@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
+import {
+  createCategory, deleteCategory, getAttributes, getCategories, getSimilarCategories, updateCategory,
+} from '@/api/generated/api'
 import {
   type Attribute, type Category, type CategoryFormValues, type StatusMessage, UserRole,
 } from '@/components/types'
@@ -11,9 +12,6 @@ import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
 
 /** Form values for a new category. */
 const emptyForm: CategoryFormValues = { name: '', description: '', attributeIds: [] }
-
-/** API path for one category, which the API addresses by name. */
-const categoryPath = (name: string) => `${ApiConfig.ENDPOINTS.CATEGORIES}/${encodeURIComponent(name)}`
 
 /** Lists categories for every user; admins can also create, edit and delete them and link attributes. */
 const CategoriesPage: React.FC = () => {
@@ -30,7 +28,7 @@ const CategoriesPage: React.FC = () => {
   /** Fetches the category list from the API. */
   const loadCategories = useCallback(async () => {
     try {
-      setCategories(await ApiService.get<Category[]>(ApiConfig.ENDPOINTS.CATEGORIES))
+      setCategories(await getCategories())
     } catch (err) {
       setStatus({ message: err instanceof Error ? err.message : 'Failed to load categories', isSuccess: false })
     }
@@ -43,7 +41,7 @@ const CategoriesPage: React.FC = () => {
   /** Fetches the attributes an admin can link to a category. */
   const loadAttributes = useCallback(async () => {
     try {
-      setAttributes(await ApiService.get<Attribute[]>(ApiConfig.ENDPOINTS.ATTRIBUTES))
+      setAttributes(await getAttributes())
     } catch (err) {
       setStatus({ message: err instanceof Error ? err.message : 'Failed to load attributes', isSuccess: false })
     }
@@ -70,10 +68,10 @@ const CategoriesPage: React.FC = () => {
 
     try {
       if (editingName === null) {
-        await ApiService.post<Category>(ApiConfig.ENDPOINTS.CATEGORIES, formFields)
+        await createCategory(formFields)
         setStatus({ message: `Category ${formFields.name} created.`, isSuccess: true })
       } else {
-        await ApiService.put<Category>(categoryPath(editingName), formFields)
+        await updateCategory(encodeURIComponent(editingName), formFields)
         setStatus({ message: `Category ${formFields.name} updated.`, isSuccess: true })
       }
       resetForm()
@@ -103,7 +101,7 @@ const CategoriesPage: React.FC = () => {
 
     setStatus(null)
     try {
-      await ApiService.delete<void>(categoryPath(category.name))
+      await deleteCategory(encodeURIComponent(category.name))
       setStatus({ message: `Category ${category.name} deleted.`, isSuccess: true })
       if (editingName === category.name) {
         resetForm()
@@ -140,8 +138,8 @@ const CategoriesPage: React.FC = () => {
                   required
                 />
               </div>
-              <SimilarRecordsWarning<Category>
-                endpoint={`${ApiConfig.ENDPOINTS.CATEGORIES}/similar`}
+              <SimilarRecordsWarning
+                findSimilar={getSimilarCategories}
                 name={formFields.name}
                 isEnabled={editingName === null}
                 label="Similar categories"
