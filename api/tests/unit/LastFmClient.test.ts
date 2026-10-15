@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import LastFmClient from '@/services/imports/LastFmClient'
 import ImportSource from '@/models/ImportSource'
-import { ImportNotFound } from '@/errors/ImportNotFound'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { ImportSourceFailed } from '@/errors/ImportSourceFailed'
 import { ImportSourceNotConfigured } from '@/errors/ImportSourceNotConfigured'
 import {
@@ -77,13 +77,13 @@ describe('LastFmClient', () => {
     }])
   })
 
-  it('fails with ImportNotFound when the user does not exist', async () => {
+  it('fails with UnknownResource when the user does not exist', async () => {
     // GIVEN Last.fm does not know the user
     mockExternalApi(lastFmUserNotFound, 404)
 
     // WHEN the albums are read THEN the missing user is reported
     await expect(new LastFmClient('lastfm-key').getTopAlbums('nobody'))
-      .rejects.toThrow(new ImportNotFound('Last.fm user "nobody" was not found'))
+      .rejects.toThrow(new UnknownResource('Last.fm user', 'nobody'))
   })
 
   it('fails with ImportSourceFailed on any other Last.fm error', async () => {

@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
-import type { LastFmTopAlbumsResponse, LastFmTopArtistsResponse } from '@/models/LastFmModels'
-import type { YouTubePlaylistItemsResponse } from '@/models/YouTubeModels'
+import type { LastFmTopAlbumsResponse, LastFmTopArtistsResponse } from '@/models/LastFM'
+import type { YouTubePlaylistItemsResponse } from '@/models/Youtube'
 
 /** Last.fm top albums with one largest image and one blank largest image that falls back to a smaller image. */
 export const lastFmTopAlbums: LastFmTopAlbumsResponse = {

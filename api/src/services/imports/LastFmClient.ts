@@ -1,7 +1,7 @@
 import ImportSource from '@/models/ImportSource'
 import { IMPORT_PAGE_SIZE, ImportedItem } from '@/models/ImportedItem'
-import type { LastFmImage, LastFmTopAlbumsResponse, LastFmTopArtistsResponse } from '@/models/LastFmModels'
-import { ImportNotFound } from '@/errors/ImportNotFound'
+import type { LastFmImage, LastFmTopAlbumsResponse, LastFmTopArtistsResponse } from '@/models/LastFM'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { ImportSourceFailed } from '@/errors/ImportSourceFailed'
 import { ImportSourceNotConfigured } from '@/errors/ImportSourceNotConfigured'
 
@@ -62,7 +62,7 @@ export default class LastFmClient {
       const response = await fetch(`${LASTFM_API_URL}?${params}`)
       const body = await response.json() as LastFmTopAlbumsResponse
       if (body.error === LASTFM_INVALID_PARAMETERS) {
-        throw new ImportNotFound(`Last.fm user "${username}" was not found`)
+        throw new UnknownResource('Last.fm user', username)
       }
       if (!response.ok || !body.topalbums) {
         throw new ImportSourceFailed(ImportSource.LASTFM, response.status)
@@ -103,7 +103,7 @@ export default class LastFmClient {
       const response = await fetch(`${LASTFM_API_URL}?${params}`)
       const body = await response.json() as LastFmTopArtistsResponse
       if (body.error === LASTFM_INVALID_PARAMETERS) {
-        throw new ImportNotFound(`Last.fm user "${username}" was not found`)
+        throw new UnknownResource('Last.fm user', username)
       }
       if (!response.ok || !body.topartists) {
         throw new ImportSourceFailed(ImportSource.LASTFM, response.status)

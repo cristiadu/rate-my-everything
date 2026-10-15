@@ -3,7 +3,7 @@ import ImportService from '@/services/imports/ImportService'
 import ImportSource from '@/models/ImportSource'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import { ImportNotFound } from '@/errors/ImportNotFound'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { ImportSourceFailed } from '@/errors/ImportSourceFailed'
 import { ImportSourceNotConfigured } from '@/errors/ImportSourceNotConfigured'
 
@@ -39,7 +39,7 @@ export default class ImportController {
       const data = await this.importService.findItems(source, query.trim())
       res.status(200).json(data)
     } catch (error) {
-      if (error instanceof ImportNotFound) {
+      if (error instanceof UnknownResource) {
         return res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, error.message))
       }
       if (error instanceof ImportSourceFailed) {

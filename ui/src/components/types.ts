@@ -181,6 +181,8 @@ export interface ImportedItem {
     name: string;
     description: string;
     imageUrl?: string | null;
+}
+
 /** Longest comment body the comments API accepts, in characters. */
 export const MAX_COMMENT_LENGTH = 2000
 

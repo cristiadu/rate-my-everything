@@ -1,7 +1,7 @@
 import { describe, it, expect, afterEach, vi } from 'vitest'
 import YouTubeClient from '@/services/imports/YouTubeClient'
 import ImportSource from '@/models/ImportSource'
-import { ImportNotFound } from '@/errors/ImportNotFound'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { ImportSourceFailed } from '@/errors/ImportSourceFailed'
 import { ImportSourceNotConfigured } from '@/errors/ImportSourceNotConfigured'
 import { mockExternalApi, youTubePlaylistItems } from '@@/testutils/common/Imports'
@@ -88,13 +88,13 @@ describe('YouTubeClient', () => {
     }])
   })
 
-  it('fails with ImportNotFound when the playlist does not exist', async () => {
+  it('fails with UnknownResource when the playlist does not exist', async () => {
     // GIVEN YouTube does not find the playlist
     mockExternalApi({ error: { code: 404, message: 'playlistNotFound' } }, 404)
 
     // WHEN the videos are read THEN the missing playlist is reported
     await expect(new YouTubeClient('youtube-key').getVideos('PLmissing'))
-      .rejects.toThrow(new ImportNotFound('YouTube playlist "PLmissing" was not found'))
+      .rejects.toThrow(new UnknownResource('YouTube playlist', 'PLmissing'))
   })
 
   it('fails with ImportSourceFailed on any other YouTube error', async () => {

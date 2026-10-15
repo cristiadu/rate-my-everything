@@ -72,7 +72,7 @@ describe('Import API Integration Tests', async () => {
         .expect(res => {
           const apiError = res.body as APIError
           expect(apiError.code).toBe(ErrorCode.RESOURCE_NOT_FOUND)
-          expect(apiError.message).toBe('Last.fm user "nobody" was not found')
+          expect(apiError.message).toBe('Unknown Last.fm user id: nobody')
         })
     })
 

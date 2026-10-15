@@ -2,8 +2,8 @@ import ImportSource from '@/models/ImportSource'
 import {
   IMPORT_PAGE_SIZE, ImportedItem,
 } from '@/models/ImportedItem'
-import type { YouTubePlaylistItemsResponse, YouTubeVideosResponse } from '@/models/YouTubeModels'
-import { ImportNotFound } from '@/errors/ImportNotFound'
+import type { YouTubePlaylistItemsResponse, YouTubeVideosResponse } from '@/models/Youtube'
+import { UnknownResource } from '@/errors/UnknownResource'
 import { ImportSourceFailed } from '@/errors/ImportSourceFailed'
 import { ImportSourceNotConfigured } from '@/errors/ImportSourceNotConfigured'
 
@@ -43,14 +43,14 @@ export default class YouTubeClient {
       const params = new URLSearchParams({ part: 'snippet', id: videoId, key: this.apiKey })
       const response = await fetch(`${YOUTUBE_VIDEOS_URL}?${params}`)
       if (response.status === YOUTUBE_PLAYLIST_NOT_FOUND_STATUS) {
-        throw new ImportNotFound(`YouTube video "${videoId}" was not found`)
+        throw new UnknownResource('YouTube video', videoId)
       }
       if (!response.ok) {
         throw new ImportSourceFailed(ImportSource.YOUTUBE, response.status)
       }
       const body = await response.json() as YouTubeVideosResponse
       if (body.items.length === 0) {
-        throw new ImportNotFound(`YouTube video "${videoId}" was not found`)
+        throw new UnknownResource('YouTube video', videoId)
       }
       return body.items.map(({ snippet }) => ({
         type: 'Video' as const,
@@ -71,7 +71,7 @@ export default class YouTubeClient {
       }
       const response = await fetch(`${YOUTUBE_PLAYLIST_ITEMS_URL}?${params}`)
       if (response.status === YOUTUBE_PLAYLIST_NOT_FOUND_STATUS) {
-        throw new ImportNotFound(`YouTube playlist "${playlistId}" was not found`)
+        throw new UnknownResource('YouTube playlist', playlistId)
       }
       if (!response.ok) {
         throw new ImportSourceFailed(ImportSource.YOUTUBE, response.status)

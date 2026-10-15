@@ -24,7 +24,7 @@ const responses: Record<string, object> = {
 /** Answers a mocked request from the responses table, or with a 404 error. */
 const respond = async (url: RequestInfo | URL, init?: RequestInit) => {
   const body = responses[`${init?.method} ${String(url).replace(API_URL, '')}`]
-  return body ? jsonResponse(body) : jsonResponse({ message: 'Last.fm user "nobody" was not found' }, 404)
+  return body ? jsonResponse(body) : jsonResponse({ message: 'Unknown Last.fm user id: nobody' }, 404)
 }
 
 /** Lists the item bodies the page posted. */
@@ -117,7 +117,7 @@ describe('ImportPage', () => {
     searchLastFm('nobody')
 
     // THEN the API error is shown and nothing is listed
-    expect(await screen.findByText('Last.fm user "nobody" was not found')).toBeInTheDocument()
+    expect(await screen.findByText('Unknown Last.fm user id: nobody')).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByRole('table')).not.toBeInTheDocument())
   })
 })
