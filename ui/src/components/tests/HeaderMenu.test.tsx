@@ -66,4 +66,18 @@ describe('HeaderMenu', () => {
     expect(screen.queryByText('My Account')).not.toBeInTheDocument()
     expect(screen.queryByText('Admin')).not.toBeInTheDocument()
   })
+
+  test('links the brand icon home and shows no placeholder items', () => {
+    // GIVEN an admin is logged in
+    loginAs([UserRole.ADMIN])
+
+    // WHEN the menu renders
+    renderMenu()
+
+    // THEN the icon goes to the home page and the template placeholders are gone
+    expect(screen.getByAltText('Icon').closest('a')).toHaveAttribute('href', '/')
+    expect(screen.queryByText('First')).not.toBeInTheDocument()
+    expect(screen.queryByText('Second')).not.toBeInTheDocument()
+    expect(screen.queryByText('At the end')).not.toBeInTheDocument()
+  })
 })
