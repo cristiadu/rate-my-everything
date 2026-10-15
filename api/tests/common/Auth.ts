@@ -3,6 +3,7 @@ import type { Express } from 'express'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
+import UserRole from '@/models/UserRole'
 
 const TMP_TOKEN_PATH = path.resolve(__dirname, '../../tmp/auth-token.txt')
 
@@ -22,13 +23,13 @@ export const getAuthTokenFromFile = (): Promise<string> => {
     })
   })
 }
-/** Registers a fresh user with only the "user" role and returns its token. */
-export const getUserRoleAuthToken = async (app: Express): Promise<string> => {
-  const username = `plain-user-${Date.now()}`
+/** Registers a fresh user with the given roles (only "user" by default) and returns its token. */
+export const getUserRoleAuthToken = async (app: Express, roles: UserRole[] = [UserRole.USER]): Promise<string> => {
+  const username = `plain-${roles.join('-')}-${Date.now()}`
   const password = 'Password123!'
   await request(app)
     .post('/api/login/register')
-    .send({ username, email: `${username}@example.com`, password, roles: ['user'] })
+    .send({ username, email: `${username}@example.com`, password, roles })
     .expect(201)
 
   const loginRes = await request(app)

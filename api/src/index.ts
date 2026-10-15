@@ -12,6 +12,7 @@ import User from '@/models/User'
 import Attribute from '@/models/Attribute'
 import AttributeValue from '@/models/AttributeValue'
 import Category from '@/models/Category'
+import ChangeRequest from '@/models/ChangeRequest'
 import Comment from '@/models/Comment'
 import { routes, authenticationFilter, addDefaultHeaders } from '@/routes/RouterAuthConfig'
 import { enableSimilarityExtensions } from '@/helpers/SimilarityHelper'
@@ -48,7 +49,7 @@ const DBConnection: DataSource = new DataSource({
   username: process.env.PGUSER || process.env.DATABASE_USERNAME,
   password: process.env.PGPASSWORD || process.env.DATABASE_PASSWORD,
   database: process.env.PGDATABASE || process.env.DATABASE_NAME,
-  entities: [RatedItem, Item, User, Attribute, AttributeValue, Category, Comment],
+  entities: [RatedItem, Item, User, Attribute, AttributeValue, Category, ChangeRequest, Comment],
   synchronize: true,
   connectTimeoutMS: 10000,
   extra: {

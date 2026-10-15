@@ -3,8 +3,13 @@ import ItemService from '@/services/ItemService'
 import { ItemInput } from '@/models/Item'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
+import { SessionUser } from '@/models/User'
+import { canModerate } from '@/helpers/RouteHelper'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { isValidSimilarName } from '@/helpers/SimilarityHelper'
+
+/** Message returned when a user without a moderation role tries to change a shared interest directly. */
+const MODERATION_REQUIRED_MESSAGE = 'Only moderators can change interests directly; send a change request instead'
 
 export default class ItemController {
   public router = Router()
@@ -100,9 +105,15 @@ export default class ItemController {
     }
   }
 
-  /** Updates the fields sent for an item; 404 when it does not exist, 422 for an unknown category or attribute. */
+  /**
+   * Updates the fields sent for an item; 403 for users without a moderation role, 404 when it does not exist,
+   * 422 for an unknown category or attribute.
+   */
   public async update(req: Request, res: Response) {
     try {
+      if (!canModerate((res.locals.user as SessionUser).roles)) {
+        return res.status(403).json(NewApiError(ErrorCode.FORBIDDEN, 403, MODERATION_REQUIRED_MESSAGE))
+      }
       const data = await this.itemService.update(parseInt(req.params.id, 10), req.body as ItemInput)
       if (data) {
         res.status(200).json(data)
@@ -118,8 +129,12 @@ export default class ItemController {
     }
   }
 
+  /** Deletes an item; 403 for users without a moderation role. */
   public async delete(req: Request, res: Response) {
     try {
+      if (!canModerate((res.locals.user as SessionUser).roles)) {
+        return res.status(403).json(NewApiError(ErrorCode.FORBIDDEN, 403, MODERATION_REQUIRED_MESSAGE))
+      }
       await this.itemService.delete(parseInt(req.params.id, 10))
       res.status(204).json()
     } catch (error) {

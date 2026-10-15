@@ -6,7 +6,7 @@ import Attribute from '@/models/Attribute'
 import AttributeValueType from '@/models/AttributeValueType'
 import Category from '@/models/Category'
 import ErrorCode from '@/errors/ErrorCode'
-import { getAuthTokenFromFile } from '@@/testutils/common/Auth'
+import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { cleanupAllAttributes, cleanupAllCategories } from '@@/testutils/common/DataCleanup'
 import { Endpoints } from '@@/testutils/common/constants'
 
@@ -257,6 +257,36 @@ describe('Attribute API Integration Tests', async () => {
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(204)
         .expect(res => { expect(res.body).toEqual({}) })
+    })
+  })
+
+  describe('Attribute permissions for the user role', () => {
+    let userToken: string
+
+    beforeAll(async () => {
+      userToken = await getUserRoleAuthToken(app)
+    })
+
+    it('should let users list attributes so they can propose category attributes', async () => {
+      // GIVEN a user-role token (beforeAll)
+      // WHEN listing attributes
+      // THEN the request succeeds
+      await request(app)
+        .get(Endpoints.ATTRIBUTES_BASE_PATH)
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(200)
+    })
+
+    it('should forbid users from creating attributes', async () => {
+      // GIVEN a user-role token (beforeAll)
+      // WHEN creating an attribute
+      // THEN it is forbidden
+      await request(app)
+        .post(Endpoints.ATTRIBUTES_BASE_PATH)
+        .set('Authorization', `Bearer ${userToken}`)
+        .send({ name: 'User-Attribute', valueType: AttributeValueType.STRING })
+        .expect(403)
+        .expect(res => expect((res.body as APIError).code).toBe(ErrorCode.FORBIDDEN))
     })
   })
 })

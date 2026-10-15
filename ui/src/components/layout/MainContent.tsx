@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Content } from 'react-bulma-components'
 import Index from '@/components/index/Index'
 import OverallRankings from '@/components/rankings/OverallRankings'
-import RequireAdmin, { RequireLogin } from '@/components/admin/RequireAdmin'
+import RequireAdmin, { RequireLogin, RequireModerator } from '@/components/admin/RequireAdmin'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 import UserManagement from '@/components/admin/users/UserManagement'
 import CreateUserForm from '@/components/users/CreateUserForm'
@@ -12,6 +12,8 @@ import UserAccount from '@/components/account/UserAccount'
 import CategoriesPage from '@/components/categories/CategoriesPage'
 import AttributeManagement from '@/components/admin/attributes/AttributeManagement'
 import InterestFormPage from '@/components/interests/InterestFormPage'
+import ModerationPage from '@/components/moderation/ModerationPage'
+import MyChangeRequestsPage from '@/components/moderation/MyChangeRequestsPage'
 import ImportPage from '@/components/interests/ImportPage'
 import InterestPage from '@/components/interests/InterestPage'
 import { RankingScope } from '@/components/types'
@@ -32,6 +34,8 @@ const MainContent = () => (
         <Route path="/interests/:itemId" element={<RequireLogin><InterestPage /></RequireLogin>} />
         <Route path="/interests/:itemId/edit" element={<RequireLogin><InterestFormPage /></RequireLogin>} />
         <Route path="/categories" element={<RequireLogin><CategoriesPage /></RequireLogin>} />
+        <Route path="/change-requests" element={<RequireLogin><MyChangeRequestsPage /></RequireLogin>} />
+        <Route path="/moderation" element={<RequireModerator><ModerationPage /></RequireModerator>} />
         <Route path="/health" element={<HealthCheck />} />
         <Route path="/*" element={<Index />} />
         {/* Add other routes as needed */}

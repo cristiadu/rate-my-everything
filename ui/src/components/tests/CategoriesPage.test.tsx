@@ -38,19 +38,40 @@ describe('CategoriesPage', () => {
     expect(screen.getByText('Author')).toBeInTheDocument()
   })
 
-  test('lets non-admins browse without editing', async () => {
+  test('lets non-admins suggest a new category for approval', async () => {
     // GIVEN a logged-in user without the admin role
     loginAs([UserRole.USER])
-
-    // WHEN the page loads
     renderPage()
     await screen.findByText('Books')
 
-    // THEN no attributes are fetched and no editing controls are shown
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/categories'])
-    expect(screen.queryByRole('form', { name: 'Create category' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Edit' })).not.toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: 'Delete' })).not.toBeInTheDocument()
+    // WHEN they fill in and send a new category
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Games' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Send for approval' }))
+
+    // THEN a change request is sent instead of creating the category
+    expect(await screen.findByText('Your change was sent to the moderators for approval.')).toBeInTheDocument()
+    const [url, options] = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST') ?? []
+    expect(url).toBe('http://localhost:3000/api/change-requests')
+    expect(JSON.parse(String(options?.body))).toEqual({
+      targetType: 'category', action: 'create', changes: { name: 'Games', description: '', attributeIds: [] },
+    })
+  })
+
+  test('lets non-admins suggest removing a category by id', async () => {
+    // GIVEN a user who confirms the removal prompt
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    loginAs([UserRole.USER])
+    renderPage()
+    const booksRow = (await screen.findByText('Books')).closest('tr') as HTMLElement
+
+    // WHEN suggesting the removal of Books
+    fireEvent.click(within(booksRow).getByRole('button', { name: 'Suggest removal' }))
+
+    // THEN a deletion change request names Books by id and nothing is deleted
+    expect(await screen.findByText('Your change was sent to the moderators for approval.')).toBeInTheDocument()
+    const [, options] = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST') ?? []
+    expect(JSON.parse(String(options?.body))).toEqual({ targetType: 'category', action: 'delete', targetId: 10 })
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false)
   })
 
   test('lets admins link attributes when editing a category', async () => {
