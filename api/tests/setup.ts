@@ -12,20 +12,31 @@ dotenv.config({
   override: true
 })
 
+/** How many times setup checks whether the database connection is ready. */
+const DB_INIT_MAX_RETRIES = 15
+
+/** Wait between database readiness checks, in milliseconds. */
+const DB_INIT_RETRY_DELAY_MS = 3000
+
+/** Wait for routes to be registered after the database connects, in milliseconds. */
+const ROUTE_REGISTRATION_DELAY_MS = 2000
+
+/** bcrypt cost factor used to hash the test user's password. */
+const PASSWORD_SALT_ROUNDS = 10
+
 export const TEST_USER = {
   email: 'test@example.com',
   password: 'Password123!',
 }
 
-// Export the setup function for global setup
-export default async function setup() {
+/** Global test setup: waits for the database, then creates the admin test user and stores its token. */
+const setup = async () => {
     const app = await appReady
-    const maxRetries = 15
     let retries = 0
-    while (!DBConnection.isInitialized && retries < maxRetries) {
-      console.log(`Waiting for database connection to initialize... (Attempt ${retries + 1}/${maxRetries})`)
+    while (!DBConnection.isInitialized && retries < DB_INIT_MAX_RETRIES) {
+      console.log(`Waiting for database connection to initialize... (Attempt ${retries + 1}/${DB_INIT_MAX_RETRIES})`)
       try {
-        await new Promise(resolve => setTimeout(resolve, 3000))
+        await new Promise(resolve => setTimeout(resolve, DB_INIT_RETRY_DELAY_MS))
         retries++
       } catch (err) {
         console.error('Error waiting for database initialization:', err)
@@ -44,7 +55,7 @@ export default async function setup() {
         const testUser = new User()
         testUser.username = TEST_USER.email
         testUser.email = TEST_USER.email
-        testUser.password = await bcrypt.hash(TEST_USER.password, 10)
+        testUser.password = await bcrypt.hash(TEST_USER.password, PASSWORD_SALT_ROUNDS)
         testUser.roles = [UserRole.ADMIN, UserRole.USER]
         await userRepo.save(testUser)
         console.log('Test user created successfully')
@@ -57,8 +68,7 @@ export default async function setup() {
     }
     
     try {
-      // Wait a bit for routes to be registered after DB connection
-      await new Promise(resolve => setTimeout(resolve, 2000))
+      await new Promise(resolve => setTimeout(resolve, ROUTE_REGISTRATION_DELAY_MS))
       
       console.log('Attempting to get auth token...')
       const loginResponse = await request(app)
@@ -89,3 +99,5 @@ export default async function setup() {
       }
     }
 }
+
+export default setup

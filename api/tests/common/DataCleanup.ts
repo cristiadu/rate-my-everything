@@ -7,6 +7,7 @@ import RatedItem from '@/models/RatedItem'
 import { getAuthTokenFromFile } from '@@/testutils/common/Auth'
 import { Endpoints } from '@@/testutils/common/constants'
 
+/** Deletes every attribute. */
 export const cleanupAllAttributes = async (app: Express) => {
   const testAuthToken = await getAuthTokenFromFile()
   const attributesRes = await request(app)
@@ -23,7 +24,9 @@ export const cleanupAllAttributes = async (app: Express) => {
   }
 }
 
+/** Deletes every category, after deleting the items that belong to them. */
 export const cleanupAllCategories = async (app: Express) => {
+  await cleanupAllItems(app)
   const testAuthToken = await getAuthTokenFromFile()
   const categoriesRes = await request(app)
     .get(Endpoints.CATEGORIES_BASE_PATH)
@@ -33,13 +36,15 @@ export const cleanupAllCategories = async (app: Express) => {
   const categories = categoriesRes.body as Category[]
   for (const cat of categories) {
     await request(app)
-      .delete(`${Endpoints.CATEGORIES_BASE_PATH}/${cat.id}`)
+      .delete(`${Endpoints.CATEGORIES_BASE_PATH}/${cat.name}`)
       .set('Authorization', `Bearer ${testAuthToken}`)
       .expect(204)
   }
 }
 
+/** Deletes every item, after deleting the ratings of them. */
 export const cleanupAllItems = async (app: Express) => {
+  await cleanupAllRatedItems(app)
   const testAuthToken = await getAuthTokenFromFile()
   const itemsRes = await request(app)
     .get(Endpoints.ITEMS_BASE_PATH)
@@ -55,13 +60,14 @@ export const cleanupAllItems = async (app: Express) => {
   }
 }
 
+/** Deletes every rating. */
 export const cleanupAllRatedItems = async (app: Express) => {
   const testAuthToken = await getAuthTokenFromFile()
   const ratedItemsRes = await request(app)
     .get(Endpoints.RATINGS_BASE_PATH)
     .set('Authorization', `Bearer ${testAuthToken}`)
     .expect(200)
-    
+
   const ratedItems = ratedItemsRes.body as RatedItem[]
   for (const rated of ratedItems) {
     await request(app)
