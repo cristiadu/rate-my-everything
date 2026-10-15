@@ -38,7 +38,7 @@ const App = () => {
         </Navbar>
         <Hero size="fullheight" style={{ paddingTop: `${navbarHeight}px` }}>
           <Hero.Body className="is-flex is-align-items-flex-start">
-            <FilterMenu />
+            <FilterMenu topOffset={navbarHeight} />
             <Columns.Column size={10}>
               <MainContent />
             </Columns.Column>

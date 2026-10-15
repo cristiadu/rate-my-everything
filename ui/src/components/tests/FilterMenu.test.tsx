@@ -15,7 +15,7 @@ const renderFilteredRankings = () => render(
   <AuthProvider>
     <FilterProvider>
       <MemoryRouter>
-        <FilterMenu />
+        <FilterMenu topOffset={0} />
         <OverallRankings scope={RankingScope.ALL} />
       </MemoryRouter>
     </FilterProvider>

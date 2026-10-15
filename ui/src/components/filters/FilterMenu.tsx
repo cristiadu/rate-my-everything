@@ -12,11 +12,17 @@ import { filterAttributes, toAppliedFilters } from '@/components/filters/filterQ
 import { useFilters } from '@/components/filters/FilterContext'
 import { useAuth } from '@/components/users/AuthContext'
 
+/** Props for the filter panel. */
+interface FilterMenuProps {
+  /** Height of the fixed header above the panel, in pixels, so the panel starts right under the top menu. */
+  topOffset: number;
+}
+
 /**
  * Collapsible panel with the filters for the interests and rankings pages: name, categories, the chosen categories'
  * attributes and a grade range. Applying them hands them to the pages, which ask the API for the matching ratings.
  */
-const FilterMenu = () => {
+const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
   const [isOpen, setIsOpen] = useState(false)
   const { isAuthenticated } = useAuth()
   const { filters, setFilters } = useFilters()
@@ -33,9 +39,15 @@ const FilterMenu = () => {
     bmCross: {
       background: '#373a47',
     },
-    // Pins the closed panel to the window's left edge so it slides fully out of view, leaving only its arrow
+    // Pins the panel to the window's left edge right under the top menu, so the closed panel slides fully out of view
     bmMenuWrap: {
       left: '0',
+      top: `${topOffset}px`,
+      height: `calc(100% - ${topOffset}px)`,
+    },
+    // Dims only the page below the top menu while the panel is open
+    bmOverlay: {
+      top: `${topOffset}px`,
     },
   }
 
@@ -75,14 +87,16 @@ const FilterMenu = () => {
 
   return (
     <SlideMenu
+      // react-burger-menu only applies new styles when it opens or closes, so it is remounted when the header height changes
+      key={topOffset}
       isOpen={isOpen}
       onStateChange={(state: { isOpen: boolean }) => setIsOpen(state.isOpen)}
-      className="box has-background-danger-dark-invert"
+      className="box has-background-danger"
       styles={styles}
     >
       <Block>
         <Arrow isOpen={isOpen} setIsOpen={setIsOpen} />
-        <Tag color="danger" backgroundColor="danger-light" size="large">FILTERS</Tag>
+        <Tag color="danger" backgroundColor="danger-light" textColor="danger-dark" size="large">FILTERS</Tag>
         <form onSubmit={handleSubmit} style={{ marginTop: '20px' }}>
           {error && <p className="help is-danger">{error}</p>}
           <div className="field">
