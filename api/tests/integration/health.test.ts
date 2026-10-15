@@ -7,8 +7,11 @@ import { Endpoints } from '@@/testutils/common/constants'
 describe('Health API Integration Test', async () => {
   const testApp = await appReady
 
-  describe('Health API Integration Test', () => {
+  describe(`GET ${Endpoints.HEALTH_BASE_PATH}`, () => {
     it('should return health status with database connected', async () => {
+      // GIVEN the running app with its database connected
+      // WHEN its health is requested
+      // THEN the app and the database report healthy
       await request(testApp)
         .get(Endpoints.HEALTH_BASE_PATH)
         .expect('Content-Type', /json/)
