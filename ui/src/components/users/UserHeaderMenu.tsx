@@ -47,13 +47,12 @@ const UserHeaderMenu = () => {
   }
 
   return (
-    <Level p={2} backgroundColor="dark">
+    <Level p={2} backgroundColor="dark" textColor="primary">
       <Level.Side pr={2} align="left">
         <Level.Item>
           <Heading
             size={6}
             subtitle
-            textColor="primary"
           >
             {isAuthenticated ? 'Welcome!' : 'User Section'}
           </Heading>
@@ -65,7 +64,7 @@ const UserHeaderMenu = () => {
           <Level.Item>
             <Form.Field horizontal>
               <Form.Field.Label className="is-align-items-center is-flex">
-                <Form.Label size="small" textColor="primary">
+                <Form.Label size="small" textColor="danger">
                   Username
                 </Form.Label>
               </Form.Field.Label>
@@ -86,7 +85,7 @@ const UserHeaderMenu = () => {
           <Level.Item>
             <Form.Field horizontal>
               <Form.Field.Label className="is-align-items-center is-flex">
-                <Form.Label size="small" textColor="primary">
+                <Form.Label size="small" textColor="danger">
                   Password
                 </Form.Label>
               </Form.Field.Label>
@@ -108,14 +107,14 @@ const UserHeaderMenu = () => {
           <Level.Item>
             <Button
               size="small"
-              color="primary"
+              color="danger"
               mr={2}
               onClick={handleLogin}
               loading={isLoading}
             >
               Log In
             </Button>
-            <Button size="small" color="primary" outlined>New Account</Button>
+            <Button size="small" color="info">New Account</Button>
           </Level.Item>
           {error && (
             <Level.Item>
@@ -126,7 +125,7 @@ const UserHeaderMenu = () => {
       ) : (
         <Level.Side align="right">
           <Level.Item>
-            <Button size="small" color="primary" onClick={logout}>Log Out</Button>
+            <Button size="small" color="danger" onClick={logout}>Log Out</Button>
           </Level.Item>
         </Level.Side>
       )}

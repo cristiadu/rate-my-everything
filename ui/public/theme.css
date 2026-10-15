@@ -1,92 +1,31 @@
-/* Shared palette: primary is the top menu's rose, so every is-primary element follows the menu's identity */
+/* Shared palette: primary takes the top menu's danger pink, so is-primary elements match the menu */
 :root {
-  --bulma-primary-h: 348deg;
-  --bulma-primary-s: 100%;
-  --bulma-primary-l: 70%;
-  --bulma-primary-invert-l: var(--bulma-primary-05-l);
-  --bulma-primary-light-invert-l: var(--bulma-primary-25-l);
-  --bulma-primary-dark-l: var(--bulma-primary-35-l);
-  --bulma-primary-dark-invert-l: var(--bulma-primary-100-l);
-  --bulma-primary-on-scheme-l: 40%;
+  --bulma-primary-h: var(--bulma-danger-h);
+  --bulma-primary-s: var(--bulma-danger-s);
+  --bulma-primary-l: var(--bulma-danger-l);
+  --bulma-primary-invert-l: var(--bulma-danger-invert-l);
+  --bulma-primary-light-l: var(--bulma-danger-light-l);
+  --bulma-primary-light-invert-l: var(--bulma-danger-light-invert-l);
+  --bulma-primary-dark-l: var(--bulma-danger-dark-l);
+  --bulma-primary-dark-invert-l: var(--bulma-danger-dark-invert-l);
+  --bulma-primary-on-scheme-l: var(--bulma-danger-on-scheme-l);
 }
 
-/* Links use a deeper shade of the menu's rose so link text stays readable on white */
+/* Links use the menu's pink at the darker on-white shade Bulma picks for readable text */
 :root {
-  --bulma-link-h: var(--bulma-primary-h);
-  --bulma-link-s: var(--bulma-primary-s);
-  --bulma-link-l: 40%;
-  --bulma-link-invert-l: var(--bulma-link-100-l);
-  --bulma-link-on-scheme-l: 40%;
+  --bulma-link-h: var(--bulma-danger-h);
+  --bulma-link-s: var(--bulma-danger-s);
+  --bulma-link-l: var(--bulma-danger-on-scheme-l);
+  --bulma-link-on-scheme-l: var(--bulma-danger-on-scheme-l);
 }
 
-/* Danger moves to a true red so destructive actions and errors don't look like the brand color */
-:root {
-  --bulma-danger-h: 4deg;
-  --bulma-danger-s: 85%;
-  --bulma-danger-l: 52%;
-  --bulma-danger-invert-l: var(--bulma-danger-100-l);
-  --bulma-danger-light-invert-l: var(--bulma-danger-35-l);
-  --bulma-danger-on-scheme-l: 45%;
+/* Table headers get a menu-pink underline instead of the default grey one */
+.table thead th,
+.content table thead th {
+  border-bottom-color: var(--bulma-danger);
 }
 
-/* A faint rose page background ties the content area to the header */
-:root {
-  --bulma-body-background-color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), 98%);
-}
-
-/* Page headings use the deep rose of the palette */
-.title {
-  --bulma-title-color: var(--bulma-primary-dark);
-}
-
-/* Headings and table headers inside the main content area use the same deep rose */
-.content {
-  --bulma-content-heading-color: var(--bulma-primary-dark);
-  --bulma-content-table-head-cell-color: var(--bulma-primary-dark);
-}
-
-/* Boxes and cards get a rose top edge, like the menu bar above them */
-.box,
-.card {
-  border-top: 4px solid var(--bulma-primary);
-}
-
-/* Table headers sit on a light rose band with deep rose text */
-.table {
-  --bulma-table-head-background-color: var(--bulma-primary-light);
-  --bulma-table-head-cell-color: var(--bulma-primary-dark);
-  --bulma-table-head-cell-border-width: 0 0 2px;
-  --bulma-table-striped-row-even-background-color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), 97%);
-}
-
-/* Table header border follows the palette instead of the default grey */
-.table thead th {
-  border-color: var(--bulma-primary);
-}
-
-/* Untinted tags take the light rose of the palette */
-.tag:not([class*='is-']) {
-  background-color: var(--bulma-primary-light);
-  color: var(--bulma-primary-dark);
-}
-
-/* Dropdown items in the top menu highlight with the menu's rose on hover and when current */
-.navbar-dropdown a.navbar-item:hover,
-.navbar-dropdown a.navbar-item.is-active {
-  background-color: var(--bulma-primary-light);
-  color: var(--bulma-primary-dark);
-}
-
-/* The current page's top menu item stays marked with the darker menu shade */
-.navbar.is-primary .navbar-start > a.navbar-item.is-active,
-.navbar.is-primary .navbar-start .navbar-link.is-active {
-  background-color: var(--bulma-primary-dark);
-  color: var(--bulma-primary-dark-invert);
-}
-
-/* The footer closes the page with the same light rose as the header body */
+/* The footer repeats the header's light pink band so the page is framed by the menu's colors */
 .footer {
-  --bulma-footer-background-color: var(--bulma-primary-light);
-  border-top: 4px solid var(--bulma-primary);
-  color: var(--bulma-primary-dark);
+  --bulma-footer-background-color: var(--bulma-danger-light);
 }

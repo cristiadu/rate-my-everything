@@ -15,7 +15,7 @@ const HeaderMenu = () => {
   const { isAuthenticated, token } = useAuth()
 
   return (
-    <Navbar active={isActive} color="primary">
+    <Navbar active={isActive} color="danger">
       <Navbar.Brand>
         <Navbar.Item href="#">
           <img

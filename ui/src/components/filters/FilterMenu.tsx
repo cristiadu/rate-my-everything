@@ -13,15 +13,15 @@ const FilterMenu = () => {
       display: 'none',
     },
     bmCross: {
-      background: 'var(--bulma-primary-dark)',
+      background: '#373a47',
     },
   }
 
   return (
-    <SlideMenu isOpen={isOpen} className="box has-background-primary-light" styles={styles}>
+    <SlideMenu isOpen={isOpen} className="box has-background-danger-dark-invert" styles={styles}>
       <Block>
         <Arrow isOpen={isOpen} setIsOpen={setIsOpen} />
-        <Tag color="primary" size="large">FILTERS</Tag>
+        <Tag color="danger" backgroundColor="danger-light" size="large">FILTERS</Tag>
         <Form.Field color="dark" style={{ marginTop: '20px' }}>
           <Form.Label size="medium">Title</Form.Label>
           <Form.Control>
@@ -51,7 +51,7 @@ const FilterMenu = () => {
             <Form.Input type="number" min="0" max="10" placeholder="Search by rating" />
           </Form.Control>
         </Form.Field>
-        <Button color="primary">Submit</Button>
+        <Button color="dark">Submit</Button>
       </Block>
     </SlideMenu>
   )
