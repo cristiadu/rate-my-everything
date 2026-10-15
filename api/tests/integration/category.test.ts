@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, beforeEach, afterAll } from 'vitest'
 import request from 'supertest'
 import { appReady } from '@/index'
 import Category from '@/models/Category'
@@ -8,12 +8,12 @@ import APIError from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { cleanupAllCategories } from '@@/testutils/common/DataCleanup'
+import { createTestCategory } from '@@/testutils/common/Categories'
 import { Endpoints } from '@@/testutils/common/constants'
 
 describe('Category API Integration Tests', async () => {
   const app = await appReady
   const testAuthToken = await getAuthTokenFromFile()
-  let createdCategory: Category
 
   beforeAll(async () => {
     await cleanupAllCategories(app)
@@ -21,31 +21,27 @@ describe('Category API Integration Tests', async () => {
 
   describe(`POST ${Endpoints.CATEGORIES_BASE_PATH}`, () => {
     it('should create a new category when authorized', async () => {
-      const newCategory = {
-        name: `Test-Category-${Date.now()}`,
-        description: 'Created during integration tests'
-      } as Category
-
+      // GIVEN a new category name and description
+      // WHEN an admin creates it
+      // THEN it comes back with an id and the sent fields
       await request(app)
         .post(Endpoints.CATEGORIES_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send(newCategory)
+        .send({ name: 'Created-Category', description: 'Created during integration tests' })
         .expect('Content-Type', /json/)
         .expect(201)
         .expect(res => {
           const apiResult = res.body as Category
           expect(apiResult.id).toBeDefined()
-          expect(apiResult.name).toBe(newCategory.name)
-          expect(apiResult.description).toBe(newCategory.description)
-          createdCategory = apiResult
+          expect(apiResult.name).toBe('Created-Category')
+          expect(apiResult.description).toBe('Created during integration tests')
         })
-
-      if (!createdCategory) {
-        throw new Error('Failed to create category in test setup')
-      }
     })
 
     it('should fail to create a category with missing name', async () => {
+      // GIVEN a category without a name
+      // WHEN an admin creates it
+      // THEN the request fails validation
       await request(app)
         .post(Endpoints.CATEGORIES_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -61,6 +57,9 @@ describe('Category API Integration Tests', async () => {
     })
 
     it('should fail to create a category when unauthorized', async () => {
+      // GIVEN no authorization header
+      // WHEN creating a category
+      // THEN the request is rejected as unauthorized
       await request(app)
         .post(Endpoints.CATEGORIES_BASE_PATH)
         .set('Authorization', '')
@@ -77,48 +76,52 @@ describe('Category API Integration Tests', async () => {
   })
 
   describe(`PUT ${Endpoints.CATEGORIES_BASE_PATH}/:name`, () => {
+    let categoryToUpdate: Category
+
+    beforeEach(async () => {
+      categoryToUpdate = await createTestCategory(app, testAuthToken, `Update-Category-${Date.now()}`, 'Before the update')
+    })
+
     it('should update a category', async () => {
-      if (!createdCategory) {
-        throw new Error('Test category not initialized')
-      }
-
-      const updatedDesc = 'Updated category description'
-
+      // GIVEN a category described as "Before the update" (beforeEach)
+      // WHEN its description is updated
+      // THEN the new description comes back on the same category
       await request(app)
-        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${createdCategory.name}`)
+        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${categoryToUpdate.name}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send({ description: updatedDesc })
+        .send({ description: 'Updated category description' })
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
           const apiResult = res.body as Category
-          expect(apiResult.description).toBe(updatedDesc)
-          expect(apiResult.name).toBe(createdCategory.name)
-          expect(apiResult.id).toBe(createdCategory.id)
-          createdCategory = apiResult
+          expect(apiResult.description).toBe('Updated category description')
+          expect(apiResult.name).toBe(categoryToUpdate.name)
+          expect(apiResult.id).toBe(categoryToUpdate.id)
         })
     })
 
     it('should update same category with same name', async () => {
-      if (!createdCategory) {
-        throw new Error('Test category not initialized')
-      }
-
+      // GIVEN a category described as "Before the update" (beforeEach)
+      // WHEN it is updated with its own name
+      // THEN it comes back unchanged
       await request(app)
-        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${createdCategory.name}`)
+        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${categoryToUpdate.name}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send({ name: createdCategory.name })
+        .send({ name: categoryToUpdate.name })
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
           const apiResult = res.body as Category
-          expect(apiResult.description).toBe(createdCategory.description)
-          expect(apiResult.name).toBe(createdCategory.name)
-          expect(apiResult.id).toBe(createdCategory.id)
+          expect(apiResult.description).toBe('Before the update')
+          expect(apiResult.name).toBe(categoryToUpdate.name)
+          expect(apiResult.id).toBe(categoryToUpdate.id)
         })
     })
 
     it('should fail to update a non-existent category', async () => {
+      // GIVEN no category named non-existent-category
+      // WHEN updating it
+      // THEN it is not found
       await request(app)
         .put(`${Endpoints.CATEGORIES_BASE_PATH}/non-existent-category`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -134,8 +137,11 @@ describe('Category API Integration Tests', async () => {
     })
 
     it('should fail to update a category when unauthorized', async () => {
+      // GIVEN an existing category (beforeEach) and no authorization header
+      // WHEN updating it
+      // THEN the request is rejected as unauthorized
       await request(app)
-        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${createdCategory.name}`)
+        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${categoryToUpdate.name}`)
         .set('Authorization', '')
         .send({ description: 'Unauthorized update attempt' })
         .expect('Content-Type', /json/)
@@ -149,32 +155,20 @@ describe('Category API Integration Tests', async () => {
     })
 
     it('should fail when updating a category to a name that already exists', async () => {
-      if (!createdCategory) {
-        throw new Error('Test category not initialized')
-      }
+      // GIVEN another category named Taken-Category
+      await createTestCategory(app, testAuthToken, 'Taken-Category', 'Owns the name')
 
-      // First, create another category to cause a name conflict
-      const anotherCategory = {
-        name: `Another-Category-${Date.now()}`,
-        description: 'Another category for name conflict test'
-      } as Category
-
+      // WHEN the first category is renamed to Taken-Category
+      // THEN the rename is rejected
       await request(app)
-        .post(Endpoints.CATEGORIES_BASE_PATH)
+        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${categoryToUpdate.name}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send(anotherCategory)
-        .expect(201)
-
-      // Now, attempt to update the original category to have the same name
-      await request(app)
-        .put(`${Endpoints.CATEGORIES_BASE_PATH}/${createdCategory.name}`)
-        .set('Authorization', `Bearer ${testAuthToken}`)
-        .send({ name: anotherCategory.name })
+        .send({ name: 'Taken-Category' })
         .expect('Content-Type', /json/)
         .expect(422)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe(`Resource "Category" with id "${anotherCategory.name}" already exists`)
+          expect(apiError.message).toBe('Resource "Category" with id "Taken-Category" already exists')
           expect(apiError.code).toBe(ErrorCode.RESOURCE_ALREADY_EXISTS)
           expect(apiError.status).toBe(422)
         })
@@ -182,25 +176,31 @@ describe('Category API Integration Tests', async () => {
   })
 
   describe(`GET ${Endpoints.CATEGORIES_BASE_PATH}/:name`, () => {
-    it('should return a specific category by name', async () => {
-      if (!createdCategory) {
-        throw new Error('Test category not initialized')
-      }
+    beforeAll(async () => {
+      await createTestCategory(app, testAuthToken, 'Fetched-Category', 'Read by name')
+    })
 
+    it('should return a specific category by name', async () => {
+      // GIVEN the category Fetched-Category (beforeAll)
+      // WHEN getting it by name
+      // THEN its fields come back
       await request(app)
-        .get(`${Endpoints.CATEGORIES_BASE_PATH}/${createdCategory.name}`)
+        .get(`${Endpoints.CATEGORIES_BASE_PATH}/Fetched-Category`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
           const apiResult = res.body as Category
-          expect(apiResult.id).toBe(createdCategory.id)
-          expect(apiResult.name).toBe(createdCategory.name)
-          expect(apiResult.description).toBe(createdCategory.description)
+          expect(apiResult.id).toBeDefined()
+          expect(apiResult.name).toBe('Fetched-Category')
+          expect(apiResult.description).toBe('Read by name')
         })
     })
 
     it('should fail to get a non-existent category', async () => {
+      // GIVEN no category named non-existent-category
+      // WHEN getting it by name
+      // THEN it is not found
       await request(app)
         .get(`${Endpoints.CATEGORIES_BASE_PATH}/non-existent-category`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -215,8 +215,11 @@ describe('Category API Integration Tests', async () => {
     })
 
     it('should fail to get a category when unauthorized', async () => {
+      // GIVEN the category Fetched-Category (beforeAll) and no authorization header
+      // WHEN getting it by name
+      // THEN the request is rejected as unauthorized
       await request(app)
-        .get(`${Endpoints.CATEGORIES_BASE_PATH}/${createdCategory.name}`)
+        .get(`${Endpoints.CATEGORIES_BASE_PATH}/Fetched-Category`)
         .set('Authorization', '')
         .expect('Content-Type', /json/)
         .expect(401)
@@ -230,27 +233,34 @@ describe('Category API Integration Tests', async () => {
   })
 
   describe(`GET ${Endpoints.CATEGORIES_BASE_PATH}`, () => {
-    it('should return all categories', async () => {
-      if (!createdCategory) {
-        throw new Error('Test category not initialized')
-      }
+    beforeAll(async () => {
+      await cleanupAllCategories(app)
+      await createTestCategory(app, testAuthToken, 'Listed-Category-A', 'First listed')
+      await createTestCategory(app, testAuthToken, 'Listed-Category-B', 'Second listed')
+    })
 
+    it('should return all categories', async () => {
+      // GIVEN exactly the categories Listed-Category-A and Listed-Category-B (beforeAll)
+      // WHEN listing categories
+      // THEN both come back
       await request(app)
         .get(Endpoints.CATEGORIES_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect('Content-Type', /json/)
         .expect(200)
         .expect(res => {
-          expect(Array.isArray(res.body)).toBe(true)
-          expect(res.body.length).toBe(2)
-          const apiResult = res.body[0] as Category
-          expect(apiResult.id).toBe(createdCategory.id)
-          expect(apiResult.name).toBe(createdCategory.name)
-          expect(apiResult.description).toBe(createdCategory.description)
+          const categories = res.body as Category[]
+          expect(categories.map((category) => [category.name, category.description]).sort()).toEqual([
+            ['Listed-Category-A', 'First listed'],
+            ['Listed-Category-B', 'Second listed'],
+          ])
         })
     })
 
     it('should fail to get categories when unauthorized', async () => {
+      // GIVEN no authorization header
+      // WHEN listing categories
+      // THEN the request is rejected as unauthorized
       await request(app)
         .get(Endpoints.CATEGORIES_BASE_PATH)
         .set('Authorization', '')
@@ -263,59 +273,50 @@ describe('Category API Integration Tests', async () => {
           expect(apiError.status).toBe(401)
         })
     })
+  })
+
+  describe(`GET ${Endpoints.CATEGORIES_BASE_PATH} with no categories`, () => {
+    beforeAll(async () => {
+      await cleanupAllCategories(app)
+    })
 
     it('should return an empty array when no categories exist', async () => {
-      // First, delete existing categories
-      const categoriesResponse = await request(app)
-        .get(Endpoints.CATEGORIES_BASE_PATH)
-        .set('Authorization', `Bearer ${testAuthToken}`)
-        .expect(200)
-
-      const categories = categoriesResponse.body
-      for (const category of categories) {
-        await request(app)
-          .delete(`${Endpoints.CATEGORIES_BASE_PATH}/${category.name}`)
-          .set('Authorization', `Bearer ${testAuthToken}`)
-          .expect(204)
-      }
-
-      // Now, get categories and expect an empty array
+      // GIVEN no categories (beforeAll)
+      // WHEN listing categories
+      // THEN the list is empty
       await request(app)
         .get(Endpoints.CATEGORIES_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect('Content-Type', /json/)
         .expect(200)
-        .expect(res => {
-          expect(Array.isArray(res.body)).toBe(true)
-          expect(res.body.length).toBe(0)
-        })
+        .expect(res => { expect(res.body).toEqual([]) })
     })
   })
 
   describe(`DELETE ${Endpoints.CATEGORIES_BASE_PATH}/:name`, () => {
-    it('should delete a category', async () => {
-      // create category to be deleted
-      const categoryToBeDeleted = {
-        name: `Delete-Category-${Date.now()}`,
-        description: 'Category to be deleted during tests'
-      } as Category
-
-      const createRes = await request(app)
-        .post(Endpoints.CATEGORIES_BASE_PATH)
-        .set('Authorization', `Bearer ${testAuthToken}`)
-        .send(categoryToBeDeleted)
-        .expect(201)
-
-      const createdCategoryToBeDeleted = createRes.body as Category
-
-      // now delete the created category
-      await request(app)
-        .delete(`${Endpoints.CATEGORIES_BASE_PATH}/${createdCategoryToBeDeleted.name}`)
-        .set('Authorization', `Bearer ${testAuthToken}`)
-        .expect(204)
+    beforeAll(async () => {
+      await createTestCategory(app, testAuthToken, 'Delete-Category', 'Deleted during tests')
     })
 
-    it('should fail to delete a non-existent category', async () => {
+    it('should delete a category', async () => {
+      // GIVEN the category Delete-Category (beforeAll)
+      // WHEN deleting it
+      await request(app)
+        .delete(`${Endpoints.CATEGORIES_BASE_PATH}/Delete-Category`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(204)
+
+      // THEN it is gone
+      await request(app)
+        .get(`${Endpoints.CATEGORIES_BASE_PATH}/Delete-Category`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(404)
+    })
+
+    it('should not fail when deleting a non-existent category', async () => {
+      // GIVEN no category named non-existent-category
+      // WHEN deleting it
+      // THEN the delete still succeeds with no body
       await request(app)
         .delete(`${Endpoints.CATEGORIES_BASE_PATH}/non-existent-category`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -324,8 +325,11 @@ describe('Category API Integration Tests', async () => {
     })
 
     it('should fail to delete a category when unauthorized', async () => {
+      // GIVEN no authorization header
+      // WHEN deleting a category
+      // THEN the request is rejected as unauthorized
       await request(app)
-        .delete(`${Endpoints.CATEGORIES_BASE_PATH}/${createdCategory.name}`)
+        .delete(`${Endpoints.CATEGORIES_BASE_PATH}/Delete-Category`)
         .set('Authorization', '')
         .expect('Content-Type', /json/)
         .expect(401)
@@ -351,13 +355,17 @@ describe('Category API Integration Tests', async () => {
       linkedAttribute = attributeRes.body as Attribute
     })
 
+    beforeEach(async () => {
+      const categoryRes = await request(app)
+        .post(Endpoints.CATEGORIES_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ name: `Linked-Category-${Date.now()}`, attributeIds: [linkedAttribute.id] })
+        .expect(201)
+      linkedCategory = categoryRes.body as Category
+    })
+
     afterAll(async () => {
-      if (linkedCategory) {
-        await request(app)
-          .delete(`${Endpoints.CATEGORIES_BASE_PATH}/${linkedCategory.name}`)
-          .set('Authorization', `Bearer ${testAuthToken}`)
-          .expect(204)
-      }
+      await cleanupAllCategories(app)
       await request(app)
         .delete(`${Endpoints.ATTRIBUTES_BASE_PATH}/${linkedAttribute.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
@@ -371,17 +379,17 @@ describe('Category API Integration Tests', async () => {
       await request(app)
         .post(Endpoints.CATEGORIES_BASE_PATH)
         .set('Authorization', `Bearer ${testAuthToken}`)
-        .send({ name: `Linked-Category-${Date.now()}`, attributeIds: [linkedAttribute.id] })
+        .send({ name: 'New-Linked-Category', attributeIds: [linkedAttribute.id] })
         .expect('Content-Type', /json/)
         .expect(201)
         .expect(res => {
-          linkedCategory = res.body as Category
-          expect(linkedCategory.attributes.map(attr => attr.id)).toEqual([linkedAttribute.id])
+          const apiResult = res.body as Category
+          expect(apiResult.attributes.map(attr => attr.id)).toEqual([linkedAttribute.id])
         })
     })
 
     it('should return linked attributes when getting a category', async () => {
-      // GIVEN the linked category
+      // GIVEN a category linked to the attribute (beforeEach)
       // WHEN getting it by name
       // THEN its attributes are included
       await request(app)
@@ -395,7 +403,7 @@ describe('Category API Integration Tests', async () => {
     })
 
     it('should keep linked attributes when attributeIds is omitted on update', async () => {
-      // GIVEN the linked category
+      // GIVEN a category linked to the attribute (beforeEach)
       // WHEN updating it without attributeIds
       // THEN its attributes stay linked
       await request(app)
@@ -410,7 +418,7 @@ describe('Category API Integration Tests', async () => {
     })
 
     it('should unlink attributes when updating with an empty list', async () => {
-      // GIVEN the linked category
+      // GIVEN a category linked to the attribute (beforeEach)
       // WHEN updating it with an empty attributeIds list
       await request(app)
         .put(`${Endpoints.CATEGORIES_BASE_PATH}/${linkedCategory.name}`)
@@ -427,7 +435,7 @@ describe('Category API Integration Tests', async () => {
     })
 
     it('should reject attributeIds that are not integers', async () => {
-      // GIVEN the linked category
+      // GIVEN a category linked to the attribute (beforeEach)
       // WHEN updating it with non-integer attributeIds
       // THEN the request is rejected as invalid
       await request(app)
