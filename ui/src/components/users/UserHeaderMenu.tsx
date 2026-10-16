@@ -34,12 +34,13 @@ const UserHeaderMenu = () => {
   }
 
   return (
-    <Level p={2} backgroundColor="dark" textColor="primary">
+    <Level p={2} backgroundColor="grey-dark" textColor="primary">
       <Level.Side pr={2} align="left">
         <Level.Item>
           <Heading
             size={6}
             subtitle
+            textColor="white"
           >
             {isAuthenticated ? 'Welcome!' : 'User Section'}
           </Heading>

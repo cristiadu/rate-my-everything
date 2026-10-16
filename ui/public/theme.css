@@ -69,17 +69,16 @@
     visibility: visible;
   }
 
-  /* A menu item with a dropdown has the same berry outline as its dropdown, so the two read as one shape when open */
+  /* A menu item with a dropdown has the berry outline of its dropdown on its left and right sides only, so the two read as one shape when open */
   .navbar .navbar-item.has-dropdown > .navbar-link {
-    border: 1px solid var(--bulma-primary);
+    border-inline: 1px solid var(--bulma-primary);
   }
 
-  /* While its dropdown is open the menu item fills with a berry a bit lighter than the outline, and drops its bottom edge to join the dropdown */
+  /* While its dropdown is open the menu item fills with a berry a bit lighter than the outline */
   .navbar .navbar-item.has-dropdown.is-active > .navbar-link,
   .navbar .navbar-item.has-dropdown.is-hoverable:hover > .navbar-link,
   .navbar .navbar-item.has-dropdown.is-hoverable:focus-within > .navbar-link {
     background-color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-45-l));
-    border-bottom-color: transparent;
     color: var(--bulma-primary-invert);
   }
 }
