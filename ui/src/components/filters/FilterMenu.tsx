@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import { Block } from 'react-bulma-components'
+import { Block, Tag } from 'react-bulma-components'
 import { slide as SlideMenu } from 'react-burger-menu'
 import Arrow, { FILTER_PANEL_WIDTH } from '@/components/filters/Arrow'
 import { getCategories, type CategoryResponse } from '@/api/generated/api'
@@ -48,7 +48,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
     },
     // Lifts the panel off the page and lets the top menu cast a soft shadow on it, so the two read as separate layers
     bmMenu: {
-      padding: '3rem 1.5rem 1.5rem',
+      padding: '1.25rem 1.5rem 1.5rem',
       boxShadow: 'inset 0 8px 8px -8px rgba(0, 0, 0, 0.3), 6px 0 18px rgba(0, 0, 0, 0.18)',
     },
     // Dims only the page below the top menu while the panel is open
@@ -99,11 +99,12 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
         key={topOffset}
         isOpen={isOpen}
         onStateChange={(state: { isOpen: boolean }) => setIsOpen(state.isOpen)}
-        className="has-background-danger"
+        // The header band's light pink keeps the panel in the palette while setting it apart from the top menu
+        className="has-background-danger-light"
         styles={styles}
       >
         <Block>
-          <h2 className="title is-5">Filters</h2>
+          <Tag color="danger" size="medium" className="has-text-weight-semibold mb-4">FILTERS</Tag>
           <form onSubmit={handleSubmit}>
             {error && <p className="help is-danger">{error}</p>}
             <div className="field">
@@ -176,7 +177,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
             </div>
             <div className="field is-grouped">
               <div className="control">
-                <button className="button is-dark" type="submit">Apply</button>
+                <button className="button is-primary" type="submit">Apply</button>
               </div>
               <div className="control">
                 <button className="button is-light" type="button" onClick={clearFilters}>Clear</button>

@@ -8,7 +8,9 @@ import { AuthProvider } from '@/components/users/AuthContext'
 import { RankingScope, UserRole } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
-import { booksCategory, duneRating, moviesCategory } from '@/components/tests/common/Interests'
+import {
+  booksCategory, duneRating, filmsCategory, moviesCategory,
+} from '@/components/tests/common/Interests'
 
 /** Renders the filter panel next to the all rankings page, sharing the applied filters. */
 const renderFilteredRankings = () => render(
@@ -64,18 +66,20 @@ describe('FilterMenu', () => {
     expect(screen.queryByLabelText('Author')).not.toBeInTheDocument()
   })
 
-  test('shows the attributes of the chosen category, picking the input from its value type', async () => {
-    // GIVEN the API lists Books with Author (text), Pages (number) and Finished (yes/no)
-    fetchMock.mockImplementation(async (url) => jsonResponse(String(url).endsWith('/categories') ? [booksCategory] : []))
+  test('shows every attribute of the chosen categories, picking the input from each value type', async () => {
+    // GIVEN Books with Author (text), Pages (number) and Finished (yes/no), and Films with Released (date)
+    fetchMock.mockImplementation(async (url) => jsonResponse(String(url).endsWith('/categories') ? [booksCategory, filmsCategory] : []))
     renderFilteredRankings()
 
-    // WHEN Books is chosen
+    // WHEN both categories are chosen
     fireEvent.click(await screen.findByLabelText('Books'))
+    fireEvent.click(screen.getByLabelText('Films'))
 
-    // THEN each attribute gets its input type
+    // THEN every attribute of both is shown, each with the input for its value type
     expect(screen.getByLabelText('Author')).toHaveAttribute('type', 'text')
     expect(screen.getByLabelText('Pages')).toHaveAttribute('type', 'number')
     expect(screen.getByLabelText('Finished')).toHaveAttribute('type', 'checkbox')
+    expect(screen.getByLabelText('Released')).toHaveAttribute('type', 'date')
   })
 
   test('shows the API error when the categories cannot be loaded', async () => {
