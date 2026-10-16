@@ -3,9 +3,11 @@ import request from 'supertest'
 import { appReady } from '@/index'
 import APIError from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
-import { UserTokenResponse } from '@/models/User'
+import { UserTokenResponse, type UserResponse } from '@/models/User'
+import UserRole from '@/models/UserRole'
 import { TEST_USER } from '@@/testutils/setup'
 import { Endpoints } from '@@/testutils/common/constants'
+import { registerAndLogin } from '@@/testutils/common/Auth'
 
 describe('Login API Integration Tests', async () => {
   const testApp = await appReady
@@ -70,6 +72,30 @@ describe('Login API Integration Tests', async () => {
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
           expect(apiError.status).toBe(400)
         })
+    })
+  })
+
+  describe(`POST ${Endpoints.LOGIN_BASE_PATH}/register`, () => {
+    it('should give a new account only the user role, even when other roles are sent', async () => {
+      // GIVEN a sign-up that asks for the admin role
+      // WHEN registering and then logging in
+      const { registerRes, loginRes } = await registerAndLogin(testApp, 'signup', { roles: [UserRole.ADMIN] })
+
+      // THEN the account and its token hold only the user role
+      expect((registerRes.body as UserResponse).roles).toEqual([UserRole.USER])
+      expect((loginRes.body as UserTokenResponse).user.roles).toEqual([UserRole.USER])
+    })
+
+    it('should let a new account use the endpoints for signed-in users', async () => {
+      // GIVEN a freshly registered account
+      const { loginRes } = await registerAndLogin(testApp, 'signup-access')
+
+      // WHEN it lists its own ratings
+      // THEN the request is allowed
+      await request(testApp)
+        .get(`${Endpoints.RATINGS_BASE_PATH}/mine`)
+        .set('Authorization', `Bearer ${(loginRes.body as UserTokenResponse).token}`)
+        .expect(200)
     })
   })
 })
