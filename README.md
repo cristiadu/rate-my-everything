@@ -37,6 +37,27 @@ This is a monorepo with two main apps:
 | --- | --- | --- |
 | `LASTFM_API_KEY` | none | Importing all pages of a Last.fm user's most played artists and albums. Create a key at https://www.last.fm/api/account/create. |
 | `YOUTUBE_API_KEY` | none | Importing a public YouTube video or every available video in a playlist. Create a key for the YouTube Data API v3 in the Google Cloud console. |
+| `PORT` | `3000` | Port the API listens on. |
+| `IP` | every address | Address the API listens on; alwaysdata sets it for its Node.js sites. |
+| `UI_DIST_DIR` | none | Folder of the built UI. When set, the API serves the UI next to `/api` and answers every other path with its `index.html`; locally, webpack serves the UI instead. |
+
+## Deployment
+
+The app runs on the free [alwaysdata](https://www.alwaysdata.com/en/offers/) plan (no card, 1 GB disk, 256 MB RAM, personal use), with the API serving the UI from one Node.js site at `https://<account>.alwaysdata.net`. The production UI build calls the API on the same site's `/api`.
+
+The **Deploy to alwaysdata** workflow runs on each push to `main`: it builds both apps, copies the API with its production dependencies and the UI to `~/rate-my-everything/` over SSH, then restarts the site through the alwaysdata API. It is skipped while the `ALWAYSDATA_ACCOUNT` variable is unset.
+
+One-time setup in the alwaysdata panel:
+
+| Where | Setting |
+| --- | --- |
+| Databases > PostgreSQL | A database and user; enable the `pg_trgm` and `unaccent` extensions on it |
+| Web > Sites | A Node.js site on `<account>.alwaysdata.net`, command `node dist/index.js`, working directory `rate-my-everything/api`, idle time `0` |
+| Site environment | `JWT_SECRET`, `PGHOST=postgresql-<account>.alwaysdata.net`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `UI_DIST_DIR=../ui`, and optionally `LASTFM_API_KEY` and `YOUTUBE_API_KEY` |
+| Remote access > SSH | Password login on for the account's SSH user |
+| Profile > Tokens | An API token |
+
+Then in the GitHub repository settings, add the variables `ALWAYSDATA_ACCOUNT` (account name) and `ALWAYSDATA_SITE_ID` (the number in the site's panel URL), and the secrets `ALWAYSDATA_PASSWORD` (SSH password) and `ALWAYSDATA_API_TOKEN`.
 
 ## Importing interests
 

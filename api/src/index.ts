@@ -10,6 +10,7 @@ import { addDefaultHeaders, errorHandler, notFoundHandler } from '@/helpers/Requ
 import { TOO_MANY_REQUESTS_EXAMPLE } from '@/api/ApiDocumentation'
 import { enableSimilarityExtensions } from '@/helpers/SimilarityHelper'
 import http from 'http'
+import path from 'path'
 import { logger } from '@/helpers/Logger'
 
 /** Window the request rate limit counts over, in milliseconds (15 minutes). */
@@ -21,6 +22,9 @@ const RATE_LIMIT_MAX_REQUESTS = 100
 /** HTTP port used when PORT is not set. */
 const DEFAULT_PORT = 3000
 
+/** Folder of the built UI the API serves next to /api, set on deployments; unset locally, where webpack serves the UI. */
+const UI_DIST_DIR = process.env.UI_DIST_DIR
+
 const app = express()
 let server: http.Server
 const limiter = rateLimit({
@@ -29,6 +33,10 @@ const limiter = rateLimit({
   message: TOO_MANY_REQUESTS_EXAMPLE,
 })
 
+// Static UI files load before the rate limit so a page load does not spend the API's request budget.
+if (UI_DIST_DIR) {
+  app.use(express.static(UI_DIST_DIR))
+}
 app.use(limiter)
 app.use(cors())
 app.use(bodyParser.json())
@@ -47,6 +55,10 @@ const initializeApp = async (): Promise<typeof app> => {
   const apiRouter = express.Router()
   RegisterRoutes(apiRouter)
   app.use('/api', apiRouter, notFoundHandler)
+  if (UI_DIST_DIR) {
+    // Every other path is a UI route, which the UI's router renders from index.html.
+    app.get('/{*uiRoute}', (_req, res) => res.type('html').sendFile(path.resolve(UI_DIST_DIR, 'index.html')))
+  }
   app.use(errorHandler)
   return app
 }
@@ -54,9 +66,11 @@ const initializeApp = async (): Promise<typeof app> => {
 /** Starts listening for HTTP requests once the app is ready. */
 const startServer = async (): Promise<void> => {
   const appInstance = await appReady
-  const port = process.env.PORT || DEFAULT_PORT
-  server = appInstance.listen(port, () => {
-    logger.info(`Server is running on port ${port}`)
+  const port = Number(process.env.PORT || DEFAULT_PORT)
+  // Hosts that give each app its own address, like alwaysdata, set IP; otherwise listen on every address.
+  const host = process.env.IP
+  server = appInstance.listen(port, host, () => {
+    logger.info(`Server is running on ${host ?? 'every address'}, port ${port}`)
   })
 }
 
