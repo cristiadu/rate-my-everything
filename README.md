@@ -37,6 +37,8 @@ This is a monorepo with two main apps:
 | --- | --- | --- |
 | `LASTFM_API_KEY` | none | Importing all pages of a Last.fm user's most played artists and albums. Create a key at https://www.last.fm/api/account/create. |
 | `YOUTUBE_API_KEY` | none | Importing a public YouTube video or every available video in a playlist. Create a key for the YouTube Data API v3 in the Google Cloud console. |
+| `SEED_BOOTSTRAP_DATA` | `false` | When `true`, every start creates the bootstrap admin and the starter categories (Movies, Music, Books, Games, Restaurants) with their attributes. Rows that already exist are kept, so it is safe to leave on. |
+| `BOOTSTRAP_ADMIN_USERNAME`, `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | none | The bootstrap admin's login. Required when `SEED_BOOTSTRAP_DATA` is `true`; the API refuses to start without them. `api/.env.example` has local development values. |
 | `PORT` | `3000` | Port the API listens on. |
 | `IP` | every address | Address the API listens on; alwaysdata sets it for its Node.js sites. |
 | `UI_DIST_DIR` | none | Folder of the built UI. When set, the API serves the UI next to `/api` and answers every other path with its `index.html`; locally, webpack serves the UI instead. |
@@ -53,7 +55,7 @@ One-time setup in the alwaysdata panel:
 | --- | --- |
 | Databases > PostgreSQL | A database and user; enable the `pg_trgm` and `unaccent` extensions on it |
 | Web > Sites | A Node.js site on `<account>.alwaysdata.net`, command `node dist/index.js`, working directory `rate-my-everything/api`, idle time `0` |
-| Site environment | `JWT_SECRET`, `PGHOST=postgresql-<account>.alwaysdata.net`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `UI_DIST_DIR=../ui`, and optionally `LASTFM_API_KEY` and `YOUTUBE_API_KEY` |
+| Site environment | `JWT_SECRET`, `PGHOST=postgresql-<account>.alwaysdata.net`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `UI_DIST_DIR=../ui`, and optionally `SEED_BOOTSTRAP_DATA=true` with the `BOOTSTRAP_ADMIN_*` login for the first admin, `LASTFM_API_KEY` and `YOUTUBE_API_KEY` |
 | Remote access > SSH | Password login on for the account's SSH user |
 | Profile > Tokens | An API token |
 

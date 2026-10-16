@@ -1,6 +1,7 @@
 import { DBConnection } from '@/Database'
 import Attribute from '@/models/Attribute'
 import AttributeValue from '@/models/AttributeValue'
+import AttributeValueType from '@/models/AttributeValueType'
 import BaseService from '@/services/BaseService'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { In, Repository } from 'typeorm'
@@ -36,6 +37,11 @@ class AttributeService extends BaseService<Attribute> {
   public async getAttribute(id: number): Promise<Attribute | null> {
     const attribute = await this.repository.findOne({ where: { id } })
     return attribute
+  }
+
+  /** Reads the attribute with the given name and value type, if one exists. */
+  public async getAttributeByName(name: string, valueType: AttributeValueType): Promise<Attribute | null> {
+    return this.repository.findOne({ where: { name, valueType } })
   }
 
   /** Loads the attributes with the given ids; throws UnknownResource when any id does not exist. */

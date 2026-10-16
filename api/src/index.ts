@@ -12,6 +12,8 @@ import { enableSimilarityExtensions } from '@/helpers/SimilarityHelper'
 import http from 'http'
 import path from 'path'
 import { logger } from '@/helpers/Logger'
+import { isBootstrapEnabled, readBootstrapAdmin } from '@/helpers/BootstrapHelper'
+import BootstrapService from '@/services/BootstrapService'
 
 /** Window the request rate limit counts over, in milliseconds (15 minutes). */
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000
@@ -42,11 +44,14 @@ app.use(cors())
 app.use(bodyParser.json())
 app.use(addDefaultHeaders)
 
-/** Connects to the database, enables the similarity extensions and mounts every route. */
+/** Connects to the database, enables the similarity extensions, seeds the bootstrap data when enabled and mounts every route. */
 const initializeApp = async (): Promise<typeof app> => {
   try {
     await DBConnection.initialize()
     await enableSimilarityExtensions(DBConnection)
+    if (isBootstrapEnabled(process.env)) {
+      await new BootstrapService().seed(readBootstrapAdmin(process.env))
+    }
   } catch (err) {
     logger.error(err, 'Error during Data Source initialization')
     throw err
