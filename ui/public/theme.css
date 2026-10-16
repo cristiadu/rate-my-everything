@@ -34,10 +34,23 @@
   border-bottom-color: var(--bulma-primary);
 }
 
-/* Top menu dropdowns get a pink border so they stand apart from the page behind them */
+/* Top menu dropdowns hang from the menu bar with a thin berry outline instead of floating borderless */
 .navbar-dropdown {
-  border: 1px solid var(--bulma-danger);
-  border-top: 3px solid var(--bulma-danger);
+  border: 1px solid var(--bulma-primary);
+  border-top: none;
+  border-radius: 0 0 var(--bulma-radius-large) var(--bulma-radius-large);
+}
+
+/* Dropdown items use plain text and a soft pink highlight, so the open menu reads as one calm panel */
+.navbar .navbar-dropdown .navbar-item {
+  color: var(--bulma-text-strong);
+}
+
+/* Hovered and current dropdown items get the header's light pink with berry text */
+.navbar .navbar-dropdown .navbar-item:hover,
+.navbar .navbar-dropdown .navbar-item.is-active {
+  background-color: var(--bulma-danger-light);
+  color: var(--bulma-primary);
 }
 
 /* The footer uses the user bar's dark slate so the page is framed top and bottom */
