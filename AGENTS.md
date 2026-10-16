@@ -6,7 +6,7 @@
 - Install dependencies with `pnpm install`.
 - Run CI checks with `pnpm lint`, `pnpm test`, `pnpm build`, and `pnpm knip`.
 - Upgrade dependencies with `pnpm upgrade-dependencies`; this project chooses latest available versions.
-- API routes are tsoa-decorated controllers in `api/src/api/`. After changing routes or request and response types, run `pnpm openapi` to regenerate `api/openapi.yaml`, the API routes and the UI client.
+- API routes are tsoa-decorated controllers in `api/src/api/`, each listed in alphabetical order under `controllerPathGlobs` in `api/tsoa.json`. After changing routes or request and response types, run `pnpm openapi` to regenerate `api/openapi.yaml`, the API routes and the UI client.
 
 ## Code Style
 

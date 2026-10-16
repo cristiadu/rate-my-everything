@@ -1,7 +1,17 @@
 {
   "entryFile": "src/index.ts",
   "controllerPathGlobs": [
-    "src/api/*Controller.ts"
+    "src/api/AttributeController.ts",
+    "src/api/CategoryController.ts",
+    "src/api/ChangeRequestController.ts",
+    "src/api/CommentController.ts",
+    "src/api/HealthController.ts",
+    "src/api/ImportController.ts",
+    "src/api/ItemController.ts",
+    "src/api/LoginController.ts",
+    "src/api/ModerationController.ts",
+    "src/api/RatedItemController.ts",
+    "src/api/UserController.ts"
   ],
   "noImplicitAdditionalProperties": "ignore",
   "spec": {
