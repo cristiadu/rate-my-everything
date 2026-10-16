@@ -29,6 +29,11 @@ jobs:
         cache: 'pnpm'
         cache-dependency-path: pnpm-lock.yaml
     - run: pnpm install
+    # Pull requests must commit the spec that `pnpm openapi` generates, since nothing pushes it to main afterwards.
+    - name: Check the OpenAPI spec is up to date
+      run: |
+        pnpm --filter @cristiadu/rate-my-everything-api openapi
+        git diff --exit-code api/openapi.yaml || (echo "::error file=api/openapi.yaml::api/openapi.yaml is out of date; run pnpm openapi and commit it" && exit 1)
     - run: pnpm lint
     - run: pnpm test
     - run: pnpm build
