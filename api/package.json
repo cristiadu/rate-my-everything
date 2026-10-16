@@ -15,11 +15,14 @@
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
     "lint": "eslint --ext .ts src/",
-    "upgrade-dependencies": "pnpm up --latest"
+    "upgrade-dependencies": "pnpm up --latest",
+    "openapi": "tsoa spec-and-routes",
+    "postinstall": "pnpm openapi"
   },
   "author": "Cristiano Faustino",
   "license": "ISC",
   "dependencies": {
+    "@tsoa/runtime": "7.0.0-alpha.0",
     "@types/bcrypt": "6.0.0",
     "bcrypt": "6.0.0",
     "body-parser": "2.3.0",
@@ -30,6 +33,7 @@
     "jsonwebtoken": "9.0.3",
     "pino": "10.4.0",
     "reflect-metadata": "0.2.2",
+    "tsoa": "7.0.0-alpha.0",
     "typeorm": "1.1.1"
   },
   "devDependencies": {

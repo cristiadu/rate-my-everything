@@ -1,4 +1,4 @@
-import type { ImportedItem } from '@/components/types'
+import type { ImportedItem } from '@/api/generated/api'
 
 /** Albums returned by the mocked Last.fm import; the second has no picture. */
 export const lastFmImportedItems: ImportedItem[] = [

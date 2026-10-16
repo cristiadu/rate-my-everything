@@ -5,7 +5,7 @@ import {
 import { MemoryRouter } from 'react-router-dom'
 import ImportPage from '@/components/interests/ImportPage'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { UserRole } from '@/components/types'
+import { UserRole } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import { booksCategory, duneItem, moviesCategory } from '@/components/tests/common/Interests'

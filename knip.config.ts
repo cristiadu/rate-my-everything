@@ -7,6 +7,8 @@ const config = {
     'api': {
       project: ['**/*.{ts,js}'],
       ignoreBinaries: ["sleep"],
+      // Imported by the routes tsoa generates into the gitignored src/routes/generated/
+      ignoreDependencies: ['@tsoa/runtime'],
     },
     'ui': {
       project: ['**/*.{ts,js,tsx,jsx}'],

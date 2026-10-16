@@ -3,7 +3,7 @@ import {
   fireEvent, render, screen, within,
 } from '@testing-library/react'
 import AttributeManagement from '@/components/admin/attributes/AttributeManagement'
-import { AttributeValueType } from '@/components/types'
+import { AttributeValueType } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { testAttributes } from '@/components/tests/common/Categories'
 

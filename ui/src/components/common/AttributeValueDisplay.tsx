@@ -1,10 +1,10 @@
 import React from 'react'
-import { AttributeValueType, type Attribute } from '@/components/types'
+import { AttributeValueType, type AttributeResponse } from '@/api/generated/api'
 import { formatDate } from '@/components/common/formatDate'
 
 /** Props for one type-aware attribute value. */
 interface AttributeValueDisplayProps {
-  attribute: Attribute;
+  attribute: AttributeResponse;
   value: string;
 }
 

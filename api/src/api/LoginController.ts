@@ -1,90 +1,72 @@
-import { Request, Response, Router } from 'express'
+import { Body, Controller, Post, Response, Route, SuccessResponse, Tags } from 'tsoa'
 import UserService from '@/services/UserService'
-import User from '@/models/User'
-import { NewApiError } from '@/models/APIError'
+import User, { UserTokenResponse } from '@/models/User'
+import type { LoginInput, RegisterInput, UserResponse } from '@/models/User'
+import APIError, { NewApiError } from '@/models/APIError'
 import { InvalidCredentials } from '@/errors/InvalidCredentials'
 import ErrorCode from '@/errors/ErrorCode'
-import { logger } from '@/helpers/Logger'
+import { RequestRejected } from '@/errors/RequestRejected'
+import {
+  BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE, INVALID_CREDENTIALS_DESCRIPTION,
+  INVALID_CREDENTIALS_EXAMPLE, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE, UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE,
+} from '@/api/ApiDocumentation'
+import type { RateLimitHeaders } from '@/api/ApiDocumentation'
 
-export default class LoginController {
-  public router = Router()
-
+/** Signs users in and creates accounts; the only operations that need no bearer token besides the health check. */
+@Route('login')
+@Tags('Login')
+@Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+@Response<APIError, { [Header in keyof RateLimitHeaders]: RateLimitHeaders[Header] }>(
+  429, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+)
+@Response<APIError>(500, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE)
+export class LoginController extends Controller {
   private userService = new UserService()
 
-  constructor() {
-    this.initializeRoutes()
-  }
+  /**
+   * Signs in and returns a bearer token for the other endpoints.
+   * @summary Signs in and returns a bearer token
+   */
+  @Post()
+  @Response<APIError>(401, INVALID_CREDENTIALS_DESCRIPTION, INVALID_CREDENTIALS_EXAMPLE)
+  public async login(@Body() credentials: LoginInput): Promise<UserTokenResponse> {
+    const { username, password } = credentials
+    if (!username || !password) {
+      throw new RequestRejected(NewApiError(ErrorCode.MISSING_CREDENTIALS, 400, 'Username and password are required'))
+    }
 
-  public initializeRoutes() {
-    this.router.post('/', (req, res) => {
-      this.login(req, res)
-    })
-    this.router.post('/register', (req, res) => {
-      this.register(req, res)
-    })
-  }
-
-  public async login(req: Request, res: Response) {
     try {
-      const { username, password } = req.body
-
-      if (!username || !password) {
-        return res.status(400)
-          .json(NewApiError(ErrorCode.MISSING_CREDENTIALS, 400, 'Username and password are required'))
-      }
-
-      const result = await this.userService.login(username, password)
-      if (result) {
-        res.status(200)
-          .json(result)
-      } else {
-        res.status(401)
-          .json(NewApiError(ErrorCode.INVALID_CREDENTIALS, 401, 'Invalid username or password'))
-      }
+      return await this.userService.login(username, password)
     } catch (error) {
       if (error instanceof InvalidCredentials) {
-        return res.status(401)
-          .json(NewApiError(ErrorCode.INVALID_CREDENTIALS, 401, 'Invalid username or password'))
+        throw new RequestRejected(NewApiError(ErrorCode.INVALID_CREDENTIALS, 401, 'Invalid username or password'))
       }
-
-      logger.error(error, 'Login failed')
-      res.status(500)
-        .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+      throw error
     }
   }
 
-  public async register(req: Request, res: Response) {
-    try {
-      const { username, email, password, roles } = req.body
-      if (!username || !email || !password) {
-        return res.status(400)
-          .json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields'))
-      }
-
-      const existingUser = await this.userService.getByUsername(username)
-      if (existingUser) {
-        return res.status(422)
-          .json(NewApiError(ErrorCode.RESOURCE_ALREADY_EXISTS, 422, 'Username already exists'))
-      }
-
-      const userObj = {
-        username,
-        email,
-        password,
-        roles: roles || [],
-        ratedItems: []
-      } as Partial<User>
-
-      const user = await this.userService.create(userObj as Omit<User, 'id'>)
-
-      // Never return password - destructure to omit password from response
-      const userSafe = { ...user, password: undefined }
-      res.status(201)
-        .json(userSafe)
-    } catch (error) {
-      logger.error(error, 'Registration failed')
-      res.status(500)
-        .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /**
+   * Creates an account; 400 when a field is missing and 422 when the username is taken.
+   * @summary Creates an account
+   */
+  @Post('register')
+  @SuccessResponse(201, 'Account created')
+  @Response<APIError>(422, UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE)
+  public async register(@Body() input: RegisterInput): Promise<UserResponse> {
+    const { username, email, password, roles } = input
+    if (!username || !email || !password) {
+      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields'))
     }
+
+    const existingUser = await this.userService.getByUsername(username)
+    if (existingUser) {
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_ALREADY_EXISTS, 422, 'Username already exists'))
+    }
+
+    const user = await this.userService.create({ username, email, password, roles: roles || [], ratedItems: [] } as Omit<User, 'id'>)
+
+    // Never return password - destructure to omit password from response
+    this.setStatus(201)
+    return { ...user, password: undefined } as UserResponse
   }
 }

@@ -1,11 +1,11 @@
 import React from 'react'
 import { Box, Image } from 'react-bulma-components'
 import AttributeValueDisplay from '@/components/common/AttributeValueDisplay'
-import type { Item } from '@/components/types'
+import type { ItemResponse } from '@/api/generated/api'
 
 /** Props for the descriptive portion of an interest's detail page. */
 interface InterestDetailsProps {
-  item: Item;
+  item: ItemResponse;
 }
 
 /** Shows an interest's name, category, description, image, and category attributes. */

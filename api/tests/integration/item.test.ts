@@ -322,7 +322,7 @@ describe('Item API Integration Tests', async () => {
         .delete(`${Endpoints.ITEMS_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(204)
-        .expect(res => { expect(res.body).toEqual({}) })
+        .expect(res => { expect(res.text).toBe('') })
     })
   })
 
@@ -416,9 +416,9 @@ describe('Item API Integration Tests', async () => {
     })
 
     it.each([
-      [{}, 'Invalid value for name: it must be a non-empty text'],
+      [{}, "Invalid request: name: 'name' is required"],
       [{ name: '  ' }, 'Invalid value for name: it must be a non-empty text'],
-      [{ name: 'Dune', categoryId: 'books' }, 'Invalid value for categoryId: it must be an integer'],
+      [{ name: 'Dune', categoryId: 'books' }, 'Invalid request: categoryId: invalid integer number'],
     ])('should reject the query %j', async (query, message) => {
       // GIVEN the items created in beforeAll
       // WHEN the name is missing or blank, or the category is not a number

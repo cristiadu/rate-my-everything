@@ -62,7 +62,7 @@ describe('RatedItem API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Missing required fields: item_id, rating')
+          expect(apiError.message).toBe("Invalid request: input.item_id: 'item_id' is required")
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
           expect(apiError.status).toBe(400)
         })
@@ -256,7 +256,7 @@ describe('RatedItem API Integration Tests', async () => {
         .delete(`${Endpoints.RATINGS_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(204)
-        .expect(res => { expect(res.body).toEqual({}) })
+        .expect(res => { expect(res.text).toBe('') })
     })
   })
 })

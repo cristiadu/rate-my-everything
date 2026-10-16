@@ -1,11 +1,12 @@
-import type { RankingItem, RatedItem } from '@/components/types'
+import type { RatedItemResponse } from '@/api/generated/api'
+import type { RankingItem } from '@/components/types'
 
 /** Category label for items saved before categories were required. */
 const UNCATEGORIZED = 'Uncategorized'
 
 /** Groups ratings by the key each one maps to, keeping the order they came in. */
-const groupRatings = (ratings: RatedItem[], keyOf: (ratedItem: RatedItem) => number): RatedItem[][] => {
-  const groups = new Map<number, RatedItem[]>()
+const groupRatings = (ratings: RatedItemResponse[], keyOf: (ratedItem: RatedItemResponse) => number): RatedItemResponse[][] => {
+  const groups = new Map<number, RatedItemResponse[]>()
   for (const ratedItem of ratings) {
     groups.set(keyOf(ratedItem), [...(groups.get(keyOf(ratedItem)) ?? []), ratedItem])
   }
@@ -16,19 +17,19 @@ const groupRatings = (ratings: RatedItem[], keyOf: (ratedItem: RatedItem) => num
 const average = (grades: number[]): number => grades.reduce((sum, grade) => sum + grade, 0) / grades.length
 
 /** Personal grade: the average of every time the given user rated, or null when they gave no rating. */
-export const personalGrade = (ratings: RatedItem[], userId: number | null): number | null => {
+export const personalGrade = (ratings: RatedItemResponse[], userId: number | null): number | null => {
   const userRatings = ratings.filter((ratedItem) => ratedItem.userId === userId)
   return userRatings.length > 0 ? average(userRatings.map((ratedItem) => ratedItem.rating)) : null
 }
 
 /** Collective grade: the average of each user's personal grade, so rating an item many times still counts once. */
-export const collectiveGrade = (ratings: RatedItem[]): number => average(
+export const collectiveGrade = (ratings: RatedItemResponse[]): number => average(
   groupRatings(ratings, (ratedItem) => ratedItem.userId)
     .map((userRatings) => average(userRatings.map((ratedItem) => ratedItem.rating))),
 )
 
 /** Builds one ranking row per rated item, with its collective grade and the given user's personal grade. */
-const toRankingItems = (ratings: RatedItem[], userId: number | null): RankingItem[] => (
+const toRankingItems = (ratings: RatedItemResponse[], userId: number | null): RankingItem[] => (
   groupRatings(ratings, (ratedItem) => ratedItem.item.id).map((itemRatings) => ({
     item_id: itemRatings[0].item.id,
     item_name: itemRatings[0].item.name,
@@ -41,10 +42,10 @@ const toRankingItems = (ratings: RatedItem[], userId: number | null): RankingIte
 )
 
 /** Lists the items the given user rated, best personal grade first, each with its collective grade too. */
-export const toMyRankings = (ratings: RatedItem[], userId: number | null): RankingItem[] => toRankingItems(ratings, userId)
+export const toMyRankings = (ratings: RatedItemResponse[], userId: number | null): RankingItem[] => toRankingItems(ratings, userId)
   .filter((ranking) => ranking.my_rating !== null)
   .sort((a, b) => (b.my_rating ?? 0) - (a.my_rating ?? 0))
 
 /** Lists every rated item, best collective grade first, each with the given user's personal grade too. */
-export const toOverallRankings = (ratings: RatedItem[], userId: number | null): RankingItem[] => toRankingItems(ratings, userId)
+export const toOverallRankings = (ratings: RatedItemResponse[], userId: number | null): RankingItem[] => toRankingItems(ratings, userId)
   .sort((a, b) => b.rating - a.rating)

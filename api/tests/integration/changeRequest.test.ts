@@ -103,7 +103,10 @@ describe('Change request and moderation API Integration Tests', async () => {
     })
 
     it.each([
-      [{ targetType: 'rating', action: ChangeRequestAction.UPDATE, targetId: 1 }, 'targetType must be one of: item, category'],
+      [
+        { targetType: 'rating', action: ChangeRequestAction.UPDATE, targetId: 1 },
+        "Invalid request: input.targetType: should be one of the following; ['item','category']",
+      ],
       [
         { targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.CREATE, changes: { name: 'X' } },
         'action for item must be one of: update',
@@ -187,7 +190,9 @@ describe('Change request and moderation API Integration Tests', async () => {
         .get(`${Endpoints.MODERATION_BASE_PATH}?status=archived`)
         .set('Authorization', `Bearer ${moderatorToken}`)
         .expect(400)
-        .expect(res => expect((res.body as APIError).message).toBe('status must be one of: pending, approved, rejected'))
+        .expect(res => expect((res.body as APIError).message).toBe(
+          "Invalid request: status: should be one of the following; ['pending','approved','rejected']",
+        ))
     })
   })
 

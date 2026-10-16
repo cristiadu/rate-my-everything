@@ -1,11 +1,10 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
-import { createChangeRequest } from '@/config/ChangeRequestService'
 import {
-  type Attribute, type Category, type CategoryFormValues, ChangeRequestAction, type ChangeRequestInput,
-  ChangeRequestTarget, type StatusMessage, UserRole,
-} from '@/components/types'
+  ChangeRequestAction, ChangeRequestTarget, UserRole, createCategory, createChangeRequest, deleteCategory,
+  getAttributes, getCategories, getSimilarCategories, updateCategory, type AttributeResponse, type CategoryResponse,
+  type ChangeRequestInput,
+} from '@/api/generated/api'
+import type { CategoryFormValues, StatusMessage } from '@/components/types'
 import { getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
 import MultiSelectDropdown from '@/components/common/MultiSelectDropdown'
@@ -13,9 +12,6 @@ import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
 
 /** Form values for a new category. */
 const emptyForm: CategoryFormValues = { name: '', description: '', attributeIds: [] }
-
-/** API path for one category, which the API addresses by name. */
-const categoryPath = (name: string) => `${ApiConfig.ENDPOINTS.CATEGORIES}/${encodeURIComponent(name)}`
 
 /** Message shown after a user's proposed change to a category is saved for moderators. */
 const SENT_FOR_APPROVAL_MESSAGE = 'Your change was sent to the moderators for approval.'
@@ -27,8 +23,8 @@ const SENT_FOR_APPROVAL_MESSAGE = 'Your change was sent to the moderators for ap
 const CategoriesPage: React.FC = () => {
   const { token } = useAuth()
   const isAdmin = getRolesFromToken(token).includes(UserRole.ADMIN)
-  const [categories, setCategories] = useState<Category[]>([])
-  const [attributes, setAttributes] = useState<Attribute[]>([])
+  const [categories, setCategories] = useState<CategoryResponse[]>([])
+  const [attributes, setAttributes] = useState<AttributeResponse[]>([])
   const [formFields, setFormFields] = useState<CategoryFormValues>(emptyForm)
   // Categories are addressed by name in the API, so keep the name the category had before editing
   const [editingName, setEditingName] = useState<string | null>(null)
@@ -38,7 +34,7 @@ const CategoriesPage: React.FC = () => {
   /** Fetches the category list from the API. */
   const loadCategories = useCallback(async () => {
     try {
-      setCategories(await ApiService.get<Category[]>(ApiConfig.ENDPOINTS.CATEGORIES))
+      setCategories(await getCategories())
     } catch (err) {
       setStatus({ message: err instanceof Error ? err.message : 'Failed to load categories', isSuccess: false })
     }
@@ -51,7 +47,7 @@ const CategoriesPage: React.FC = () => {
   /** Fetches the attributes that can be linked to a category. */
   const loadAttributes = useCallback(async () => {
     try {
-      setAttributes(await ApiService.get<Attribute[]>(ApiConfig.ENDPOINTS.ATTRIBUTES))
+      setAttributes(await getAttributes())
     } catch (err) {
       setStatus({ message: err instanceof Error ? err.message : 'Failed to load attributes', isSuccess: false })
     }
@@ -86,10 +82,10 @@ const CategoriesPage: React.FC = () => {
           ? { targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.CREATE, changes: formFields }
           : { targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.UPDATE, targetId: editingId, changes: formFields })
       } else if (editingName === null) {
-        await ApiService.post<Category>(ApiConfig.ENDPOINTS.CATEGORIES, formFields)
+        await createCategory(formFields)
         setStatus({ message: `Category ${formFields.name} created.`, isSuccess: true })
       } else {
-        await ApiService.put<Category>(categoryPath(editingName), formFields)
+        await updateCategory(encodeURIComponent(editingName), formFields)
         setStatus({ message: `Category ${formFields.name} updated.`, isSuccess: true })
       }
       resetForm()
@@ -102,7 +98,7 @@ const CategoriesPage: React.FC = () => {
   }
 
   /** Loads a category into the form for editing. */
-  const handleEdit = (category: Category) => {
+  const handleEdit = (category: CategoryResponse) => {
     setFormFields({
       name: category.name,
       description: category.description ?? '',
@@ -112,7 +108,7 @@ const CategoriesPage: React.FC = () => {
   }
 
   /** Deletes the category after the admin confirms, then reloads the list; non-admins propose the removal instead. */
-  const handleDelete = async (category: Category) => {
+  const handleDelete = async (category: CategoryResponse) => {
     if (!window.confirm(`${isAdmin ? 'Delete' : 'Suggest removing'} category ${category.name}?`)) {
       return
     }
@@ -123,7 +119,7 @@ const CategoriesPage: React.FC = () => {
         await proposeChange({ targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.DELETE, targetId: category.id })
         return
       }
-      await ApiService.delete<void>(categoryPath(category.name))
+      await deleteCategory(encodeURIComponent(category.name))
       setStatus({ message: `Category ${category.name} deleted.`, isSuccess: true })
       if (editingName === category.name) {
         resetForm()
@@ -201,8 +197,8 @@ const CategoriesPage: React.FC = () => {
               <button className={`button is-primary ${isSaving ? 'is-loading' : ''}`} type="submit" disabled={isSaving}>
                 {submitLabel}
               </button>
-              <SimilarRecordsWarning<Category>
-                endpoint={`${ApiConfig.ENDPOINTS.CATEGORIES}/similar`}
+              <SimilarRecordsWarning
+                findSimilar={getSimilarCategories}
                 name={formFields.name}
                 isEnabled={editingName === null}
                 label="Similar categories"

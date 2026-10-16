@@ -4,7 +4,7 @@ import RequireAdmin, {
   canModerate, getRolesFromToken, getUserIdFromToken, getUsernameFromToken, RequireLogin, RequireModerator,
 } from '@/components/admin/RequireAdmin'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { UserRole } from '@/components/types'
+import { UserRole } from '@/api/generated/api'
 import { loginAs, makeTestToken } from '@/components/tests/common/Auth'
 
 /** Renders RequireAdmin around a marker child inside the auth provider. */

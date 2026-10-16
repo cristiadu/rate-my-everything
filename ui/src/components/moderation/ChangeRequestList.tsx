@@ -1,14 +1,13 @@
 import React from 'react'
-import {
-  type ChangeRequest, type ChangeRequestLookups, ChangeRequestStatus, type ReviewDecision,
-} from '@/components/types'
+import { ChangeRequestStatus, type ChangeRequestResponse } from '@/api/generated/api'
+import type { ChangeRequestLookups, ReviewDecision } from '@/components/types'
 import { STATUS_TAG_CLASSES, describeChangeRequest, listChanges } from '@/components/moderation/changeRequestText'
 
 /** Props for the change request table; `onReview` adds approve and reject buttons to pending requests. */
 interface ChangeRequestListProps {
-  changeRequests: ChangeRequest[];
+  changeRequests: ChangeRequestResponse[];
   lookups: ChangeRequestLookups;
-  onReview?: (changeRequest: ChangeRequest, decision: ReviewDecision) => void;
+  onReview?: (changeRequest: ChangeRequestResponse, decision: ReviewDecision) => void;
 }
 
 /** Table of change requests with what each proposes, who sent it and where it is in moderation. */

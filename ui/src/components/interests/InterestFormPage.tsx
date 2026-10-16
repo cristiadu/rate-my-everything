@@ -1,12 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { Box, Message } from 'react-bulma-components'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
-import { createChangeRequest } from '@/config/ChangeRequestService'
 import {
-  type Category, ChangeRequestAction, ChangeRequestTarget, type InterestForm, type Item, type RatedItem,
-} from '@/components/types'
+  ChangeRequestAction, ChangeRequestTarget, createChangeRequest, createItem, createRating, deleteRating, getCategories,
+  getItem, getRatingsByItem, getSimilarItems, updateItem, type CategoryResponse, type RatedItemResponse,
+} from '@/api/generated/api'
+import type { InterestForm } from '@/components/types'
 import { useAuth } from '@/components/users/AuthContext'
 import { canModerate, getUserIdFromToken } from '@/components/admin/RequireAdmin'
 import AttributeField from '@/components/interests/AttributeField'
@@ -31,12 +30,12 @@ const InterestFormPage: React.FC = () => {
   const navigate = useNavigate()
   const { token } = useAuth()
   const editingItemId = itemId === undefined ? null : Number(itemId)
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<CategoryResponse[]>([])
   const [formFields, setFormFields] = useState<InterestForm>(emptyInterestForm)
   const [loadedForm, setLoadedForm] = useState<InterestForm>(emptyInterestForm)
   /** Id of the signed-in user, used to pick their ratings out of everyone's. */
   const userId = getUserIdFromToken(token)
-  const [itemRatings, setItemRatings] = useState<RatedItem[]>([])
+  const [itemRatings, setItemRatings] = useState<RatedItemResponse[]>([])
   const [error, setError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
 
@@ -49,13 +48,13 @@ const InterestFormPage: React.FC = () => {
   /** Loads the categories and, when editing, the item and everyone's ratings of it. */
   const loadForm = useCallback(async () => {
     try {
-      setCategories(await ApiService.get<Category[]>(ApiConfig.ENDPOINTS.CATEGORIES))
+      setCategories(await getCategories())
       if (editingItemId === null) {
         return
       }
 
-      const item = await ApiService.get<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${editingItemId}`)
-      const ratings = await ApiService.get<RatedItem[]>(`${ApiConfig.ENDPOINTS.RATINGS}/item/${editingItemId}`)
+      const item = await getItem(editingItemId)
+      const ratings = await getRatingsByItem(editingItemId)
       setItemRatings(ratings)
       const itemForm = toInterestForm(item)
       setFormFields(itemForm)
@@ -89,17 +88,17 @@ const InterestFormPage: React.FC = () => {
       const isProposingChange = editingItemId !== null && !canModerate(token) && hasItemChanges(formFields, loadedForm, selectedCategory)
       let savedItemId = editingItemId
       if (editingItemId === null) {
-        savedItemId = (await ApiService.post<Item>(ApiConfig.ENDPOINTS.ITEMS, itemInput)).id
+        savedItemId = (await createItem(itemInput)).id
       } else if (isProposingChange) {
         await createChangeRequest({
           targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.UPDATE, targetId: editingItemId, changes: itemInput,
         })
       } else if (canModerate(token)) {
-        await ApiService.put<Item>(`${ApiConfig.ENDPOINTS.ITEMS}/${editingItemId}`, itemInput)
+        await updateItem(editingItemId, itemInput)
       }
 
       if (formFields.rating !== '') {
-        await ApiService.post<RatedItem>(ApiConfig.ENDPOINTS.RATINGS, { item_id: savedItemId, ...toRatingInput(formFields) })
+        await createRating(toRatingInput(formFields, savedItemId as number))
       }
       navigate(isProposingChange ? MY_CHANGE_REQUESTS_PATH : MY_RANKINGS_PATH)
     } catch (err) {
@@ -118,7 +117,7 @@ const InterestFormPage: React.FC = () => {
     setError('')
     try {
       for (const ratedItem of myRatings) {
-        await ApiService.delete(`${ApiConfig.ENDPOINTS.RATINGS}/${ratedItem.id}`)
+        await deleteRating(ratedItem.id)
       }
       navigate(MY_RANKINGS_PATH)
     } catch (err) {
@@ -127,14 +126,14 @@ const InterestFormPage: React.FC = () => {
   }
 
   /** Deletes one of the signed-in user's ratings after confirming, and updates the grades without reloading. */
-  const handleRemoveRating = async (ratedItem: RatedItem) => {
+  const handleRemoveRating = async (ratedItem: RatedItemResponse) => {
     if (!window.confirm(`Remove your ${ratedItem.rating.toFixed(1)} rating of "${formFields.name}"?`)) {
       return
     }
 
     setError('')
     try {
-      await ApiService.delete(`${ApiConfig.ENDPOINTS.RATINGS}/${ratedItem.id}`)
+      await deleteRating(ratedItem.id)
       setItemRatings(itemRatings.filter((rating) => rating.id !== ratedItem.id))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to remove the rating')
@@ -181,11 +180,11 @@ const InterestFormPage: React.FC = () => {
                 required
               />
             </div>
-            <SimilarRecordsWarning<Item>
-              endpoint={`${ApiConfig.ENDPOINTS.ITEMS}/similar`}
+            <SimilarRecordsWarning
+              findSimilar={getSimilarItems}
               name={formFields.name}
               isEnabled={editingItemId === null}
-              filters={formFields.categoryId ? { categoryId: formFields.categoryId } : {}}
+              filters={formFields.categoryId ? { categoryId: Number(formFields.categoryId) } : {}}
               label="Similar interests"
               message="Similar interests already exist. Rate one of them instead of adding a duplicate:"
               renderRecord={(item) => (

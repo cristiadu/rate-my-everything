@@ -1,37 +1,28 @@
-import { Request, Response, Router } from 'express'
+import { Controller, Get, Response, Route, Tags } from 'tsoa'
 import { runHealthChecks } from '@/services/HealthIndicators'
-import { HealthStatus } from '@/models/Health'
-import { NewApiError } from '@/models/APIError'
-import ErrorCode from '@/errors/ErrorCode'
-import { logger } from '@/helpers/Logger'
+import { Health, HealthStatus } from '@/models/Health'
+import APIError from '@/models/APIError'
+import { TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE } from '@/api/ApiDocumentation'
+import type { RateLimitHeaders } from '@/api/ApiDocumentation'
 
-export default class HealthController {
-  public router = Router()
-
-  constructor() {
-    this.initializeRoutes()
-  }
-
-  public initializeRoutes() {
-    this.router.get('/', (req, res) => {
-      this.getHealth(req, res)
-    })
-  }
-
-  public async getHealth(_req: Request, res: Response) {
-    try {
-      const health = await runHealthChecks()
-      
-      if (health.status === HealthStatus.HEALTHY) {
-          res.status(200)
-            .json(health)
-      } else {
-        return res.status(500).json(health)
-      }
-    } catch (error) {
-      logger.error(error, 'Health check failed')
-        res.status(500)
-          .json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+/** Health check for monitors and load balancers; needs no bearer token. */
+@Route('health')
+@Tags('Health')
+@Response<APIError, { [Header in keyof RateLimitHeaders]: RateLimitHeaders[Header] }>(
+  429, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+)
+export class HealthController extends Controller {
+  /**
+   * Reports whether the API and its database work.
+   * @summary Reports whether the API and its database work
+   */
+  @Get()
+  @Response<Health>(500, 'A service is unhealthy')
+  public async getHealth(): Promise<Health> {
+    const health = await runHealthChecks()
+    if (health.status !== HealthStatus.HEALTHY) {
+      this.setStatus(500)
     }
+    return health
   }
 }

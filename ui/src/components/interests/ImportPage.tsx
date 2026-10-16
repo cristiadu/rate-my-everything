@@ -1,11 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Box, Message } from 'react-bulma-components'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
 import {
-  IMPORT_SOURCES, ImportSource, type Category, type ImportedItem, type Item, type ItemInput,
-} from '@/components/types'
+  ImportSource, createItem, findImportItems, getCategories, type CategoryResponse, type ImportedItem, type ItemInput,
+  type ItemResponse,
+} from '@/api/generated/api'
+import { IMPORT_SOURCES } from '@/components/types'
 
 /** Side length, in pixels, of the pictures shown next to found interests. */
 const IMPORTED_IMAGE_SIZE = 48
@@ -19,16 +19,16 @@ const ImportPage: React.FC = () => {
   const [query, setQuery] = useState('')
   const [foundItems, setFoundItems] = useState<ImportedItem[]>([])
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([])
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<CategoryResponse[]>([])
   const [categoryId, setCategoryId] = useState('')
-  const [importedItems, setImportedItems] = useState<Item[]>([])
+  const [importedItems, setImportedItems] = useState<ItemResponse[]>([])
   const [error, setError] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
 
   const loadCategories = useCallback(async () => {
     try {
-      setCategories(await ApiService.get<Category[]>(ApiConfig.ENDPOINTS.CATEGORIES))
+      setCategories(await getCategories())
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load categories')
     }
@@ -44,7 +44,7 @@ const ImportPage: React.FC = () => {
     setError('')
     setImportedItems([])
     try {
-      const items = await ApiService.get<ImportedItem[]>(`${ApiConfig.ENDPOINTS.IMPORTS}/${source}?query=${encodeURIComponent(query)}`)
+      const items = await findImportItems(source, { query })
       setFoundItems(items)
       setSelectedIndexes(items.map((_item, index) => index))
     } catch (err) {
@@ -73,7 +73,7 @@ const ImportPage: React.FC = () => {
         categoryId: Number(categoryId),
         attributeValues: [],
       }))
-      setImportedItems(await Promise.all(itemInputs.map((itemInput) => ApiService.post<Item>(ApiConfig.ENDPOINTS.ITEMS, itemInput))))
+      setImportedItems(await Promise.all(itemInputs.map((itemInput) => createItem(itemInput))))
       setFoundItems([])
       setSelectedIndexes([])
     } catch (err) {

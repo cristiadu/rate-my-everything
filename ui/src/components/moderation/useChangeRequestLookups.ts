@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useState } from 'react'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
-import type { Attribute, Category, ChangeRequestLookups } from '@/components/types'
+import { getAttributes, getCategories } from '@/api/generated/api'
+import type { ChangeRequestLookups } from '@/components/types'
 
 /** Loads categories and attributes so change requests can show names instead of ids; stays empty if loading fails. */
 export const useChangeRequestLookups = (): ChangeRequestLookups => {
@@ -10,8 +9,8 @@ export const useChangeRequestLookups = (): ChangeRequestLookups => {
   const loadLookups = useCallback(async () => {
     try {
       const [categories, attributes] = await Promise.all([
-        ApiService.get<Category[]>(ApiConfig.ENDPOINTS.CATEGORIES),
-        ApiService.get<Attribute[]>(ApiConfig.ENDPOINTS.ATTRIBUTES),
+        getCategories(),
+        getAttributes(),
       ])
       setLookups({ categories, attributes })
     } catch {
