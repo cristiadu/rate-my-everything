@@ -6,7 +6,7 @@ import APIError, { NewApiError } from '@/models/APIError'
 import UserRole from '@/models/UserRole'
 import ErrorCode from '@/errors/ErrorCode'
 import { RequestRejected } from '@/errors/RequestRejected'
-import RatedItem from '@/models/RatedItem'
+import { RatingNotOwned } from '@/errors/RatingNotOwned'
 import type {
   NewRatingInput, RatedItemResponse, RatingQuery, RatingUpdate,
 } from '@/models/RatedItem'
@@ -100,29 +100,50 @@ export class RatedItemController extends Controller {
   }
 
   /**
+   * Changes a rating; 403 when it belongs to another user.
    * @summary Changes a rating
    * @param id Id of the rating
    */
   @Put('{id}')
   @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
   @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
-  public async updateRating(@Path() id: ResourceId, @Body() input: RatingUpdate): Promise<RatedItemResponse> {
-    const data = await this.ratedItemService.update(id, input as RatedItem)
-    if (!data) {
-      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
+  public async updateRating(
+    @Request() request: AuthenticatedRequest, @Path() id: ResourceId, @Body() input: RatingUpdate,
+  ): Promise<RatedItemResponse> {
+    // Copy only the editable fields so a request body can never move a rating to another item or user
+    const { rating, notes } = input
+    const changes = { ...(rating !== undefined && { rating }), ...(notes !== undefined && { notes }) }
+    try {
+      const data = await this.ratedItemService.update(id, changes, request.user)
+      if (!data) {
+        throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
+      }
+      return data
+    } catch (error) {
+      if (error instanceof RatingNotOwned) {
+        throw new RequestRejected(NewApiError(ErrorCode.FORBIDDEN, 403, error.message))
+      }
+      throw error
     }
-    return data
   }
 
   /**
+   * Deletes a rating; 403 unless it is the signed-in user's own or they moderate.
    * @summary Deletes a rating
    * @param id Id of the rating
    */
   @Delete('{id}')
   @SuccessResponse(204, 'Rating deleted')
   @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
-  public async deleteRating(@Path() id: ResourceId): Promise<void> {
-    await this.ratedItemService.delete(id)
-    this.setStatus(204)
+  public async deleteRating(@Request() request: AuthenticatedRequest, @Path() id: ResourceId): Promise<void> {
+    try {
+      await this.ratedItemService.delete(id, request.user)
+      this.setStatus(204)
+    } catch (error) {
+      if (error instanceof RatingNotOwned) {
+        throw new RequestRejected(NewApiError(ErrorCode.FORBIDDEN, 403, error.message))
+      }
+      throw error
+    }
   }
 }

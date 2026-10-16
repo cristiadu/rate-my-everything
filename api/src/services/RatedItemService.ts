@@ -1,8 +1,11 @@
 import RatedItem, {
-  AttributeFilter, MAX_GRADE, MIN_GRADE, RatingFilters,
+  AttributeFilter, MAX_GRADE, MIN_GRADE, RatingFilters, RatingUpdate,
 } from '@/models/RatedItem'
 import RankingScope from '@/models/RankingScope'
 import BaseService from '@/services/BaseService'
+import { SessionUser } from '@/models/User'
+import { RatingNotOwned } from '@/errors/RatingNotOwned'
+import { canModerate } from '@/helpers/RouteHelper'
 
 /** Relations returned with every rating so clients can show what was rated and its category. */
 const RATING_RELATIONS = { item: { category: true } }
@@ -55,22 +58,29 @@ class RatedItemService extends BaseService<RatedItem> {
     return ratedItem
   }
 
-  /** Update a RatedItem. */
-  public async update(id: number, ratedItem: Omit<RatedItem, 'id'>): Promise<RatedItem | null> {
+  /** Update a RatedItem; only the user who gave it may change it. */
+  public async update(id: number, changes: RatingUpdate, sessionUser: SessionUser): Promise<RatedItem | null> {
     const updatedRatedItem = await this.get(id)
-    if (updatedRatedItem) {
-      this.repository.merge(updatedRatedItem, ratedItem)
-      return this.repository.save(updatedRatedItem)
+    if (!updatedRatedItem) {
+      return null
     }
-    return null
+    if (updatedRatedItem.userId !== sessionUser.id) {
+      throw new RatingNotOwned(id)
+    }
+    this.repository.merge(updatedRatedItem, changes)
+    return this.repository.save(updatedRatedItem)
   }
 
-  /** Delete a RatedItem. */
-  public async delete(id: number): Promise<void> {
+  /** Delete a RatedItem; only the user who gave it or a moderator may delete it. */
+  public async delete(id: number, sessionUser: SessionUser): Promise<void> {
     const ratedItem = await this.get(id)
-    if (ratedItem) {
-      await this.repository.delete(ratedItem.id)
+    if (!ratedItem) {
+      return
     }
+    if (ratedItem.userId !== sessionUser.id && !canModerate(sessionUser.roles)) {
+      throw new RatingNotOwned(id)
+    }
+    await this.repository.delete(ratedItem.id)
   }
 
   /**

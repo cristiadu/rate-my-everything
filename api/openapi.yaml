@@ -2386,6 +2386,7 @@ paths:
                     code: INTERNAL_ERROR
                     status: 500
                     message: An internal server error occurred
+      description: Changes a rating; 403 when it belongs to another user.
       summary: Changes a rating
       tags:
         - Ratings
@@ -2494,6 +2495,8 @@ paths:
                     code: INTERNAL_ERROR
                     status: 500
                     message: An internal server error occurred
+      description: Deletes a rating; 403 unless it is the signed-in user's own or they
+        moderate.
       summary: Deletes a rating
       tags:
         - Ratings
