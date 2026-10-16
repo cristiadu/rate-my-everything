@@ -4,6 +4,12 @@ import { useAuth } from '@/components/users/AuthContext'
 import { canModerate, getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { UserRole } from '@/api/generated/api'
 
+/** Path prefix shared by every admin page, used to mark the Admin menu as current. */
+const ADMIN_PATH_PREFIX = '/admin'
+
+/** Whether the browser is on the given top menu path, so its item can be marked as current. */
+const isCurrentPath = (path: string): boolean => window.location.pathname === path
+
 const HeaderMenu = () => {
   const [isActive, setActive] = useState(false)
   const { isAuthenticated, token } = useAuth()
@@ -44,51 +50,55 @@ const HeaderMenu = () => {
             Second
           </Navbar.Item>
           {isAuthenticated && (
-            <Navbar.Item renderAs="a" href="/account">
+            <Navbar.Item renderAs="a" href="/account" active={isCurrentPath('/account')}>
               My Account
             </Navbar.Item>
           )}
           {isAuthenticated && (
             <>
-              <Navbar.Item renderAs="a" href="/rankings">
+              <Navbar.Item renderAs="a" href="/rankings" active={isCurrentPath('/rankings')}>
                 My interests
               </Navbar.Item>
-              <Navbar.Item renderAs="a" href="/all_rankings">
+              <Navbar.Item renderAs="a" href="/all_rankings" active={isCurrentPath('/all_rankings')}>
                 All rankings
               </Navbar.Item>
-              <Navbar.Item renderAs="a" href="/interests/import">
+              <Navbar.Item renderAs="a" href="/interests/import" active={isCurrentPath('/interests/import')}>
                 Import interests
               </Navbar.Item>
             </>
           )}
           {isAuthenticated && (
             <>
-              <Navbar.Item renderAs="a" href="/categories">
+              <Navbar.Item renderAs="a" href="/categories" active={isCurrentPath('/categories')}>
                 Categories
               </Navbar.Item>
-              <Navbar.Item renderAs="a" href="/change-requests">
+              <Navbar.Item renderAs="a" href="/change-requests" active={isCurrentPath('/change-requests')}>
                 My change requests
               </Navbar.Item>
             </>
           )}
           {canModerate(token) && (
-            <Navbar.Item renderAs="a" href="/moderation">
+            <Navbar.Item renderAs="a" href="/moderation" active={isCurrentPath('/moderation')}>
               Moderation
             </Navbar.Item>
           )}
           {getRolesFromToken(token).includes(UserRole.ADMIN) && (
             <Navbar.Item hoverable>
-              <Navbar.Link renderAs="a" href="/admin">
+              <Navbar.Link
+                renderAs="a"
+                href="/admin"
+                className={window.location.pathname.startsWith(ADMIN_PATH_PREFIX) ? 'is-active' : undefined}
+              >
                 Admin
               </Navbar.Link>
               <Navbar.Dropdown>
-                <Navbar.Item renderAs="a" href="/admin">
+                <Navbar.Item renderAs="a" href="/admin" active={isCurrentPath('/admin')}>
                   Dashboard
                 </Navbar.Item>
-                <Navbar.Item renderAs="a" href="/admin/users">
+                <Navbar.Item renderAs="a" href="/admin/users" active={isCurrentPath('/admin/users')}>
                   Users
                 </Navbar.Item>
-                <Navbar.Item renderAs="a" href="/admin/attributes">
+                <Navbar.Item renderAs="a" href="/admin/attributes" active={isCurrentPath('/admin/attributes')}>
                   Attributes
                 </Navbar.Item>
               </Navbar.Dropdown>
