@@ -72,7 +72,7 @@ Signed-in users open **Import interests** in the top menu, pick a source, and se
 ## Integration & Patterns
 
 - API endpoints defined in `api/src/api/*Controller.ts`
-- The API contract is `api/openapi.yaml` (OpenAPI 3.1), generated from the decorated controllers, so a route cannot exist without being documented. tsoa validates request bodies, paths and queries against it, and the spec is regenerated and committed on every push to `main` that changes the API
+- The API contract is `api/openapi.yaml` (OpenAPI 3.1), generated from the decorated controllers, so a route cannot exist without being documented. tsoa validates request bodies, paths and queries against it, and the "Publish OpenAPI spec" workflow regenerates it on each pull request that changes the API and commits it onto that pull request's branch
 - Frontend API calls use the client generated from that spec
 - Authentication managed via frontend context and backend controller
 - Linting and code analysis required before merging (see CI/CD)

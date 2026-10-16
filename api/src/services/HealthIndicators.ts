@@ -1,5 +1,5 @@
 import { ComponentHealth, Health, HealthMessage, HealthStatus } from "@/models/Health"
-import { DBConnection } from ".."
+import { DBConnection } from '@/Database'
 
 export interface HealthIndicator {
     name: string;
