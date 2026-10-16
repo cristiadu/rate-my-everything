@@ -10,7 +10,7 @@ describe('Footer', () => {
 
     // THEN the app is named with its tagline and this year's copyright
     expect(screen.getByText('Rate My Everything')).toBeInTheDocument()
-    expect(screen.getByText(/Personal ratings, not crowd scores/)).toBeInTheDocument()
+    expect(screen.getByText(/When you change your mind a lot and need to keep track of it/)).toBeInTheDocument()
     expect(screen.getByText(new RegExp(`© ${new Date().getFullYear()} Cristiano Faustino`))).toBeInTheDocument()
   })
 
