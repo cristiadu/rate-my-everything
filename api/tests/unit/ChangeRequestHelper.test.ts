@@ -4,6 +4,9 @@ import { ChangeRequestInput } from '@/models/ChangeRequest'
 import ChangeRequestAction from '@/models/ChangeRequestAction'
 import ChangeRequestTarget from '@/models/ChangeRequestTarget'
 
+/** A target type a request body can carry although it is not a ChangeRequestTarget. */
+const UNSUPPORTED_TARGET_TYPE: string = 'rating'
+
 describe('findChangeRequestError', () => {
   it.each([
     { targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.UPDATE, targetId: 1, changes: { name: 'Dune' } },
@@ -14,6 +17,17 @@ describe('findChangeRequestError', () => {
     // WHEN it is checked
     // THEN no error is found
     expect(findChangeRequestError(input)).toBeNull()
+  })
+
+  it('rejects a target type that cannot be changed', () => {
+    // GIVEN a change request for a rating, which is not an item or a category
+    const input: ChangeRequestInput = {
+      targetType: UNSUPPORTED_TARGET_TYPE as ChangeRequestTarget, action: ChangeRequestAction.UPDATE, targetId: 1, changes: {},
+    }
+
+    // WHEN it is checked
+    // THEN the allowed target types are named
+    expect(findChangeRequestError(input)).toBe('targetType must be one of: item, category')
   })
 
   it('rejects category changes with non-integer attribute ids', () => {

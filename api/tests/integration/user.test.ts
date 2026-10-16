@@ -115,6 +115,39 @@ describe('User API Integration Tests', async () => {
     })
   })
 
+  describe(`GET ${Endpoints.USERS_BASE_PATH}/username/:username`, () => {
+    it('should get a user by username without the password', async () => {
+      // GIVEN an existing user (created in beforeAll)
+      // WHEN it is requested by username
+      const res = await request(app)
+        .get(`${Endpoints.USERS_BASE_PATH}/username/${existingUserPayload.username}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+
+      // THEN that user comes back without a password
+      const apiResult = res.body as User
+      expect(apiResult.id).toBe(existingUser.id)
+      expect(apiResult.email).toBe(existingUserPayload.email)
+      expect(apiResult.password).toBeUndefined()
+    })
+
+    it('should return 404 for an unknown username', async () => {
+      // GIVEN a username nobody has
+      // WHEN it is requested
+      const res = await request(app)
+        .get(`${Endpoints.USERS_BASE_PATH}/username/nobody-has-this-name`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(404)
+
+      // THEN a not-found error comes back
+      const apiError = res.body as APIError
+      expect(apiError.code).toBe(ErrorCode.RESOURCE_NOT_FOUND)
+      expect(apiError.message).toBe('User not found')
+    })
+  })
+
   describe(`PUT ${Endpoints.USERS_BASE_PATH}/:id`, () => {
     it('should update roles and keep the existing password when none is sent', async () => {
       // GIVEN an existing user (created in beforeAll)
@@ -150,6 +183,22 @@ describe('User API Integration Tests', async () => {
         .post(Endpoints.LOGIN_BASE_PATH)
         .send({ username: existingUserPayload.username, password: 'NewPassword456!' })
         .expect(200)
+    })
+
+    it('should return 404 when updating an unknown user', async () => {
+      // GIVEN an id no user has
+      // WHEN its roles are updated
+      const res = await request(app)
+        .put(`${Endpoints.USERS_BASE_PATH}/999999`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ roles: [UserRole.USER] })
+        .expect('Content-Type', /json/)
+        .expect(404)
+
+      // THEN a not-found error comes back
+      const apiError = res.body as APIError
+      expect(apiError.code).toBe(ErrorCode.RESOURCE_NOT_FOUND)
+      expect(apiError.message).toBe('User not found')
     })
   })
 

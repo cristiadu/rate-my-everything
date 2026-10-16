@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, beforeEach } from 'vitest'
+import { describe, it, expect, afterEach, beforeAll, beforeEach, vi } from 'vitest'
 import request from 'supertest'
 import { appReady } from '@/index'
 import APIError from '@/models/APIError'
@@ -7,10 +7,11 @@ import Category from '@/models/Category'
 import Attribute from '@/models/Attribute'
 import AttributeValueType from '@/models/AttributeValueType'
 import ErrorCode from '@/errors/ErrorCode'
+import ItemService from '@/services/ItemService'
 import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { cleanupAllItems, cleanupAllCategories } from '@@/testutils/common/DataCleanup'
 import { createTestAttribute } from '@@/testutils/common/Attributes'
-import { createTestItemInCategory } from '@@/testutils/common/Items'
+import { createTestItem, createTestItemInCategory } from '@@/testutils/common/Items'
 import { Endpoints } from '@@/testutils/common/constants'
 
 describe('Item API Integration Tests', async () => {
@@ -32,6 +33,10 @@ describe('Item API Integration Tests', async () => {
       .send({ name: 'Item-Category', description: 'For item tests', attributeIds: [pagesAttribute.id] })
       .expect(201)
     testCategory = categoryRes.body
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   describe(`POST ${Endpoints.ITEMS_BASE_PATH}`, () => {
@@ -120,6 +125,23 @@ describe('Item API Integration Tests', async () => {
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
         })
     })
+
+    it('should answer with an internal error when saving the item fails unexpectedly', async () => {
+      // GIVEN saving items fails with an unexpected error
+      vi.spyOn(ItemService.prototype, 'create').mockRejectedValueOnce(new Error('Connection terminated unexpectedly'))
+
+      // WHEN an item is created
+      // THEN an internal error comes back without the error's details
+      await request(app)
+        .post(Endpoints.ITEMS_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ name: 'Unsaved-Item', categoryId: testCategory.id })
+        .expect('Content-Type', /json/)
+        .expect(500)
+        .expect(res => {
+          expect(res.body).toEqual({ code: ErrorCode.INTERNAL_ERROR, status: 500, message: 'An internal server error occurred' })
+        })
+    })
   })
 
   describe(`GET ${Endpoints.ITEMS_BASE_PATH}`, () => {
@@ -141,6 +163,27 @@ describe('Item API Integration Tests', async () => {
           const items = res.body as Item[]
           expect(items.map((item) => [item.name, item.description, item.category.name]))
             .toEqual([['Listed-Item', 'Listed in tests', 'Item-Category']])
+        })
+    })
+  })
+
+  describe(`GET ${Endpoints.ITEMS_BASE_PATH}/category/:category`, () => {
+    beforeAll(async () => {
+      await createTestItem(app, testAuthToken, 'Elsewhere')
+    })
+
+    it('should list only the items of the given category', async () => {
+      // GIVEN Listed-Item in Item-Category and another item in its own category (beforeAll)
+      // WHEN listing the items of Item-Category
+      // THEN only Listed-Item comes back
+      await request(app)
+        .get(`${Endpoints.ITEMS_BASE_PATH}/category/Item-Category`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .expect(res => {
+          const items = res.body as Item[]
+          expect(items.map((item) => [item.name, item.category.name])).toEqual([['Listed-Item', 'Item-Category']])
         })
     })
   })
@@ -265,6 +308,24 @@ describe('Item API Integration Tests', async () => {
           expect(apiError.message).toBe('Item not found')
           expect(apiError.code).toBe(ErrorCode.RESOURCE_NOT_FOUND)
           expect(apiError.status).toBe(404)
+        })
+    })
+
+    it('should fail to move an item to a category that does not exist', async () => {
+      // GIVEN an item with 320 pages (beforeEach)
+      // WHEN it is moved to category 999999
+      // THEN the unknown category is reported
+      await request(app)
+        .put(`${Endpoints.ITEMS_BASE_PATH}/${itemToUpdate.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ categoryId: 999999 })
+        .expect('Content-Type', /json/)
+        .expect(422)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe('Unknown category id: 999999')
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+          expect(apiError.status).toBe(422)
         })
     })
   })

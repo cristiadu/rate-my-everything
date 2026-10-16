@@ -94,4 +94,34 @@ describe('ModerationPage', () => {
     expect(screen.getByText('by mod')).toBeInTheDocument()
     await waitFor(() => expect(screen.getAllByRole('button', { name: 'Approve' })).toHaveLength(1))
   })
+  test('shows the API error when the requests cannot be loaded', async () => {
+    // GIVEN an API that rejects the moderation list
+    fetchMock.mockImplementation(async (url) => (String(url).includes('/moderation/')
+      ? jsonResponse({ message: 'Moderator role required' }, 403)
+      : respond(url)))
+
+    // WHEN the page loads
+    renderPage()
+
+    // THEN the message is shown
+    expect(await screen.findByText('Moderator role required')).toBeInTheDocument()
+  })
+
+  test('shows the API error when reviewing fails', async () => {
+    // GIVEN a moderator rejecting with a note and an API that refuses the review
+    jest.spyOn(window, 'prompt').mockReturnValue('Wrong page count')
+    fetchMock.mockImplementation(async (url, init) => (init?.method === 'PUT'
+      ? jsonResponse({ message: 'Change request already reviewed' }, 409)
+      : respond(url)))
+    renderPage()
+    const row = (await screen.findByText('Edit interest "Dune"')).closest('tr') as HTMLElement
+
+    // WHEN rejecting it
+    fireEvent.click(within(row).getByRole('button', { name: 'Reject' }))
+
+    // THEN the rejection was sent and the API's message is shown
+    expect(await screen.findByText('Change request already reviewed')).toBeInTheDocument()
+    const [url] = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT') ?? []
+    expect(url).toBe(`${API_URL}/moderation/change-requests/1/reject`)
+  })
 })

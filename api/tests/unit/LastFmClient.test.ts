@@ -5,7 +5,7 @@ import { UnknownResource } from '@/errors/UnknownResource'
 import { ImportSourceFailed } from '@/errors/ImportSourceFailed'
 import { ImportSourceNotConfigured } from '@/errors/ImportSourceNotConfigured'
 import {
-  lastFmTopAlbums, lastFmTopArtists, lastFmUserNotFound, mockExternalApi,
+  lastFmInvalidApiKey, lastFmTopAlbums, lastFmTopArtists, lastFmUserNotFound, mockExternalApi,
 } from '@@/testutils/common/Imports'
 
 describe('LastFmClient', () => {
@@ -88,7 +88,7 @@ describe('LastFmClient', () => {
 
   it('fails with ImportSourceFailed on any other Last.fm error', async () => {
     // GIVEN Last.fm rejects the API key
-    mockExternalApi({ error: 10, message: 'Invalid API key' }, 403)
+    mockExternalApi(lastFmInvalidApiKey, 403)
 
     // WHEN the albums are read THEN the failed call is reported with its status
     await expect(new LastFmClient('bad-key').getTopAlbums('rj'))
@@ -101,6 +101,24 @@ describe('LastFmClient', () => {
 
     // WHEN the albums are read THEN the missing configuration is reported
     await expect(new LastFmClient(undefined).getTopAlbums('rj')).rejects.toThrow(ImportSourceNotConfigured)
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  it('fails with ImportSourceFailed when Last.fm refuses the top artists', async () => {
+    // GIVEN Last.fm rejects the API key
+    mockExternalApi(lastFmInvalidApiKey, 403)
+
+    // WHEN the artists are read THEN the failed call is reported with its status
+    await expect(new LastFmClient('bad-key').getTopArtists('rj'))
+      .rejects.toThrow(new ImportSourceFailed(ImportSource.LASTFM, 403))
+  })
+
+  it('fails with ImportSourceNotConfigured without calling Last.fm for artists when there is no API key', async () => {
+    // GIVEN no Last.fm API key
+    const fetchMock = mockExternalApi(lastFmTopArtists)
+
+    // WHEN the artists are read THEN the missing configuration is reported
+    await expect(new LastFmClient(undefined).getTopArtists('rj')).rejects.toThrow(ImportSourceNotConfigured)
     expect(fetchMock).not.toHaveBeenCalled()
   })
 })
