@@ -6,7 +6,6 @@ import APIError, { NewApiError } from '@/models/APIError'
 import UserRole from '@/models/UserRole'
 import ErrorCode from '@/errors/ErrorCode'
 import { RequestRejected } from '@/errors/RequestRejected'
-import { RatingNotOwned } from '@/errors/RatingNotOwned'
 import type {
   NewRatingInput, RatedItemResponse, RatingQuery, RatingUpdate,
 } from '@/models/RatedItem'
@@ -118,7 +117,7 @@ export class RatedItemController extends Controller {
     if (input.notes !== undefined) {
       changes.notes = input.notes
     }
-    const data = await this.rejectUnlessAllowed(() => this.ratedItemService.update(id, changes, request.user))
+    const data = await this.ratedItemService.update(id, changes, request.user)
     if (!data) {
       throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
     }
@@ -134,19 +133,7 @@ export class RatedItemController extends Controller {
   @SuccessResponse(204, 'Rating deleted')
   @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
   public async deleteRating(@Request() request: AuthenticatedRequest, @Path() id: ResourceId): Promise<void> {
-    await this.rejectUnlessAllowed(() => this.ratedItemService.delete(id, request.user))
+    await this.ratedItemService.delete(id, request.user)
     this.setStatus(204)
-  }
-
-  /** Runs a change to a rating, answering 403 when the signed-in user may not make it. */
-  private async rejectUnlessAllowed<Result>(change: () => Promise<Result>): Promise<Result> {
-    try {
-      return await change()
-    } catch (error) {
-      if (error instanceof RatingNotOwned) {
-        throw new RequestRejected(NewApiError(ErrorCode.FORBIDDEN, 403, error.message))
-      }
-      throw error
-    }
   }
 }
