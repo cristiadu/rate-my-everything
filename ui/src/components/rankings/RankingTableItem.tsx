@@ -4,7 +4,7 @@ import { Image } from 'react-bulma-components'
 import type { RankingItem } from '@/components/types'
 
 /** Shown in place of a personal grade for items the signed-in user has not rated. */
-const NOT_RATED = '-'
+export const NOT_RATED = '-'
 
 /** Props for one rankings row. */
 interface RankingTableItemProps {

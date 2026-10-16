@@ -46,6 +46,11 @@ export const duneRerating: RatedItemResponse = {
   ...duneRating, id: 903, rating: 8.5, notes: 'Slower the second time', ratedAt: '2026-10-01T10:00:00.000Z',
 }
 
+/** The signed-in user's earliest rating of Dune, before the other two. */
+export const duneFirstRating: RatedItemResponse = {
+  ...duneRating, id: 904, rating: 7, notes: 'Hard to get into', ratedAt: '2026-08-01T10:00:00.000Z',
+}
+
 /** Another user's rating of Dune. */
 export const otherUserDuneRating: RatedItemResponse = {
   ...duneRating, id: 902, rating: 6, notes: null, userId: OTHER_USER_ID, ratedAt: '2026-09-15T10:00:00.000Z',

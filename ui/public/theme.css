@@ -101,3 +101,64 @@
   --bulma-footer-background-color: var(--bulma-dark);
   color: var(--bulma-dark-invert);
 }
+
+/* The interest view's name and category row is split from the rest of the view by a thin line, like a title bar */
+.interest-view-header {
+  border-bottom: 1px solid var(--bulma-border-weak);
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+}
+
+/* The category sits at the right end of the title bar, set apart from the name by a thin line */
+.interest-view-category {
+  border-left: 1px solid var(--bulma-border-weak);
+  margin-bottom: 0;
+  padding: 0.25rem 0 0.25rem 1.25rem;
+}
+
+/* The photo fits inside its frame without cropping, on a light background when its shape differs */
+.interest-view-photo {
+  background-color: var(--bulma-scheme-main-bis);
+  border-radius: var(--bulma-radius);
+  overflow: hidden;
+}
+
+.interest-view-photo img {
+  object-fit: contain;
+}
+
+/* Grade boxes share one width that fits "10.0", and have the same padding on both sides as they have no close button */
+.grade-box {
+  margin-inline: auto;
+  padding: 1.5rem 1rem;
+  width: 9rem;
+}
+
+/* The grade number takes the box's text color, so it reads on every grade color */
+.grade-box .title {
+  color: inherit;
+}
+
+/* On wider screens the rating history is set apart from the description by a thin line */
+@media screen and (min-width: 769px) {
+  .interest-view-history {
+    border-left: 1px solid var(--bulma-border-weak);
+  }
+}
+
+/* The attributes start under a thin line, below the description and history */
+.interest-view-attributes {
+  border-top: 1px solid var(--bulma-border-weak);
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+/* A rating's date, and its grade with its Mine tag, stay on one line in the rating history */
+.rating-history-nowrap {
+  white-space: nowrap;
+}
+
+/* The grade input of a rating being edited only needs room for a grade like "10.0" */
+.rating-history-grade-input {
+  width: 5rem;
+}
