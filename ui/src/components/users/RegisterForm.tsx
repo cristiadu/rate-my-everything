@@ -25,8 +25,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
     setError('')
 
     try {
-      // Default to no roles, admin can add roles later
-      await register({ username, email, password, roles: [] })
+      // The API gives every new account the user role; admins grant the others
+      await register({ username, email, password })
       onSuccess()
     } catch (err) {
       if (err instanceof Error) {

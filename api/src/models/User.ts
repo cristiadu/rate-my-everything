@@ -35,8 +35,8 @@ export interface UserInput extends Pick<User, 'username' | 'email' | 'roles'>, P
 /** Fields accepted when changing a user; fields left out keep their value. */
 export interface UserUpdate extends Partial<UserInput> {}
 
-/** Fields accepted when signing up. */
-export interface RegisterInput extends Pick<User, 'username' | 'email' | 'password'>, Partial<Pick<User, 'roles'>> {}
+/** Fields accepted when signing up; every new account gets the user role, and only admins grant others. */
+export interface RegisterInput extends Pick<User, 'username' | 'email' | 'password'> {}
 
 /** Credentials sent to sign in. */
 export interface LoginInput extends Pick<User, 'username' | 'password'> {}
