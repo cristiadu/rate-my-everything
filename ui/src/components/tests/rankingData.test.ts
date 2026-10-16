@@ -15,15 +15,7 @@ test('lists only the items I rated, with my grade and everyone\'s grade', () => 
   const rankings = toMyRankings(ratings, MY_USER_ID)
 
   // THEN Dune shows my average of 9 next to everyone's grade, and Alien is left out
-  expect(rankings).toEqual([{
-    item_id: 100,
-    item_name: 'Dune',
-    item_img_url: 'https://example.com/dune.png',
-    category: 'Books',
-    rating: 7.5,
-    my_rating: 9,
-    rating_count: 3,
-  }])
+  expect(rankings).toEqual([{ item: duneRating.item, rating: 7.5, myRating: 9, ratingCount: 3 }])
 })
 
 test('averages each user\'s personal grade into the collective grade', () => {
@@ -32,7 +24,7 @@ test('averages each user\'s personal grade into the collective grade', () => {
   const rankings = toOverallRankings(ratings, MY_USER_ID)
 
   // THEN Dune averages my 9 and their 6, so rating it twice still counts once, and I have no grade for Alien
-  expect(rankings.map((ranking) => [ranking.item_name, ranking.rating, ranking.my_rating, ranking.rating_count])).toEqual([
+  expect(rankings.map((ranking) => [ranking.item.name, ranking.rating, ranking.myRating, ranking.ratingCount])).toEqual([
     ['Dune', 7.5, 9, 3],
     ['Alien', 7, null, 1],
   ])
@@ -47,13 +39,4 @@ test('works out a personal grade from one user\'s ratings only', () => {
 
   // THEN each grade only uses that user's ratings
   expect(grades).toEqual([9, 6, null])
-})
-
-test('labels items without a category', () => {
-  // GIVEN my rating of an item saved without a category
-  const uncategorized = [{ ...duneRating, item: { ...duneRating.item, category: null } }]
-
-  // WHEN it becomes a ranking row
-  // THEN its category reads Uncategorized
-  expect(toMyRankings(uncategorized, MY_USER_ID)[0].category).toBe('Uncategorized')
 })

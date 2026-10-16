@@ -9,7 +9,7 @@ import { UserRole } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import { booksCategory, duneItem, moviesCategory } from '@/components/tests/common/Interests'
-import { lastFmImportedItems } from '@/components/tests/common/Imports'
+import { importSources, lastFmImportedItems } from '@/components/tests/common/Imports'
 
 /** API base URL the UI calls. */
 const API_URL = 'http://localhost:3000/api'
@@ -17,6 +17,7 @@ const API_URL = 'http://localhost:3000/api'
 /** Responses of the mocked endpoints, keyed by method and path. */
 const responses: Record<string, object> = {
   'GET /categories': [booksCategory, moviesCategory],
+  'GET /imports': importSources,
   'GET /imports/lastfm?query=rj': lastFmImportedItems,
   'POST /items': { ...duneItem, id: 300, name: 'In Rainbows' },
 }
@@ -42,8 +43,8 @@ const renderImportPage = () => render(
 )
 
 /** Searches the given Last.fm username from the rendered page. */
-const searchLastFm = (username: string) => {
-  fireEvent.change(screen.getByLabelText('Last.fm username'), { target: { value: username } })
+const searchLastFm = async (username: string) => {
+  fireEvent.change(await screen.findByLabelText('Last.fm username'), { target: { value: username } })
   fireEvent.click(screen.getByRole('button', { name: 'Find' }))
 }
 
@@ -62,7 +63,7 @@ describe('ImportPage', () => {
     renderImportPage()
 
     // WHEN a Last.fm username is searched
-    searchLastFm('rj')
+    await searchLastFm('rj')
 
     // THEN artists and albums are listed with their type and selected
     expect(await screen.findByText('Artist')).toBeInTheDocument()
@@ -74,9 +75,10 @@ describe('ImportPage', () => {
     expect(screen.getByRole('button', { name: 'Import 3 selected' })).toBeEnabled()
   })
 
-  test('asks for a video or playlist URL when YouTube is chosen', () => {
-    // GIVEN the import page
+  test('asks for a video or playlist URL when YouTube is chosen', async () => {
+    // GIVEN the import page with the sources the API lists
     renderImportPage()
+    await screen.findByRole('option', { name: 'YouTube' })
 
     // WHEN YouTube is chosen
     fireEvent.change(screen.getByLabelText('Import from'), { target: { value: 'youtube' } })
@@ -88,7 +90,7 @@ describe('ImportPage', () => {
   test('imports the selected interests into the chosen category with links to rate them', async () => {
     // GIVEN the Last.fm artists and albums are listed and only In Rainbows stays selected
     renderImportPage()
-    searchLastFm('rj')
+    await searchLastFm('rj')
     await screen.findByRole('option', { name: 'Books' })
     fireEvent.click(screen.getByLabelText('Select Radiohead'))
     fireEvent.click(screen.getByLabelText('Select Demo Tape'))
@@ -114,7 +116,7 @@ describe('ImportPage', () => {
     renderImportPage()
 
     // WHEN an unknown username is searched
-    searchLastFm('nobody')
+    await searchLastFm('nobody')
 
     // THEN the API error is shown and nothing is listed
     expect(await screen.findByText('Unknown Last.fm user id: nobody')).toBeInTheDocument()

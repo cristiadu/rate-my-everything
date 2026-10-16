@@ -4,7 +4,7 @@ import {
   Message,
 } from 'react-bulma-components'
 import { UserRole, createUser, updateUser, type UserInput, type UserResponse } from '@/api/generated/api'
-import { MIN_PASSWORD_LENGTH, type StatusMessage, type UserFormValues } from '@/components/types'
+import { MIN_PASSWORD_LENGTH, type StatusMessage } from '@/components/types'
 
 /**
  * Props for the user form; pass a user to edit it, or none to create one.
@@ -13,7 +13,7 @@ import { MIN_PASSWORD_LENGTH, type StatusMessage, type UserFormValues } from '@/
 interface CreateUserFormProps {
   user?: UserResponse;
   isSaving?: boolean;
-  onSubmit?: (values: UserFormValues) => void;
+  onSubmit?: (values: UserInput) => void;
   onCancel?: () => void;
 }
 
@@ -22,7 +22,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
   user, isSaving: isParentSaving = false, onSubmit, onCancel,
 }) => {
   const isEditing = !!user
-  const [formFields, setFormFields] = useState<UserFormValues>({
+  const [formFields, setFormFields] = useState<UserInput>({
     username: user?.username ?? '',
     email: user?.email ?? '',
     password: '',

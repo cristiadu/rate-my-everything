@@ -24,7 +24,7 @@ const RankingTable: React.FC<RankingTableProps> = ({ rankings, canEdit }) => (
     </thead>
     <tbody>
       {rankings.map((ranking) => (
-        <RankingTableItem key={ranking.item_id} ranking={ranking} canEdit={canEdit} />
+        <RankingTableItem key={ranking.item.id} ranking={ranking} canEdit={canEdit} />
       ))}
     </tbody>
   </Table>

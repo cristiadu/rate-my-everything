@@ -1,16 +1,19 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import {
   ChangeRequestAction, ChangeRequestTarget, UserRole, createCategory, createChangeRequest, deleteCategory,
-  getAttributes, getCategories, getSimilarCategories, updateCategory, type AttributeResponse, type CategoryResponse,
-  type ChangeRequestInput,
+  getAttributes, getCategories, getSimilarCategories, updateCategory, type AttributeResponse, type CategoryInput,
+  type CategoryResponse, type ChangeRequestInput,
 } from '@/api/generated/api'
-import type { CategoryFormValues, StatusMessage } from '@/components/types'
+import type { StatusMessage } from '@/components/types'
 import { getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
 import MultiSelectDropdown from '@/components/common/MultiSelectDropdown'
 import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
 
 /** Form values for a new category. */
+/** Values edited in the category form: every field of the categories API body, all filled in. */
+type CategoryFormValues = { [Field in 'name' | 'description' | 'attributeIds']-?: NonNullable<CategoryInput[Field]> }
+
 const emptyForm: CategoryFormValues = { name: '', description: '', attributeIds: [] }
 
 /** Message shown after a user's proposed change to a category is saved for moderators. */

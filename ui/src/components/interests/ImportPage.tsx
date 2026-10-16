@@ -2,10 +2,9 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Box, Message } from 'react-bulma-components'
 import {
-  ImportSource, createItem, findImportItems, getCategories, type CategoryResponse, type ImportedItem, type ItemInput,
-  type ItemResponse,
+  ImportSource, createItem, findImportItems, getCategories, getImportSources, type CategoryResponse, type ImportedItem,
+  type ImportSourceDescription, type ItemInput, type ItemResponse,
 } from '@/api/generated/api'
-import { IMPORT_SOURCES } from '@/components/types'
 
 /** Side length, in pixels, of the pictures shown next to found interests. */
 const IMPORTED_IMAGE_SIZE = 48
@@ -20,23 +19,28 @@ const ImportPage: React.FC = () => {
   const [foundItems, setFoundItems] = useState<ImportedItem[]>([])
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([])
   const [categories, setCategories] = useState<CategoryResponse[]>([])
+  const [sources, setSources] = useState<ImportSourceDescription[]>([])
   const [categoryId, setCategoryId] = useState('')
   const [importedItems, setImportedItems] = useState<ItemResponse[]>([])
   const [error, setError] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
 
-  const loadCategories = useCallback(async () => {
+  const loadCategoriesAndSources = useCallback(async () => {
     try {
-      setCategories(await getCategories())
+      const [loadedCategories, loadedSources] = await Promise.all([getCategories(), getImportSources()])
+      setCategories(loadedCategories)
+      setSources(loadedSources)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load categories')
+      setError(err instanceof Error ? err.message : 'Failed to load categories and import sources')
     }
   }, [])
 
   useEffect(() => {
-    loadCategories()
-  }, [loadCategories])
+    loadCategoriesAndSources()
+  }, [loadCategoriesAndSources])
+
+  const selectedSource = sources.find((description) => description.source === source)
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -113,14 +117,14 @@ const ImportPage: React.FC = () => {
               <label className="label" htmlFor="import-source">Import from</label>
               <div className="select">
                 <select id="import-source" value={source} onChange={(e) => setSource(e.target.value as ImportSource)}>
-                  {Object.values(ImportSource).map((importSource) => (
-                    <option key={importSource} value={importSource}>{IMPORT_SOURCES[importSource].label}</option>
+                  {sources.map((description) => (
+                    <option key={description.source} value={description.source}>{description.label}</option>
                   ))}
                 </select>
               </div>
             </div>
             <div className="control is-expanded">
-              <label className="label" htmlFor="import-query">{IMPORT_SOURCES[source].queryLabel}</label>
+              <label className="label" htmlFor="import-query">{selectedSource?.queryLabel ?? 'Search'}</label>
               <input className="input" id="import-query" value={query} onChange={(e) => setQuery(e.target.value)} required />
             </div>
             <div className="control">

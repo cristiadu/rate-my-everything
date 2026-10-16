@@ -778,6 +778,35 @@ components:
           example: Thanks, the year was wrong.
       type: object
       additionalProperties: true
+    ImportSource:
+      description: External services that interests can be imported from.
+      enum:
+        - lastfm
+        - youtube
+      type: string
+      x-enum-varnames:
+        - LASTFM
+        - YOUTUBE
+    ImportSourceDescription:
+      description: An external source interests can be imported from, with the labels
+        the import screen shows for it.
+      properties:
+        source:
+          $ref: "#/components/schemas/ImportSource"
+        label:
+          type: string
+          description: Name of the source and what it imports.
+          example: Last.fm artists and albums
+        queryLabel:
+          type: string
+          description: What the search box asks for.
+          example: Last.fm username
+      required:
+        - source
+        - label
+        - queryLabel
+      type: object
+      additionalProperties: true
     ImportedItemType:
       type: string
       description: Provider-specific display label for an imported result, such as
@@ -805,15 +834,6 @@ components:
         - type
       type: object
       additionalProperties: true
-    ImportSource:
-      description: External services that interests can be imported from.
-      enum:
-        - lastfm
-        - youtube
-      type: string
-      x-enum-varnames:
-        - LASTFM
-        - YOUTUBE
     UserInput:
       description: Fields accepted when creating or updating a user; without a
         password, an update keeps the current one.
@@ -5526,6 +5546,97 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/ChangeRequestReview"
+  /imports:
+    get:
+      operationId: getImportSources
+      responses:
+        "200":
+          description: Ok
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: "#/components/schemas/ImportSourceDescription"
+                type: array
+        "401":
+          description: The bearer token is missing or invalid
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: UNAUTHORIZED
+                    status: 401
+                    message: Missing or invalid authorization header
+        "403":
+          description: The signed-in user may not call this operation or change this
+            resource
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: FORBIDDEN
+                    status: 403
+                    message: You do not have permission to access this resource
+        "429":
+          description: The client sent too many requests in the current rate limit window
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: TOO_MANY_REQUESTS
+                    status: 429
+                    message: Too many requests, try again later
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: string
+              description: Requests one client may make in each 15 minute window.
+              required: true
+            X-RateLimit-Remaining:
+              schema:
+                type: string
+              description: Requests left in the current window.
+              required: true
+            X-RateLimit-Reset:
+              schema:
+                type: string
+              description: When the current window ends, in seconds since the Unix epoch.
+              required: true
+            Retry-After:
+              schema:
+                type: string
+              description: Seconds to wait before sending another request.
+              required: true
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: INTERNAL_ERROR
+                    status: 500
+                    message: An internal server error occurred
+      summary: Lists the sources items can be imported from, with the labels to show
+        for each
+      tags:
+        - Imports
+      security:
+        - bearerAuth:
+            - user
+            - admin
+      parameters: []
   /imports/{source}:
     get:
       operationId: findImportItems
