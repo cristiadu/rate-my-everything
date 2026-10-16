@@ -14,8 +14,9 @@ export default defineConfig({
     maxConcurrency: 1,
     coverage: {
       provider: 'v8',
-      reporter: ['text', 'json', 'html'],
-      exclude: ['**/node_modules/**', '**/dist/**', '**/tests/setup.ts']
+      reporter: ['text', 'json', 'json-summary', 'html'],
+      include: ['src/**/*.ts'],
+      exclude: ['**/node_modules/**', '**/dist/**', '**/tests/setup.ts', 'src/routes/generated/**']
     }
   },
   resolve: {

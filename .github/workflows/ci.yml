@@ -30,6 +30,15 @@ jobs:
         cache-dependency-path: pnpm-lock.yaml
     - run: pnpm install
     - run: pnpm lint
-    - run: pnpm test
+    - run: pnpm test:coverage
+    - name: Show coverage in the job summary
+      run: node .github/scripts/coverage-summary.js api/coverage/coverage-summary.json ui/coverage/coverage-summary.json >> "$GITHUB_STEP_SUMMARY"
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 7.0.2
+      with:
+        name: coverage-reports
+        path: |
+          api/coverage/
+          ui/coverage/
     - run: pnpm build
     - run: pnpm knip

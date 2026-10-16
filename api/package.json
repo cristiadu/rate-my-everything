@@ -13,7 +13,7 @@
     "test": "vitest run",
     "posttest": "docker compose -f compose.yaml down -v",
     "test:watch": "vitest",
-    "test:coverage": "vitest run --coverage",
+    "test:coverage": "pnpm test --coverage",
     "lint": "eslint --ext .ts src/",
     "upgrade-dependencies": "pnpm up --latest",
     "openapi": "tsoa spec-and-routes",
