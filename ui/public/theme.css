@@ -39,13 +39,33 @@
   border: 1px solid var(--bulma-primary);
   border-top: none;
   border-radius: 0 0 var(--bulma-radius-large) var(--bulma-radius-large);
-  width: 100%;
 }
 
-/* Dropdown items drop Bulma's wide right padding and wrap, so the panel keeps the width of the menu item above it */
-.navbar .navbar-dropdown .navbar-item {
-  padding-inline: 0.75rem;
-  white-space: normal;
+/*
+ * On desktop a menu item with a dropdown grows to its dropdown's natural width.
+ * The dropdown sits in a zero-height grid row under the menu item, so it counts towards the item's width
+ * without making the menu bar taller, and it is only hidden while closed instead of removed from the layout.
+ */
+@media screen and (min-width: 1024px) {
+  .navbar-item.has-dropdown {
+    display: grid;
+    grid-template-rows: auto 0;
+    row-gap: 0;
+  }
+
+  .navbar-item.has-dropdown .navbar-dropdown {
+    align-self: start;
+    display: block;
+    inset: auto;
+    position: relative;
+    visibility: hidden;
+  }
+
+  .navbar-item.has-dropdown.is-active .navbar-dropdown,
+  .navbar-item.has-dropdown.is-hoverable:hover .navbar-dropdown,
+  .navbar-item.has-dropdown.is-hoverable:focus-within .navbar-dropdown {
+    visibility: visible;
+  }
 }
 
 /* Dropdown items use Bulma's plain strong text color instead of the menu's dark red, so the open menu reads as one calm panel */
