@@ -46,4 +46,10 @@ jobs:
       - name: Commit the spec to the pull request's branch when it changed
         run: |
           git add api/openapi.yaml
-          git diff --cached --quiet || (git commit -m "docs(api): regenerate OpenAPI spec" && git push)
+          if git diff --cached --quiet; then
+            echo "::notice file=api/openapi.yaml::The generated spec is equal to the committed one, so there is nothing to commit."
+          else
+            git commit -m "docs(api): regenerate OpenAPI spec"
+            git push
+            echo "::notice file=api/openapi.yaml::Committed the regenerated spec to ${GITHUB_HEAD_REF}."
+          fi
