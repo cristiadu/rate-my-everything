@@ -14,6 +14,9 @@ jobs:
   build:
     name: Project's CI
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     steps:
     - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # 7.0.1
     - name: Setup PNPM
@@ -30,6 +33,28 @@ jobs:
         cache-dependency-path: pnpm-lock.yaml
     - run: pnpm install
     - run: pnpm lint
-    - run: pnpm test
+    - run: pnpm test:coverage
+    - name: Write the coverage report
+      env:
+        RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+      run: |
+        node .github/scripts/coverage-summary.js api/coverage/coverage-summary.json ui/coverage/coverage-summary.json > "$RUNNER_TEMP/coverage-report.md"
+        echo -e "\nFull HTML reports: the \`coverage-reports\` artifact of [this run]($RUN_URL)." >> "$RUNNER_TEMP/coverage-report.md"
+        cat "$RUNNER_TEMP/coverage-report.md" >> "$GITHUB_STEP_SUMMARY"
+    - name: Comment the coverage report on the pull request
+      # GITHUB_TOKEN cannot comment on pull requests from forks.
+      if: github.event_name == 'pull_request' && github.event.pull_request.head.repo.full_name == github.repository
+      env:
+        GH_TOKEN: ${{ github.token }}
+        GH_REPO: ${{ github.repository }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+      run: gh pr comment "$PR_NUMBER" --edit-last --create-if-none --body-file "$RUNNER_TEMP/coverage-report.md"
+    - name: Upload coverage reports
+      uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # 7.0.2
+      with:
+        name: coverage-reports
+        path: |
+          api/coverage/
+          ui/coverage/
     - run: pnpm build
     - run: pnpm knip

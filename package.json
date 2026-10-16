@@ -15,6 +15,7 @@
     "deploy": "pnpm --parallel -r deploy",
     "release": "pnpm --parallel -r release",
     "test": "pnpm --parallel -r test",
+    "test:coverage": "pnpm --parallel -r test:coverage",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "upgrade-dependencies": "pnpm up --latest && pnpm --parallel -r upgrade-dependencies",
