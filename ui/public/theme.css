@@ -69,18 +69,53 @@
     visibility: visible;
   }
 
-  /* A menu item with a dropdown has the same berry outline as its dropdown, so the two read as one shape when open */
-  .navbar .navbar-item.has-dropdown > .navbar-link {
-    border: 1px solid var(--bulma-primary);
+  /* The soft, see-through berry of the lines that split the top menu items */
+  .navbar-start {
+    --menu-item-line-color: hsla(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-l), 0.25);
   }
 
-  /* While its dropdown is open the menu item fills with a berry a bit lighter than the outline, and drops its bottom edge to join the dropdown */
+  /*
+   * Top menu items are split by soft lines on their sides only.
+   * The lines are inset shadows rather than borders so the items keep their size, and each item draws only its left line so neighbours share one.
+   */
+  .navbar-start > a.navbar-item {
+    box-shadow: inset 1px 0 0 var(--menu-item-line-color);
+    transition: background-color var(--bulma-duration) ease, box-shadow var(--bulma-duration) ease, color var(--bulma-duration) ease;
+  }
+
+  /* The last item, when there is no Admin menu after it, also closes the row with a right line */
+  .navbar-start > a.navbar-item:last-child {
+    box-shadow: inset 1px 0 0 var(--menu-item-line-color), inset -1px 0 0 var(--menu-item-line-color);
+  }
+
+  /* A menu item with a dropdown keeps its existing side borders, in the same soft line color while closed */
+  .navbar-start > .navbar-item.has-dropdown > .navbar-link {
+    border-inline: 1px solid var(--menu-item-line-color);
+    transition: background-color var(--bulma-duration) ease, border-color var(--bulma-duration) ease, color var(--bulma-duration) ease;
+  }
+
+  /*
+   * A hovered menu item, and a menu item while its dropdown is open, fills with a berry a bit lighter than the dropdown's outline.
+   * Its side lines turn the dropdown's solid berry, so an open item and its dropdown read as one shape.
+   */
+  .navbar-start > a.navbar-item:hover,
+  .navbar-start > a.navbar-item:focus-visible,
   .navbar .navbar-item.has-dropdown.is-active > .navbar-link,
   .navbar .navbar-item.has-dropdown.is-hoverable:hover > .navbar-link,
   .navbar .navbar-item.has-dropdown.is-hoverable:focus-within > .navbar-link {
     background-color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-45-l));
-    border-bottom-color: transparent;
     color: var(--bulma-primary-invert);
+  }
+
+  .navbar-start > a.navbar-item:hover,
+  .navbar-start > a.navbar-item:focus-visible {
+    box-shadow: inset 1px 0 0 var(--bulma-primary), inset -1px 0 0 var(--bulma-primary);
+  }
+
+  .navbar .navbar-item.has-dropdown.is-active > .navbar-link,
+  .navbar .navbar-item.has-dropdown.is-hoverable:hover > .navbar-link,
+  .navbar .navbar-item.has-dropdown.is-hoverable:focus-within > .navbar-link {
+    border-inline-color: var(--bulma-primary);
   }
 }
 

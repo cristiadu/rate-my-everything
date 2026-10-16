@@ -3,6 +3,7 @@ import {
   Heading, Level, Form, Button,
 } from 'react-bulma-components'
 import { useAuth } from '@/components/users/AuthContext'
+import { getUsernameFromToken } from '@/components/admin/RequireAdmin'
 import { login as signIn } from '@/api/generated/api'
 
 const UserHeaderMenu = () => {
@@ -11,7 +12,9 @@ const UserHeaderMenu = () => {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const { isAuthenticated, login, logout } = useAuth()
+  const {
+    isAuthenticated, token, login, logout,
+  } = useAuth()
 
   const handleLogin = async (e: React.MouseEvent) => {
     e.preventDefault()
@@ -21,8 +24,8 @@ const UserHeaderMenu = () => {
     setError('')
 
     try {
-      const { token } = await signIn({ username, password })
-      login(token)
+      const { token: newToken } = await signIn({ username, password })
+      login(newToken)
       setUsername('')
       setPassword('')
     } catch (err) {
@@ -34,14 +37,21 @@ const UserHeaderMenu = () => {
   }
 
   return (
-    <Level p={2} backgroundColor="dark" textColor="primary">
+    <Level p={2} backgroundColor="grey-dark" textColor="primary">
       <Level.Side pr={2} align="left">
         <Level.Item>
           <Heading
             size={6}
             subtitle
+            textColor="white"
           >
-            {isAuthenticated ? 'Welcome!' : 'User Section'}
+            {isAuthenticated ? (
+              <>
+                Welcome,
+                {' '}
+                <strong className="has-text-danger">{getUsernameFromToken(token)}</strong>
+              </>
+            ) : 'User Section'}
           </Heading>
         </Level.Item>
       </Level.Side>
