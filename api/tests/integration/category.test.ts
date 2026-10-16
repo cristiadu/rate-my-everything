@@ -38,6 +38,34 @@ describe('Category API Integration Tests', async () => {
         })
     })
 
+    it('should create a category with the color picked for it', async () => {
+      // GIVEN a new category with a hex color
+      // WHEN an admin creates it
+      // THEN it comes back with that color
+      await request(app)
+        .post(Endpoints.CATEGORIES_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ name: 'Colored-Category', description: 'Has a color', color: '#3E8ED0' })
+        .expect(201)
+        .expect(res => {
+          expect((res.body as Category).color).toBe('#3E8ED0')
+        })
+    })
+
+    it('should fail to create a category with a color that is not a hex color', async () => {
+      // GIVEN a new category whose color is a color name instead of a hex color
+      // WHEN an admin creates it
+      // THEN the request fails validation
+      await request(app)
+        .post(Endpoints.CATEGORIES_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ name: 'Badly-Colored-Category', color: 'blue' })
+        .expect(400)
+        .expect(res => {
+          expect((res.body as APIError).code).toBe(ErrorCode.VALIDATION_ERROR)
+        })
+    })
+
     it('should fail to create a category with missing name', async () => {
       // GIVEN a category without a name
       // WHEN an admin creates it

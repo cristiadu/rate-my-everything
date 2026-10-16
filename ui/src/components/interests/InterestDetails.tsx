@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box } from 'react-bulma-components'
 import AttributeValueDisplay from '@/components/common/AttributeValueDisplay'
+import CategoryTag from '@/components/common/CategoryTag'
 import type { ItemResponse } from '@/api/generated/api'
 
 /** Props for the interest view rectangle. */
@@ -13,16 +14,18 @@ interface InterestDetailsProps {
 }
 
 /**
- * Shows an interest as one view: its name and category across the top, its photo next to its grades,
+ * Shows an interest as one view: its name and color-coded category as big labels across the top, its photo next to its grades,
  * its description next to its rating history, and its category attributes as "Field: Value" pairs in two columns.
  */
 const InterestDetails: React.FC<InterestDetailsProps> = ({ item, grades, history }) => (
   <Box className="interest-view">
-    <header className="is-flex is-align-items-center interest-view-header">
-      <h2 className="title is-3 is-flex-grow-1 mb-0">{item.name}</h2>
-      {item.category && <p className="subtitle is-5 interest-view-category">{item.category.name}</p>}
+    <header className="is-flex is-align-items-center is-justify-content-space-between interest-view-header">
+      <h2 className="mb-0">
+        <span className="tag is-primary is-large is-uppercase has-text-weight-bold interest-view-label">{item.name}</span>
+      </h2>
+      {item.category && <CategoryTag category={item.category} isLarge />}
     </header>
-    <div className="columns is-vcentered">
+    <div className="columns">
       <div className="column is-half">
         <figure className="image is-4by3 interest-view-photo">
           {item.imageUrl ? (
@@ -32,7 +35,8 @@ const InterestDetails: React.FC<InterestDetailsProps> = ({ item, grades, history
           )}
         </figure>
       </div>
-      <div className="column is-half">{grades}</div>
+      {/* The grades sit at the bottom of their column, so the + button stays close to the rating history under it */}
+      <div className="column is-half is-flex is-flex-direction-column is-justify-content-flex-end">{grades}</div>
     </div>
     <div className="columns">
       <div className="column is-half">
@@ -45,7 +49,7 @@ const InterestDetails: React.FC<InterestDetailsProps> = ({ item, grades, history
       <div className="interest-view-attributes">
         <div className="columns is-multiline">
           {item.attributes.map((attributeValue) => (
-            <div className="column is-half is-flex is-align-items-baseline" key={attributeValue.id}>
+            <div className="column is-half is-flex is-align-items-baseline is-size-5" key={attributeValue.id}>
               <span className="has-text-weight-semibold mr-2">{`${attributeValue.attribute.name}:`}</span>
               <AttributeValueDisplay attribute={attributeValue.attribute} value={attributeValue.value} />
             </div>

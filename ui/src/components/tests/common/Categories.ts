@@ -8,5 +8,5 @@ export const testAttributes: AttributeResponse[] = [
 
 /** Categories returned by the mocked categories endpoint; Books is linked to Author. */
 export const testCategories: CategoryResponse[] = [
-  { id: 10, name: 'Books', description: 'Things to read', attributes: [testAttributes[0]] },
+  { id: 10, name: 'Books', description: 'Things to read', color: '#8C3060', attributes: [testAttributes[0]] },
 ]

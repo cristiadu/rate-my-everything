@@ -96,6 +96,7 @@ const InterestPage: React.FC = () => {
               >
                 <span className="is-size-4" aria-hidden="true">+</span>
               </Link>
+              <p className="is-size-6 has-text-weight-semibold mt-1" aria-hidden="true">Add a rating</p>
             </div>
           </>
         )}

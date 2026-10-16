@@ -53,7 +53,7 @@ describe('CategoriesPage', () => {
     const [url, options] = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST') ?? []
     expect(url).toBe('http://localhost:3000/api/change-requests')
     expect(JSON.parse(String(options?.body))).toEqual({
-      targetType: 'category', action: 'create', changes: { name: 'Games', description: '', attributeIds: [] },
+      targetType: 'category', action: 'create', changes: { name: 'Games', description: '', color: '#3E8ED0', attributeIds: [] },
     })
   })
 
@@ -92,7 +92,26 @@ describe('CategoriesPage', () => {
     expect(await screen.findByText('Category Books updated.')).toBeInTheDocument()
     const [url, options] = fetchMock.mock.calls.find(([, init]) => init?.method === 'PUT') ?? []
     expect(url).toBe('http://localhost:3000/api/categories/Books')
-    expect(JSON.parse(String(options?.body))).toEqual({ name: 'Books', description: 'Things to read', attributeIds: [1, 2] })
+    expect(JSON.parse(String(options?.body))).toEqual({
+      name: 'Books', description: 'Things to read', color: '#8C3060', attributeIds: [1, 2],
+    })
+  })
+
+  test('creates a category in the color picked for it and shows the list in each category\'s color', async () => {
+    // GIVEN an admin on the categories page, where Books has its berry color
+    loginAs([UserRole.ADMIN, UserRole.USER])
+    renderPage()
+    expect(await screen.findByText('Books')).toHaveStyle({ backgroundColor: '#8C3060' })
+
+    // WHEN a new Games category is created with a green color
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Games' } })
+    fireEvent.change(screen.getByLabelText('Color'), { target: { value: '#48c78e' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create category' }))
+
+    // THEN the color is sent in capitals with the new category
+    expect(await screen.findByText('Category Games created.')).toBeInTheDocument()
+    const [, options] = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST') ?? []
+    expect(JSON.parse(String(options?.body))).toEqual({ name: 'Games', description: '', color: '#48C78E', attributeIds: [] })
   })
 
   test('deletes a category by name after confirmation', async () => {

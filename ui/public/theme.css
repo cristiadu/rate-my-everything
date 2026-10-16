@@ -109,13 +109,6 @@
   padding-bottom: 1rem;
 }
 
-/* The category sits at the right end of the title bar, set apart from the name by a thin line */
-.interest-view-category {
-  border-left: 1px solid var(--bulma-border-weak);
-  margin-bottom: 0;
-  padding: 0.25rem 0 0.25rem 1.25rem;
-}
-
 /* The photo fits inside its frame without cropping, on a light background when its shape differs */
 .interest-view-photo {
   background-color: var(--bulma-scheme-main-bis);
@@ -161,4 +154,27 @@
 /* The grade input of a rating being edited only needs room for a grade like "10.0" */
 .rating-history-grade-input {
   width: 5rem;
+}
+
+/* The name and category labels in the interest view's title bar are bigger than Bulma's large tags, so they read as the view's title */
+.tag.interest-view-label {
+  font-size: 1.5rem;
+  height: auto;
+  letter-spacing: 0.04em;
+  padding: 0.4em 0.9em;
+}
+
+/* The name label uses the berry with its light text, like the primary buttons */
+.tag.is-primary.interest-view-label {
+  color: var(--bulma-primary-invert);
+}
+
+/* The category's color picker is a plain swatch the height of a normal input, without the browser's grey frame */
+.category-color-input {
+  background: none;
+  border: none;
+  cursor: pointer;
+  height: 2.5em;
+  padding: 0;
+  width: 3.5rem;
 }
