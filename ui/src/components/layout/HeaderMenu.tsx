@@ -19,10 +19,10 @@ const HeaderMenu = () => {
       <Navbar.Brand>
         <Navbar.Item renderAs="a" href="/">
           <img
-            alt="Icon"
+            alt="RaMyEv"
             height="28"
-            src="/images/logo.png"
-            width="28"
+            src="/images/logo.svg"
+            width="106"
           />
         </Navbar.Item>
         <Navbar.Burger onClick={() => setActive(!isActive)} />
