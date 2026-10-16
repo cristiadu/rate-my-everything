@@ -3,11 +3,14 @@ import request from 'supertest'
 import { appReady } from '@/index'
 import APIError from '@/models/APIError'
 import Attribute from '@/models/Attribute'
+import type { AttributeValueResponse } from '@/models/AttributeValue'
 import AttributeValueType from '@/models/AttributeValueType'
+import type Item from '@/models/Item'
 import ErrorCode from '@/errors/ErrorCode'
 import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { cleanupAllAttributes } from '@@/testutils/common/DataCleanup'
-import { createTestAttribute } from '@@/testutils/common/Attributes'
+import { createTestAttribute, createTestAttributeValue } from '@@/testutils/common/Attributes'
+import { createTestItem } from '@@/testutils/common/Items'
 import { Endpoints } from '@@/testutils/common/constants'
 
 describe('Attribute API Integration Tests', async () => {
@@ -50,6 +53,24 @@ describe('Attribute API Integration Tests', async () => {
         .expect(res => {
           const apiError = res.body as APIError
           expect(apiError.message).toBe("Invalid request: input.name: 'name' is required; input.valueType: 'valueType' is required")
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+          expect(apiError.status).toBe(400)
+        })
+    })
+
+    it('should fail to create an attribute with an empty name', async () => {
+      // GIVEN a number attribute whose name is empty
+      // WHEN an admin creates it
+      // THEN the request is rejected naming the required fields
+      await request(app)
+        .post(Endpoints.ATTRIBUTES_BASE_PATH)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ name: '', valueType: AttributeValueType.NUMBER })
+        .expect('Content-Type', /json/)
+        .expect(400)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe('Missing required fields: name, valueType')
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
           expect(apiError.status).toBe(400)
         })
@@ -226,6 +247,168 @@ describe('Attribute API Integration Tests', async () => {
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(204)
         .expect(res => { expect(res.text).toBe('') })
+    })
+  })
+
+  describe(`${Endpoints.ATTRIBUTES_BASE_PATH}/values`, () => {
+    let valueItem: Item
+    let yearAttribute: Attribute
+    let countryAttribute: Attribute
+    let yearValue: AttributeValueResponse
+
+    beforeAll(async () => {
+      yearAttribute = await createTestAttribute(app, testAuthToken, `Year-${Date.now()}`, AttributeValueType.NUMBER)
+      countryAttribute = await createTestAttribute(app, testAuthToken, `Country-${Date.now()}`, AttributeValueType.STRING)
+      valueItem = await createTestItem(app, testAuthToken, 'AttributeValue')
+      yearValue = await createTestAttributeValue(app, testAuthToken, valueItem.id, yearAttribute.id, '1965')
+      await createTestAttributeValue(app, testAuthToken, valueItem.id, countryAttribute.id, 'United Kingdom')
+    })
+
+    it('should create an attribute value for an item', async () => {
+      // GIVEN the country attribute and an item (beforeAll)
+      // WHEN an admin stores a country for the item
+      // THEN the value comes back with an id
+      await request(app)
+        .post(`${Endpoints.ATTRIBUTES_BASE_PATH}/values`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ value: 'Ireland', item: { id: valueItem.id }, attribute: { id: countryAttribute.id } })
+        .expect('Content-Type', /json/)
+        .expect(201)
+        .expect(res => {
+          const apiResult = res.body as AttributeValueResponse
+          expect(apiResult.id).toBeDefined()
+          expect(apiResult.value).toBe('Ireland')
+        })
+    })
+
+    it('should fail to create an attribute value without its item and attribute', async () => {
+      // GIVEN a value that names neither its item nor its attribute
+      // WHEN an admin stores it
+      // THEN the request fails validation
+      await request(app)
+        .post(`${Endpoints.ATTRIBUTES_BASE_PATH}/values`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ value: 'Orphan' })
+        .expect('Content-Type', /json/)
+        .expect(400)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe("Invalid request: input.item: 'item' is required; input.attribute: 'attribute' is required")
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+        })
+    })
+
+    it('should list every attribute value', async () => {
+      // GIVEN the year value 1965 (beforeAll)
+      // WHEN listing every attribute value
+      // THEN it is among them
+      await request(app)
+        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/values`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .expect(res => {
+          expect(res.body as AttributeValueResponse[]).toContainEqual({ id: yearValue.id, value: '1965' })
+        })
+    })
+
+    it('should get an attribute value by id', async () => {
+      // GIVEN the year value 1965 (beforeAll)
+      // WHEN getting it by id
+      // THEN its value comes back
+      await request(app)
+        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/values/${yearValue.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .expect(res => {
+          expect(res.body).toEqual({ id: yearValue.id, value: '1965' })
+        })
+    })
+
+    it('should fail to get a non-existent attribute value', async () => {
+      // GIVEN no attribute value with id 999999
+      // WHEN getting it by id
+      // THEN it is not found
+      await request(app)
+        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/values/999999`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(404)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe('Attribute value not found')
+          expect(apiError.code).toBe(ErrorCode.RESOURCE_NOT_FOUND)
+          expect(apiError.status).toBe(404)
+        })
+    })
+
+    it('should list only the values of the given attribute', async () => {
+      // GIVEN the item holds a year and a country (beforeAll)
+      // WHEN listing the values of the year attribute
+      // THEN only the year comes back
+      await request(app)
+        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/${yearAttribute.id}/values`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .expect(res => {
+          expect(res.body).toEqual([{ id: yearValue.id, value: '1965' }])
+        })
+    })
+
+    it('should update an attribute value', async () => {
+      // GIVEN a year value of 1966
+      const valueToUpdate = await createTestAttributeValue(app, testAuthToken, valueItem.id, yearAttribute.id, '1966')
+
+      // WHEN it is changed to 1967
+      // THEN the new value comes back on the same id
+      await request(app)
+        .put(`${Endpoints.ATTRIBUTES_BASE_PATH}/values/${valueToUpdate.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ value: '1967', item: { id: valueItem.id }, attribute: { id: yearAttribute.id } })
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .expect(res => {
+          const apiResult = res.body as AttributeValueResponse
+          expect(apiResult.id).toBe(valueToUpdate.id)
+          expect(apiResult.value).toBe('1967')
+        })
+    })
+
+    it('should fail to update a non-existent attribute value', async () => {
+      // GIVEN no attribute value with id 999999
+      // WHEN updating it
+      // THEN it is not found
+      await request(app)
+        .put(`${Endpoints.ATTRIBUTES_BASE_PATH}/values/999999`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ value: '1968', item: { id: valueItem.id }, attribute: { id: yearAttribute.id } })
+        .expect('Content-Type', /json/)
+        .expect(404)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe('Attribute value not found')
+          expect(apiError.code).toBe(ErrorCode.RESOURCE_NOT_FOUND)
+          expect(apiError.status).toBe(404)
+        })
+    })
+
+    it('should delete an attribute value', async () => {
+      // GIVEN a year value of 1969
+      const valueToDelete = await createTestAttributeValue(app, testAuthToken, valueItem.id, yearAttribute.id, '1969')
+
+      // WHEN deleting it
+      await request(app)
+        .delete(`${Endpoints.ATTRIBUTES_BASE_PATH}/values/${valueToDelete.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(204)
+
+      // THEN it is gone
+      await request(app)
+        .get(`${Endpoints.ATTRIBUTES_BASE_PATH}/values/${valueToDelete.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(404)
     })
   })
 

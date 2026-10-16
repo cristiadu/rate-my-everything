@@ -67,6 +67,24 @@ describe('RatedItem API Integration Tests', async () => {
           expect(apiError.status).toBe(400)
         })
     })
+
+    it('should fail to create a rated item for item id 0', async () => {
+      // GIVEN a rating for item id 0, which no item can have
+      // WHEN it is posted
+      // THEN the required fields are reported missing
+      await request(app)
+        .post(`${Endpoints.RATINGS_BASE_PATH}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .send({ item_id: 0, rating: 5 })
+        .expect('Content-Type', /json/)
+        .expect(400)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.message).toBe('Missing required fields: item_id, rating')
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+          expect(apiError.status).toBe(400)
+        })
+    })
   })
 
   describe(`PUT ${Endpoints.RATINGS_BASE_PATH}/:id`, () => {
@@ -152,6 +170,25 @@ describe('RatedItem API Integration Tests', async () => {
       // THEN only the admin sees the test rating
       expect((adminRes.body as RatedItem[]).map((rating) => rating.id)).toEqual([ratedItem.id])
       expect(otherUserRes.body).toEqual([])
+    })
+  })
+
+  describe(`GET ${Endpoints.RATINGS_BASE_PATH}/user/:user_id`, () => {
+    it('should list the ratings of the given user', async () => {
+      // GIVEN the admin rated the test item 7
+      const ratedItem = await createTestRating(app, testAuthToken, testItem.id, 7)
+
+      // WHEN the ratings of the admin are listed by user id
+      // THEN only that rating comes back, with its item
+      await request(app)
+        .get(`${Endpoints.RATINGS_BASE_PATH}/user/${ratedItem.userId}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect('Content-Type', /json/)
+        .expect(200)
+        .expect(res => {
+          const ratedItems = res.body as RatedItem[]
+          expect(ratedItems.map((rating) => [rating.id, rating.rating, rating.item.name])).toEqual([[ratedItem.id, 7, testItem.name]])
+        })
     })
   })
 

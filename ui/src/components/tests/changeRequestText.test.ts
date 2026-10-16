@@ -35,6 +35,15 @@ describe('changeRequestText', () => {
     expect(itemRows).toEqual([['Category', '#99']])
   })
 
+  test('names the linked attributes of a category, and shows the id of one that no longer exists', () => {
+    // GIVEN category changes linking Author and a deleted attribute
+    // WHEN they are listed
+    const rows = listChanges({ ...rejectedCategoryChange.changes, attributeIds: [1, 99] }, lookups)
+
+    // THEN Author is named and the deleted attribute shows its id
+    expect(rows).toEqual([['Name', 'Games'], ['Description', 'Video games'], ['Attributes', 'Author, #99']])
+  })
+
   test('lists nothing for a removal', () => {
     // GIVEN a removal, which carries no changes
     // WHEN its changes are listed

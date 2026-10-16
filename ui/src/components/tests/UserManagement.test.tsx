@@ -99,4 +99,78 @@ describe('UserManagement', () => {
     expect(url).toBe('http://localhost:3000/api/users/2')
     expect(options?.method).toBe('DELETE')
   })
+  test('shows the API error when the users cannot be loaded', async () => {
+    // GIVEN the API rejects the token
+    fetchMock.mockResolvedValueOnce(jsonResponse({ message: 'Invalid token' }, 401))
+
+    // WHEN the screen loads
+    render(<UserManagement />)
+
+    // THEN the message is shown and no user is listed
+    expect(await screen.findByText('Invalid token')).toBeInTheDocument()
+    expect(screen.getByText('No users yet.')).toBeInTheDocument()
+  })
+
+  test('keeps the form open with the API error when saving fails', async () => {
+    // GIVEN the list loads and the create call is rejected
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(users))
+      .mockResolvedValueOnce(jsonResponse({ error: 'Username already exists' }, 422))
+    render(<UserManagement />)
+
+    // WHEN a user named like an existing one is submitted
+    fireEvent.click(await screen.findByRole('button', { name: 'New user' }))
+    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bob' } })
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'bob2@example.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create User' }))
+
+    // THEN the API's message is shown and the form stays open
+    expect(await screen.findByText('Username already exists')).toBeInTheDocument()
+    expect(screen.getByRole('form', { name: 'Create user' })).toBeInTheDocument()
+  })
+
+  test('closes the form when cancelled', async () => {
+    // GIVEN the new-user form is open
+    fetchMock.mockResolvedValueOnce(jsonResponse(users))
+    render(<UserManagement />)
+    fireEvent.click(await screen.findByRole('button', { name: 'New user' }))
+
+    // WHEN Cancel is clicked
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    // THEN the form closes and a new one can be opened again
+    expect(screen.queryByRole('form', { name: 'Create user' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'New user' })).toBeEnabled()
+  })
+
+  test('keeps a user when the admin cancels the deletion', async () => {
+    // GIVEN the admin does not confirm
+    jest.spyOn(window, 'confirm').mockReturnValue(false)
+    fetchMock.mockResolvedValueOnce(jsonResponse(users))
+    render(<UserManagement />)
+
+    // WHEN deleting bob
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Delete' }))[1])
+
+    // THEN nothing is sent and bob stays listed
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(screen.getByText('bob@example.com')).toBeInTheDocument()
+  })
+
+  test('shows the API error when deleting fails', async () => {
+    // GIVEN the admin confirms and the delete call is rejected
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(users))
+      .mockResolvedValueOnce(jsonResponse({ message: 'You cannot delete yourself' }, 403))
+    render(<UserManagement />)
+
+    // WHEN alice is deleted
+    fireEvent.click((await screen.findAllByRole('button', { name: 'Delete' }))[0])
+
+    // THEN the API's message is shown and alice stays listed
+    expect(await screen.findByText('You cannot delete yourself')).toBeInTheDocument()
+    expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+  })
 })

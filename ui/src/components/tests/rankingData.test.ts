@@ -1,10 +1,7 @@
 import { gradeColor, personalGrade, toMyRankings, toOverallRankings } from '@/components/rankings/rankingData'
 import {
-  alienRating, duneRating, duneRerating, otherUserDuneRating,
+  MY_USER_ID, alienRating, duneRating, duneRerating, otherUserDuneRating,
 } from '@/components/tests/common/Interests'
-
-/** Id of the signed-in user in the shared rating fixtures. */
-const MY_USER_ID = 1
 
 /** My two Dune ratings (9.5 and 8.5), another user's Dune rating (6) and another user's Alien rating (7). */
 const ratings = [alienRating, duneRating, duneRerating, otherUserDuneRating]
@@ -16,6 +13,17 @@ test('lists only the items I rated, with my grade and everyone\'s grade', () => 
 
   // THEN Dune shows my average of 9 next to everyone's grade, and Alien is left out
   expect(rankings).toEqual([{ item: duneRating.item, rating: 7.5, myRating: 9, ratingCount: 3 }])
+})
+
+test('lists the items I rated best personal grade first', () => {
+  // GIVEN I rated Dune 9.5 and 8.5, and Alien 9.8
+  const myAlienRating = { ...alienRating, userId: MY_USER_ID, rating: 9.8 }
+
+  // WHEN they become my ranking rows
+  const rankings = toMyRankings([duneRating, duneRerating, myAlienRating], MY_USER_ID)
+
+  // THEN Alien comes before Dune
+  expect(rankings.map((ranking) => [ranking.item.name, ranking.myRating])).toEqual([['Alien', 9.8], ['Dune', 9]])
 })
 
 test('averages each user\'s personal grade into the collective grade', () => {

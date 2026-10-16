@@ -7,7 +7,7 @@ import ErrorCode from '@/errors/ErrorCode'
 import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { Endpoints } from '@@/testutils/common/constants'
 import {
-  lastFmTopAlbums, lastFmTopArtists, lastFmUserNotFound, mockExternalApi, youTubePlaylistItems,
+  lastFmTopAlbums, lastFmTopArtists, lastFmUserNotFound, mockExternalApi, youTubePlaylistItems, youTubeQuotaExceeded,
 } from '@@/testutils/common/Imports'
 
 describe('Import API Integration Tests', async () => {
@@ -17,6 +17,7 @@ describe('Import API Integration Tests', async () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
+    vi.unstubAllEnvs()
   })
 
   describe(`GET ${Endpoints.IMPORTS_BASE_PATH}/:source`, () => {
@@ -78,7 +79,7 @@ describe('Import API Integration Tests', async () => {
 
     it('should return 502 when the source fails', async () => {
       // GIVEN YouTube answers that the daily quota is used up
-      mockExternalApi({ error: { code: 403, message: 'quotaExceeded' } }, 403)
+      mockExternalApi(youTubeQuotaExceeded, 403)
 
       // WHEN a playlist is imported THEN the failure of the source is reported
       await request(app)
@@ -88,6 +89,38 @@ describe('Import API Integration Tests', async () => {
         .expect(502)
         .expect(res => {
           expect((res.body as APIError).code).toBe(ErrorCode.EXTERNAL_SERVICE_ERROR)
+        })
+    })
+
+    it('should return 503 when the source has no API key on this server', async () => {
+      // GIVEN a server without a Last.fm API key
+      vi.stubEnv('LASTFM_API_KEY', '')
+
+      // WHEN Last.fm is imported from THEN the source is reported as not configured
+      await request(app)
+        .get(`${Endpoints.IMPORTS_BASE_PATH}/lastfm`)
+        .query({ query: 'rj' })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(503)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.code).toBe(ErrorCode.SERVICE_UNAVAILABLE)
+          expect(apiError.message).toBe('Importing from lastfm is not configured on this server')
+        })
+    })
+
+    it('should return 500 when the source cannot be reached', async () => {
+      // GIVEN the network to YouTube is down
+      vi.spyOn(globalThis, 'fetch').mockRejectedValue(new TypeError('fetch failed'))
+
+      // WHEN a playlist is imported THEN an internal error is reported
+      await request(app)
+        .get(`${Endpoints.IMPORTS_BASE_PATH}/youtube`)
+        .query({ query: 'PLrAXtmErZgOeiKm4sgNOknGvNjby9efdf' })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(500)
+        .expect(res => {
+          expect(res.body).toEqual({ code: ErrorCode.INTERNAL_ERROR, status: 500, message: 'An internal server error occurred' })
         })
     })
 
@@ -113,6 +146,21 @@ describe('Import API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           expect((res.body as APIError).message).toBe("Invalid request: query: 'query' is required")
+        })
+    })
+
+    it('should return 400 for a query made only of spaces', async () => {
+      // GIVEN a query with no username or playlist, only spaces
+      // WHEN Last.fm is imported from THEN the request is rejected
+      await request(app)
+        .get(`${Endpoints.IMPORTS_BASE_PATH}/lastfm`)
+        .query({ query: '   ' })
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(400)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
+          expect(apiError.message).toBe('Missing required query parameter: query')
         })
     })
   })

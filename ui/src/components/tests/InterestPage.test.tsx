@@ -1,5 +1,5 @@
 import React from 'react'
-import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import InterestPage from '@/components/interests/InterestPage'
 import { AuthProvider } from '@/components/users/AuthContext'
@@ -7,6 +7,7 @@ import { AttributeValueType, UserRole, type ItemResponse, type RatedItemResponse
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import { myComment } from '@/components/tests/common/Comments'
+import { gradeBox, historyRows } from '@/components/tests/common/Ratings'
 import {
   duneFirstRating, duneItem, duneRating, duneRerating, otherUserDuneRating,
 } from '@/components/tests/common/Interests'
@@ -46,13 +47,6 @@ const renderPageAt = (path: string) => render(
     </MemoryRouter>
   </AuthProvider>,
 )
-
-/** The rows of the rating history, as [rating, notes] text. */
-const historyRows = () => within(screen.getByRole('table')).getAllByRole('row').slice(1)
-  .map((row) => within(row).getAllByRole('cell').slice(1, 3).map((cell) => cell.textContent))
-
-/** The big grade box shown above the given label. */
-const gradeBox = (label: string) => screen.getByText(label).previousSibling as HTMLElement
 
 describe('InterestPage', () => {
   let fetchMock: jest.MockedFunction<typeof fetch>
@@ -186,6 +180,54 @@ describe('InterestPage', () => {
 
     // THEN only my 9.5 rating is left
     await waitFor(() => expect(historyRows()).toEqual([['9.5', 'Reread every year']]))
+    expect(gradeBox('My grade')).toHaveTextContent('9.5')
+  })
+
+  test('keeps my rating when I cancel removing it', async () => {
+    // GIVEN Dune's page with my 9.5 rating and a cancelled confirmation
+    jest.spyOn(window, 'confirm').mockReturnValue(false)
+    serve(fetchMock, typedDuneItem, [duneRating])
+    renderPageAt('/interests/100')
+    await screen.findByRole('table', { name: 'My ratings' })
+
+    // WHEN I try to remove it
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
+
+    // THEN nothing is deleted and the rating stays
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false)
+    expect(historyRows()).toEqual([['9.5', 'Reread every year']])
+  })
+
+  test('shows the API error and keeps my rating when removing it fails', async () => {
+    // GIVEN Dune's page with my 9.5 rating, a confirmed removal and an API that rejects it
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    serve(fetchMock, typedDuneItem, [duneRating])
+    renderPageAt('/interests/100')
+    await screen.findByRole('table', { name: 'My ratings' })
+    fetchMock.mockResolvedValueOnce(jsonResponse({ message: 'Rating not found' }, 404))
+
+    // WHEN I remove it
+    fireEvent.click(screen.getByRole('button', { name: 'Remove' }))
+
+    // THEN the error is shown above the interest and the rating stays
+    expect(await screen.findByText('Rating not found')).toBeInTheDocument()
+    expect(historyRows()).toEqual([['9.5', 'Reread every year']])
+  })
+
+  test('shows the API error and keeps the editor open when changing a rating fails', async () => {
+    // GIVEN Dune's page with my 9.5 rating being edited, and an API that rejects the change
+    serve(fetchMock, typedDuneItem, [duneRating])
+    renderPageAt('/interests/100')
+    await screen.findByRole('table', { name: 'My ratings' })
+    fireEvent.click(screen.getByRole('button', { name: 'Edit' }))
+    fetchMock.mockResolvedValueOnce(jsonResponse({ message: 'rating must be between 0 and 10' }, 400))
+
+    // WHEN it is saved
+    fireEvent.click(screen.getByRole('button', { name: 'Save' }))
+
+    // THEN the error is shown, the editor stays open to try again and my grade is unchanged
+    expect(await screen.findByText('rating must be between 0 and 10')).toBeInTheDocument()
+    expect(screen.getByRole('form', { name: 'Edit rating' })).toBeInTheDocument()
     expect(gradeBox('My grade')).toHaveTextContent('9.5')
   })
 
