@@ -55,7 +55,7 @@ One-time setup in the alwaysdata panel:
 | --- | --- |
 | Databases > PostgreSQL | A database and user; enable the `pg_trgm` and `unaccent` extensions on it |
 | Web > Sites | A Node.js site on `<account>.alwaysdata.net`, command `node dist/index.js`, working directory `rate-my-everything/api`, idle time `0` |
-| Site environment | `JWT_SECRET`, `PGHOST=postgresql-<account>.alwaysdata.net`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `UI_DIST_DIR=../ui`, and optionally `SEED_BOOTSTRAP_DATA=true` with the `BOOTSTRAP_ADMIN_*` login for the first admin, `LASTFM_API_KEY` and `YOUTUBE_API_KEY` |
+| Site environment | `JWT_SECRET` (a long random value; logins fail while it is empty), `PGHOST=postgresql-<account>.alwaysdata.net`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `UI_DIST_DIR=../ui`. Optionally `SEED_BOOTSTRAP_DATA=true` together with all three of `BOOTSTRAP_ADMIN_USERNAME`, `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` for the first admin (the API refuses to start if one is missing), and `LASTFM_API_KEY` and `YOUTUBE_API_KEY` |
 | Remote access > SSH | Password login on for the account's SSH user |
 | Profile > Tokens | An API token |
 
