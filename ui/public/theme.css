@@ -39,11 +39,20 @@
   border: 1px solid var(--bulma-primary);
   border-top: none;
   border-radius: 0 0 var(--bulma-radius-large) var(--bulma-radius-large);
+  width: 100%;
 }
 
-/* Dropdown items use plain text and a soft pink highlight, so the open menu reads as one calm panel */
+/* Dropdown items drop Bulma's wide right padding and wrap, so the panel keeps the width of the menu item above it */
 .navbar .navbar-dropdown .navbar-item {
-  color: var(--bulma-text-strong);
+  padding-inline: 0.75rem;
+  white-space: normal;
+}
+
+/* Dropdown items use Bulma's plain strong text color instead of the menu's dark red, so the open menu reads as one calm panel */
+.navbar .navbar-dropdown {
+  --bulma-navbar-dropdown-item-h: var(--bulma-text-h);
+  --bulma-navbar-dropdown-item-s: var(--bulma-text-s);
+  --bulma-navbar-dropdown-item-color-l: var(--bulma-text-strong-l);
 }
 
 /* Hovered and current dropdown items get the header's light pink with berry text */
