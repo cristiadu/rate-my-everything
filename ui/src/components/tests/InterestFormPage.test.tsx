@@ -223,12 +223,12 @@ describe('InterestFormPage', () => {
     // WHEN the edit form for Dune loads
     renderFormAt('/interests/100/edit')
 
-    // THEN my grade averages my two ratings and everyone's grade averages each user's grade
+    // THEN my grade averages my two ratings and everyone's grade averages each user's latest rating
     const history = await screen.findByRole('table', { name: 'My ratings' })
     expect(screen.getByText('My grade').previousSibling).toHaveTextContent('9.0')
     expect(screen.getByText('from 2 of my ratings')).toBeInTheDocument()
-    expect(screen.getByText('Everyone\'s grade').previousSibling).toHaveTextContent('7.5')
-    expect(screen.getByText('from 3 ratings')).toBeInTheDocument()
+    expect(screen.getByText('Everyone\'s grade').previousSibling).toHaveTextContent('7.3')
+    expect(screen.getByText('from 2 users')).toBeInTheDocument()
     const rows = within(history).getAllByRole('row').slice(1)
     expect(rows.map((row) => within(row).getAllByRole('cell').slice(1, 3).map((cell) => cell.textContent))).toEqual([
       ['8.5', 'Slower the second time'],

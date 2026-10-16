@@ -19,11 +19,17 @@ export const personalGrade = (ratings: RatedItemResponse[], userId: number | nul
   return userRatings.length > 0 ? average(userRatings.map((ratedItem) => ratedItem.rating)) : null
 }
 
-/** Collective grade: the average of each user's personal grade, so rating an item many times still counts once. */
+/** The rating a user gave most recently out of their ratings of one item. */
+const latestRating = (userRatings: RatedItemResponse[]): RatedItemResponse => userRatings
+  .reduce((latest, ratedItem) => (Date.parse(ratedItem.ratedAt) > Date.parse(latest.ratedAt) ? ratedItem : latest))
+
+/** Collective grade: the average of each user's latest rating, so only the last time a user rated an item counts. */
 export const collectiveGrade = (ratings: RatedItemResponse[]): number => average(
-  groupRatings(ratings, (ratedItem) => ratedItem.userId)
-    .map((userRatings) => average(userRatings.map((ratedItem) => ratedItem.rating))),
+  groupRatings(ratings, (ratedItem) => ratedItem.userId).map((userRatings) => latestRating(userRatings).rating),
 )
+
+/** How many users rated the item, which is how many ratings the collective grade counts. */
+export const raterCount = (ratings: RatedItemResponse[]): number => new Set(ratings.map((ratedItem) => ratedItem.userId)).size
 
 /** Builds one ranking row per rated item, with its collective grade and the given user's personal grade. */
 const toRankingItems = (ratings: RatedItemResponse[], userId: number | null): RankingItem[] => (

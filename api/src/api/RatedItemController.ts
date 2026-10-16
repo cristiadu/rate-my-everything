@@ -34,7 +34,8 @@ export class RatedItemController extends Controller {
   private ratedItemService = new RatedItemService()
 
   /**
-   * Every rating of the items matching the filters, so each item's grades stay complete. Without filters, every rating.
+   * The ratings of the items matching the filters: all of the signed-in user's, and the latest each other user gave,
+   * which is the one that counts toward the collective grade. Without filters, every item's.
    * @summary Lists the ratings of the items matching the filters
    */
   @Get()
@@ -44,29 +45,35 @@ export class RatedItemController extends Controller {
   }
 
   /**
+   * All of a user's ratings when it is the signed-in user; for anyone else, only their latest rating of each item.
    * @summary Lists the ratings of a user
    * @param userId Id of the user
    */
   @Get('user/{user_id}')
   @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
-  public async getRatingsByUser(@Path('user_id') userId: ResourceId): Promise<RatedItemResponse[]> {
-    return this.ratedItemService.getAllByUserId(userId)
+  public async getRatingsByUser(
+    @Request() request: AuthenticatedRequest, @Path('user_id') userId: ResourceId,
+  ): Promise<RatedItemResponse[]> {
+    return this.ratedItemService.getAllByUserId(userId, request.user.id)
   }
 
   /**
-   * @summary Lists every user's ratings of an item, used to work out its collective grade
+   * All of the signed-in user's ratings of the item and each other user's latest, the ones its collective grade counts.
+   * @summary Lists the ratings of an item, used to work out its collective grade
    * @param itemId Id of the item
    */
   @Get('item/{item_id}')
   @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
-  public async getRatingsByItem(@Path('item_id') itemId: ResourceId): Promise<RatedItemResponse[]> {
-    return this.ratedItemService.getAllByItemId(itemId)
+  public async getRatingsByItem(
+    @Request() request: AuthenticatedRequest, @Path('item_id') itemId: ResourceId,
+  ): Promise<RatedItemResponse[]> {
+    return this.ratedItemService.getAllByItemId(itemId, request.user.id)
   }
 
   /** @summary Lists the signed-in user's ratings, each with its item and category */
   @Get('mine')
   public async getMyRatings(@Request() request: AuthenticatedRequest): Promise<RatedItemResponse[]> {
-    return this.ratedItemService.getAllByUserId(request.user.id)
+    return this.ratedItemService.getAllByUserId(request.user.id, request.user.id)
   }
 
   /**

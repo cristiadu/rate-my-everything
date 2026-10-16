@@ -1,6 +1,6 @@
 import { Request } from 'express'
 import jwt from 'jsonwebtoken'
-import UserRole from '@/models/UserRole'
+import UserRole, { withImpliedRoles } from '@/models/UserRole'
 import { SessionUser } from '@/models/User'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
@@ -45,7 +45,7 @@ const verifyBearerToken = (authorization: string | undefined): SessionUser => {
 
 /**
  * Checks the `@Security` of an operation: the bearer token must be valid (401) and its user must hold one of the
- * roles listed as scopes (403). tsoa puts the returned user in `request.user`.
+ * roles listed as scopes (403), counting a moderator as a user too. tsoa puts the returned user in `request.user`.
  */
 export const expressAuthentication = async (request: Request, securityName: string, roles: string[] = []): Promise<SessionUser> => {
   if (securityName !== BEARER_AUTH) {
@@ -53,7 +53,7 @@ export const expressAuthentication = async (request: Request, securityName: stri
   }
 
   const sessionUser = verifyBearerToken(request.headers.authorization)
-  if (roles.length > 0 && !sessionUser.roles.some((role) => roles.includes(role))) {
+  if (roles.length > 0 && !withImpliedRoles(sessionUser.roles).some((role) => roles.includes(role))) {
     throw new RequestRejected(NewApiError(ErrorCode.FORBIDDEN, 403, 'You do not have permission to access this resource'))
   }
   return sessionUser

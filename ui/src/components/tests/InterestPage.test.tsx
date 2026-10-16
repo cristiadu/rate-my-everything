@@ -106,10 +106,10 @@ describe('InterestPage', () => {
     // WHEN Dune's page opens
     renderPageAt('/interests/100')
 
-    // THEN my 9.0 is green, everyone's 7.5 is green too, and the + button leads to the rating form
+    // THEN my 9.0 is green, everyone's 7.3 (my latest 8.5 and their 6) is green too, and the + button leads to the rating form
     await waitFor(() => expect(gradeBox('My grade')).toHaveTextContent('9.0'))
     expect(gradeBox('My grade')).toHaveClass('is-success')
-    expect(gradeBox('Everyone\'s grade')).toHaveTextContent('7.5')
+    expect(gradeBox('Everyone\'s grade')).toHaveTextContent('7.3')
     expect(screen.getByRole('link', { name: 'Add a rating' })).toHaveAttribute('href', '/interests/100/edit')
   })
 

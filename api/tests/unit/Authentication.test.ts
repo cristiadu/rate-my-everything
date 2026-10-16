@@ -13,6 +13,9 @@ const TEST_JWT_SECRET = 'authentication-test-secret'
 /** A signed-in user who holds only the user role. */
 const PLAIN_USER: SessionUser = { id: 7, username: 'plain', roles: [UserRole.USER] }
 
+/** A signed-in user who holds only the moderator role. */
+const MODERATOR_ONLY: SessionUser = { id: 8, username: 'moderator', roles: [UserRole.MODERATOR] }
+
 /** Builds a request carrying the given Authorization header. */
 const requestWithAuthorization = (authorization?: string) => ({ headers: { authorization } }) as Request
 
@@ -125,5 +128,16 @@ describe('expressAuthentication', () => {
 
     // THEN it is forbidden
     expect(apiError).toMatchObject({ code: ErrorCode.FORBIDDEN, status: 403 })
+  })
+
+  it('lets a moderator use operations open to users', async () => {
+    // GIVEN the token of a user holding only the moderator role and an operation open to users and admins
+    const request = requestFor(MODERATOR_ONLY)
+
+    // WHEN the request is authenticated
+    const sessionUser = await expressAuthentication(request, BEARER_AUTH, [UserRole.USER, UserRole.ADMIN])
+
+    // THEN the moderator is let through as a user
+    expect(sessionUser).toMatchObject(MODERATOR_ONLY)
   })
 })

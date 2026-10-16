@@ -11,8 +11,8 @@ test('lists only the items I rated, with my grade and everyone\'s grade', () => 
   // WHEN they become my ranking rows
   const rankings = toMyRankings(ratings, MY_USER_ID)
 
-  // THEN Dune shows my average of 9 next to everyone's grade, and Alien is left out
-  expect(rankings).toEqual([{ item: duneRating.item, rating: 7.5, myRating: 9, ratingCount: 3 }])
+  // THEN Dune shows my average of 9 next to everyone's grade from my latest 8.5 and their 6, and Alien is left out
+  expect(rankings).toEqual([{ item: duneRating.item, rating: 7.25, myRating: 9, ratingCount: 3 }])
 })
 
 test('lists the items I rated best personal grade first', () => {
@@ -31,9 +31,9 @@ test('averages each user\'s personal grade into the collective grade', () => {
   // WHEN they become overall ranking rows
   const rankings = toOverallRankings(ratings, MY_USER_ID)
 
-  // THEN Dune averages my 9 and their 6, so rating it twice still counts once, and I have no grade for Alien
+  // THEN Dune averages my latest 8.5 and their 6, so only my last rating counts, and I have no grade for Alien
   expect(rankings.map((ranking) => [ranking.item.name, ranking.rating, ranking.myRating, ranking.ratingCount])).toEqual([
-    ['Dune', 7.5, 9, 3],
+    ['Dune', 7.25, 9, 3],
     ['Alien', 7, null, 1],
   ])
 })

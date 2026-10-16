@@ -41,7 +41,7 @@ describe('OverallRankings', () => {
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings?scope=mine'])
     expect(screen.getAllByRole('columnheader').map((header) => header.textContent))
       .toEqual(['Image', 'Name', 'Category', 'My grade', 'Everyone\'s grade', 'Ratings', ''])
-    expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.07.53Edit'])
+    expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.07.33Edit'])
     expect(screen.getAllByRole('link', { name: 'Edit' })[0]).toHaveAttribute('href', '/interests/100/edit')
     expect(screen.getByRole('link', { name: 'Dune' })).toHaveAttribute('href', '/interests/100')
     expect(screen.getByRole('link', { name: 'Add interest' })).toHaveAttribute('href', '/interests/new')
@@ -56,7 +56,7 @@ describe('OverallRankings', () => {
 
     // THEN items are ordered by everyone's grade, and Alien has no grade of mine
     const rows = await screen.findAllByRole('row')
-    expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.07.53', 'AlienMovies-7.01'])
+    expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.07.33', 'AlienMovies-7.01'])
     expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings?scope=all'])
     expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
   })
