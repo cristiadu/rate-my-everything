@@ -1,5 +1,5 @@
 import React from 'react'
-import { render, screen } from '@testing-library/react'
+import { fireEvent, render, screen } from '@testing-library/react'
 import HeaderMenu from '@/components/layout/HeaderMenu'
 import { AuthProvider } from '@/components/users/AuthContext'
 import { UserRole } from '@/api/generated/api'
@@ -94,5 +94,19 @@ describe('HeaderMenu', () => {
     expect(screen.queryByText('First')).not.toBeInTheDocument()
     expect(screen.queryByText('Second')).not.toBeInTheDocument()
     expect(screen.queryByText('At the end')).not.toBeInTheDocument()
+  })
+  test('opens the menu from the burger button on small screens', () => {
+    // GIVEN a logged-in user with the menu closed
+    loginAs([UserRole.USER])
+    renderMenu()
+    const burger = screen.getByRole('button')
+    expect(burger).not.toHaveClass('is-active')
+
+    // WHEN the burger is clicked
+    fireEvent.click(burger)
+
+    // THEN the burger and the menu are shown as open
+    expect(burger).toHaveClass('is-active')
+    expect(screen.getByText('My Account').closest('.navbar-menu')).toHaveClass('is-active')
   })
 })

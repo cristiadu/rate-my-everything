@@ -98,4 +98,64 @@ describe('InterestDiscussion', () => {
     // THEN the comment cannot be posted
     expect(screen.getByRole('button', { name: 'Post comment' })).toBeDisabled()
   })
+  test('shows the API error when the discussion cannot be loaded', async () => {
+    // GIVEN an API that rejects the comments
+    loginAs([UserRole.USER])
+    fetchMock.mockResolvedValue(jsonResponse({ message: 'Item not found' }, 404))
+
+    // WHEN the discussion loads
+    renderDiscussion()
+
+    // THEN the error is shown
+    expect(await screen.findByText('Item not found')).toBeInTheDocument()
+  })
+
+  test('keeps the comment typed when posting it fails', async () => {
+    // GIVEN an empty discussion and an API that rejects new comments
+    loginAs([UserRole.USER])
+    fetchMock.mockImplementation(async (url, init) => (init?.method === 'POST'
+      ? jsonResponse({ message: 'body must be at most 2000 characters' }, 400)
+      : respondWith([])(url, init)))
+    renderDiscussion()
+    await screen.findByText('No comments yet. Start the discussion.')
+
+    // WHEN a comment is posted
+    fireEvent.change(screen.getByLabelText('Add a comment'), { target: { value: 'Best sci-fi ever written' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Post comment' }))
+
+    // THEN the error is shown and the comment stays in the form
+    expect(await screen.findByText('body must be at most 2000 characters')).toBeInTheDocument()
+    expect(screen.getByLabelText('Add a comment')).toHaveValue('Best sci-fi ever written')
+  })
+
+  test('keeps my comment when I cancel deleting it', async () => {
+    // GIVEN my comment and a cancelled confirmation
+    jest.spyOn(window, 'confirm').mockReturnValue(false)
+    loginAs([UserRole.USER])
+    fetchMock.mockImplementation(respondWith([myComment]))
+    renderDiscussion()
+
+    // WHEN I try to delete it
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete comment by admin' }))
+
+    // THEN nothing is deleted and the comment stays
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false)
+    expect(screen.getByText('Best sci-fi ever written')).toBeInTheDocument()
+  })
+
+  test('shows the API error when deleting a comment fails', async () => {
+    // GIVEN my comment and an API that rejects the deletion
+    loginAs([UserRole.USER])
+    fetchMock.mockImplementation(async (url, init) => (init?.method === 'DELETE'
+      ? jsonResponse({ message: 'Comment not found' }, 404)
+      : respondWith([myComment])(url, init)))
+    renderDiscussion()
+
+    // WHEN I delete it
+    fireEvent.click(await screen.findByRole('button', { name: 'Delete comment by admin' }))
+
+    // THEN the error is shown and the comment stays
+    expect(await screen.findByText('Comment not found')).toBeInTheDocument()
+    expect(screen.getByText('Best sci-fi ever written')).toBeInTheDocument()
+  })
 })

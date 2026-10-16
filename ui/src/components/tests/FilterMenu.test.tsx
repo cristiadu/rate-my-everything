@@ -44,17 +44,18 @@ describe('FilterMenu', () => {
     renderFilteredRankings()
     await screen.findByLabelText('Books')
 
-    // WHEN a name, the Books category, an author and a lowest grade are applied
+    // WHEN a name, the Books category, an author and a grade range are applied
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Dune' } })
     fireEvent.click(screen.getByLabelText('Books'))
     fireEvent.change(screen.getByLabelText('Author'), { target: { value: 'Herbert' } })
     fireEvent.change(screen.getByLabelText('Lowest grade'), { target: { value: '6' } })
+    fireEvent.change(screen.getByLabelText('Highest grade'), { target: { value: '9' } })
     fireEvent.click(screen.getByText('Apply'))
 
     // THEN the rankings are asked for with those filters and nothing matches
     expect(await screen.findByText('No interests match the filters.')).toBeInTheDocument()
     expect(fetchMock.mock.calls.map(([url]) => url)).toContain(
-      'http://localhost:3000/api/ratings?scope=all&name=Dune&categoryId=10&attribute=1%3AHerbert&minGrade=6',
+      'http://localhost:3000/api/ratings?scope=all&name=Dune&categoryId=10&attribute=1%3AHerbert&minGrade=6&maxGrade=9',
     )
 
     // WHEN the filters are cleared
@@ -63,6 +64,7 @@ describe('FilterMenu', () => {
     // THEN the panel is empty and every ranking is listed again
     expect(await screen.findByRole('link', { name: 'Dune' })).toBeInTheDocument()
     expect(screen.getByLabelText('Name')).toHaveValue('')
+    expect(screen.getByLabelText('Highest grade')).toHaveValue(null)
     expect(screen.queryByLabelText('Author')).not.toBeInTheDocument()
   })
 

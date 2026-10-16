@@ -1,10 +1,11 @@
-import { describe, it, expect, beforeAll } from 'vitest'
+import { describe, it, expect, afterEach, beforeAll, vi } from 'vitest'
 import request from 'supertest'
 import { appReady } from '@/index'
 import APIError from '@/models/APIError'
 import Comment, { MAX_COMMENT_LENGTH } from '@/models/Comment'
 import Item from '@/models/Item'
 import ErrorCode from '@/errors/ErrorCode'
+import CommentService from '@/services/CommentService'
 import { TEST_USER } from '@@/testutils/setup'
 import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { cleanupAllCategories, cleanupAllItems, cleanupAllRatedItems } from '@@/testutils/common/DataCleanup'
@@ -26,6 +27,10 @@ describe('Comment API Integration Tests', async () => {
     testItem = await createTestItem(app, adminToken, 'Comment')
     userToken = await getUserRoleAuthToken(app)
     otherUserToken = await getUserRoleAuthToken(app)
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   describe(`POST ${Endpoints.COMMENTS_BASE_PATH}/item/:item_id`, () => {
@@ -82,6 +87,17 @@ describe('Comment API Integration Tests', async () => {
       const apiError = res.body as APIError
       expect(apiError.code).toBe(ErrorCode.RESOURCE_NOT_FOUND)
       expect(apiError.message).toBe('Item not found')
+    })
+
+    it('should answer with an internal error when saving the comment fails unexpectedly', async () => {
+      // GIVEN saving comments fails with an unexpected error
+      vi.spyOn(CommentService.prototype, 'create').mockRejectedValueOnce(new Error('Connection terminated unexpectedly'))
+
+      // WHEN a comment is posted
+      const res = await postComment(app, userToken, { item_id: testItem.id, body: 'Lost words' }).expect(500)
+
+      // THEN an internal error comes back without the error's details
+      expect(res.body).toEqual({ code: ErrorCode.INTERNAL_ERROR, status: 500, message: 'An internal server error occurred' })
     })
   })
 
@@ -152,6 +168,31 @@ describe('Comment API Integration Tests', async () => {
 
       // THEN it is gone from the discussion
       expect((await listComments(app, adminToken, testItem.id)).map((current) => current.id)).not.toContain(comment.id)
+    })
+
+    it('should not fail when deleting a comment that does not exist', async () => {
+      // GIVEN no comment with id 999999
+      // WHEN a user deletes it
+      // THEN the delete still succeeds with no body
+      await request(app)
+        .delete(`${Endpoints.COMMENTS_BASE_PATH}/999999`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(204)
+        .expect(res => { expect(res.text).toBe('') })
+    })
+
+    it('should answer with an internal error when deleting the comment fails unexpectedly', async () => {
+      // GIVEN deleting comments fails with an unexpected error
+      vi.spyOn(CommentService.prototype, 'delete').mockRejectedValueOnce(new Error('Connection terminated unexpectedly'))
+
+      // WHEN a comment is deleted
+      const res = await request(app)
+        .delete(`${Endpoints.COMMENTS_BASE_PATH}/999999`)
+        .set('Authorization', `Bearer ${adminToken}`)
+        .expect(500)
+
+      // THEN an internal error comes back without the error's details
+      expect(res.body).toEqual({ code: ErrorCode.INTERNAL_ERROR, status: 500, message: 'An internal server error occurred' })
     })
 
     it('should remove an item\'s discussion when the item is deleted', async () => {

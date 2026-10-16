@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, afterEach, vi } from 'vitest'
 import request from 'supertest'
 import { appReady } from '@/index'
 import APIError from '@/models/APIError'
@@ -12,7 +12,10 @@ import ChangeRequestTarget from '@/models/ChangeRequestTarget'
 import Item from '@/models/Item'
 import UserRole from '@/models/UserRole'
 import ErrorCode from '@/errors/ErrorCode'
+import ChangeRequestService from '@/services/ChangeRequestService'
 import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
+import { createTestCategory } from '@@/testutils/common/Categories'
+import { createTestItemInCategory } from '@@/testutils/common/Items'
 import { Endpoints } from '@@/testutils/common/constants'
 
 describe('Change request and moderation API Integration Tests', async () => {
@@ -25,6 +28,7 @@ describe('Change request and moderation API Integration Tests', async () => {
   let testCategory: Category
   let testItem: Item
   let proposedCategoryName: string
+  let conflictingCategoryName: string
 
   /** Submits a change request as the given user. */
   const submit = (token: string, body: object) => request(app)
@@ -68,9 +72,13 @@ describe('Change request and moderation API Integration Tests', async () => {
   afterAll(async () => {
     // Remove what this file created so tests that expect an empty catalog still pass after it
     await request(app).delete(`${Endpoints.ITEMS_BASE_PATH}/${testItem.id}`).set('Authorization', `Bearer ${adminToken}`).expect(204)
-    for (const name of [testCategory.name, proposedCategoryName]) {
+    for (const name of [testCategory.name, proposedCategoryName, conflictingCategoryName]) {
       await request(app).delete(`${Endpoints.CATEGORIES_BASE_PATH}/${name}`).set('Authorization', `Bearer ${adminToken}`).expect(204)
     }
+  })
+
+  afterEach(() => {
+    vi.restoreAllMocks()
   })
 
   describe(`POST ${Endpoints.CHANGE_REQUESTS_BASE_PATH}`, () => {
@@ -137,6 +145,21 @@ describe('Change request and moderation API Integration Tests', async () => {
       await submit(userToken, { targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.DELETE, targetId: 999999 })
         .expect(422)
         .expect(res => expect((res.body as APIError).message).toBe('Unknown category id: 999999'))
+    })
+
+    it('answers with an internal error when saving the request fails unexpectedly', async () => {
+      // GIVEN saving change requests fails with an unexpected error
+      vi.spyOn(ChangeRequestService.prototype, 'create').mockRejectedValueOnce(new Error('Connection terminated unexpectedly'))
+
+      // WHEN a user proposes a change
+      // THEN an internal error comes back without the error's details
+      await submit(userToken, {
+        targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.UPDATE, targetId: testItem.id, changes: { description: 'Lost' },
+      })
+        .expect(500)
+        .expect(res => expect(res.body).toEqual({
+          code: ErrorCode.INTERNAL_ERROR, status: 500, message: 'An internal server error occurred',
+        }))
     })
   })
 
@@ -285,6 +308,61 @@ describe('Change request and moderation API Integration Tests', async () => {
       expect((listRes.body as ChangeRequest[]).some((changeRequest) => changeRequest.id === submitted.body.id)).toBe(true)
     })
 
+    it('deletes a category when its deletion is approved', async () => {
+      // GIVEN a pending deletion of a category
+      const retiredCategory = await createTestCategory(app, adminToken, `Retired-${Date.now()}`, 'No longer used')
+      const submitted = await submit(userToken, {
+        targetType: ChangeRequestTarget.CATEGORY, action: ChangeRequestAction.DELETE, targetId: retiredCategory.id,
+      }).expect(201)
+
+      // WHEN a moderator approves it
+      const res = await review(moderatorToken, submitted.body.id, 'approve').expect(200)
+
+      // THEN the request is approved and the category is gone
+      expect((res.body as ChangeRequest).status).toBe(ChangeRequestStatus.APPROVED)
+      await request(app)
+        .get(`${Endpoints.CATEGORIES_BASE_PATH}/${retiredCategory.name}`)
+        .set('Authorization', `Bearer ${userToken}`)
+        .expect(404)
+    })
+
+    it('fails when another category took the proposed name after the request', async () => {
+      // GIVEN a pending rename of the test category to a name an admin then gives another category
+      conflictingCategoryName = `Renamed-${Date.now()}`
+      const submitted = await submit(userToken, {
+        targetType: ChangeRequestTarget.CATEGORY,
+        action: ChangeRequestAction.UPDATE,
+        targetId: testCategory.id,
+        changes: { name: conflictingCategoryName },
+      }).expect(201)
+      await createTestCategory(app, adminToken, conflictingCategoryName, 'Took the name first')
+
+      // WHEN a moderator approves the rename
+      // THEN approval fails because the name is taken
+      await review(moderatorToken, submitted.body.id, 'approve')
+        .expect(422)
+        .expect(res => {
+          const apiError = res.body as APIError
+          expect(apiError.code).toBe(ErrorCode.RESOURCE_ALREADY_EXISTS)
+          expect(apiError.message).toBe(`Resource "Category" with id "${conflictingCategoryName}" already exists`)
+        })
+    })
+
+    it('fails when the interest was deleted after the request', async () => {
+      // GIVEN a pending change to an interest that is then deleted
+      const vanishingItem = await createTestItemInCategory(app, adminToken, testCategory.id, 'Vanishing', 'Deleted before review')
+      const submitted = await submit(userToken, {
+        targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.UPDATE, targetId: vanishingItem.id, changes: { name: 'Found' },
+      }).expect(201)
+      await request(app).delete(`${Endpoints.ITEMS_BASE_PATH}/${vanishingItem.id}`).set('Authorization', `Bearer ${adminToken}`).expect(204)
+
+      // WHEN it is approved
+      // THEN approval fails naming the missing interest
+      await review(moderatorToken, submitted.body.id, 'approve')
+        .expect(422)
+        .expect(res => expect((res.body as APIError).message).toBe(`Unknown item id: ${vanishingItem.id}`))
+    })
+
     it('returns 404 for an unknown request', async () => {
       // GIVEN a change request id nobody uses
       // WHEN a moderator approves it
@@ -313,6 +391,42 @@ describe('Change request and moderation API Integration Tests', async () => {
         .get(`${Endpoints.CATEGORIES_BASE_PATH}/${testCategory.name}`)
         .set('Authorization', `Bearer ${userToken}`)
         .expect(200)
+    })
+
+    it('refuses to reject a request twice', async () => {
+      // GIVEN a rejected request
+      const submitted = await submit(userToken, {
+        targetType: ChangeRequestTarget.ITEM, action: ChangeRequestAction.UPDATE, targetId: testItem.id, changes: { description: 'Twice' },
+      }).expect(201)
+      await review(moderatorToken, submitted.body.id, 'reject').expect(200)
+
+      // WHEN it is rejected again
+      // THEN it is refused
+      await review(moderatorToken, submitted.body.id, 'reject')
+        .expect(422)
+        .expect(res => expect((res.body as APIError).message).toBe(`Change request ${submitted.body.id} is already rejected`))
+    })
+
+    it('returns 404 for an unknown request', async () => {
+      // GIVEN a change request id nobody uses
+      // WHEN a moderator rejects it
+      // THEN it is not found
+      await review(moderatorToken, 999999, 'reject')
+        .expect(404)
+        .expect(res => expect((res.body as APIError).message).toBe('Change request not found'))
+    })
+
+    it('answers with an internal error when recording the rejection fails unexpectedly', async () => {
+      // GIVEN recording reviews fails with an unexpected error
+      vi.spyOn(ChangeRequestService.prototype, 'reject').mockRejectedValueOnce(new Error('Connection terminated unexpectedly'))
+
+      // WHEN a moderator rejects a request
+      // THEN an internal error comes back without the error's details
+      await review(moderatorToken, 999999, 'reject')
+        .expect(500)
+        .expect(res => expect(res.body).toEqual({
+          code: ErrorCode.INTERNAL_ERROR, status: 500, message: 'An internal server error occurred',
+        }))
     })
 
     it('forbids users without a moderation role', async () => {

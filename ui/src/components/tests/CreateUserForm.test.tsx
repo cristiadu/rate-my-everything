@@ -84,4 +84,31 @@ describe('CreateUserForm', () => {
     })
     expect(fetchMock).not.toHaveBeenCalled()
   })
+  test('removes a role that is unticked', () => {
+    // GIVEN the parent saves the values for bob, who has the user role
+    const onSubmit = jest.fn()
+    render(<CreateUserForm user={bob} onSubmit={onSubmit} />)
+
+    // WHEN the moderator role is ticked, the user role unticked and the form saved
+    fireEvent.click(screen.getByLabelText(/moderator/))
+    fireEvent.click(screen.getByRole('checkbox', { name: 'user' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+
+    // THEN only the moderator role is kept
+    expect(onSubmit).toHaveBeenCalledWith({
+      username: 'bob', email: 'bob@example.com', password: '', roles: ['moderator'],
+    })
+  })
+
+  test('closes through the parent when cancelled', () => {
+    // GIVEN the form opened by a parent that can close it
+    const onCancel = jest.fn()
+    render(<CreateUserForm onCancel={onCancel} />)
+
+    // WHEN Cancel is clicked
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    // THEN the parent is told to close it
+    expect(onCancel).toHaveBeenCalledTimes(1)
+  })
 })

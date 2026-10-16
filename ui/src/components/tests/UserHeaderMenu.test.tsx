@@ -3,7 +3,7 @@ import { fireEvent, render, screen } from '@testing-library/react'
 import UserHeaderMenu from '@/components/users/UserHeaderMenu'
 import { AuthProvider } from '@/components/users/AuthContext'
 import { UserRole } from '@/api/generated/api'
-import { makeTestToken } from '@/components/tests/common/Auth'
+import { loginAs, makeTestToken } from '@/components/tests/common/Auth'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 
 describe('UserHeaderMenu', () => {
@@ -25,5 +25,48 @@ describe('UserHeaderMenu', () => {
     // THEN the header switches to the logged-in state and keeps the token
     expect(await screen.findByText('Log Out')).toBeInTheDocument()
     expect(localStorage.getItem('authToken')).toBe(token)
+  })
+  test('shows the API error when the credentials are wrong', async () => {
+    // GIVEN the API rejects the credentials
+    mockFetch().mockResolvedValue(jsonResponse({ message: 'Invalid username or password' }, 401))
+    render(<AuthProvider><UserHeaderMenu /></AuthProvider>)
+
+    // WHEN the visitor logs in with a wrong password
+    fireEvent.change(screen.getByPlaceholderText('Username'), { target: { value: 'regular' } })
+    fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'wrong' } })
+    fireEvent.click(screen.getByText('Log In'))
+
+    // THEN the API's message is shown and the visitor stays logged out
+    expect(await screen.findByText('Invalid username or password')).toBeInTheDocument()
+    expect(screen.getByText('User Section')).toBeInTheDocument()
+    expect(localStorage.getItem('authToken')).toBeNull()
+  })
+
+  test('does not call the API until both credentials are typed', () => {
+    // GIVEN the header form with only a username typed
+    const fetchMock = mockFetch()
+    render(<AuthProvider><UserHeaderMenu /></AuthProvider>)
+    fireEvent.change(screen.getByPlaceholderText('Username'), { target: { value: 'regular' } })
+
+    // WHEN the visitor tries to log in
+    fireEvent.click(screen.getByText('Log In'))
+
+    // THEN no login request is sent
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
+
+  test('logs the user out and forgets the token', () => {
+    // GIVEN a logged-in user
+    loginAs([UserRole.USER])
+    render(<AuthProvider><UserHeaderMenu /></AuthProvider>)
+    expect(screen.getByText('admin')).toBeInTheDocument()
+
+    // WHEN they log out
+    fireEvent.click(screen.getByText('Log Out'))
+
+    // THEN the header shows the login form again and the token is removed
+    expect(screen.getByText('User Section')).toBeInTheDocument()
+    expect(screen.getByText('Log In')).toBeInTheDocument()
+    expect(localStorage.getItem('authToken')).toBeNull()
   })
 })

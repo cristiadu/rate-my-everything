@@ -120,4 +120,34 @@ describe('ImportPage', () => {
     expect(await screen.findByText('Unknown Last.fm user id: nobody')).toBeInTheDocument()
     await waitFor(() => expect(screen.queryByRole('table')).not.toBeInTheDocument())
   })
+  test('shows the error when the categories cannot be loaded', async () => {
+    // GIVEN an API that rejects the categories
+    fetchMock.mockImplementation(async (url, init) => (String(url).endsWith('/categories')
+      ? jsonResponse({ message: 'Invalid token' }, 401)
+      : respond(url, init)))
+
+    // WHEN the import page opens
+    renderImportPage()
+
+    // THEN the API error is shown
+    expect(await screen.findByText('Invalid token')).toBeInTheDocument()
+  })
+
+  test('shows the error and keeps the found interests when importing fails', async () => {
+    // GIVEN the Last.fm interests are listed and the API rejects new items
+    fetchMock.mockImplementation(async (url, init) => (init?.method === 'POST'
+      ? jsonResponse({ message: 'Unknown category id: 10' }, 422)
+      : respond(url, init)))
+    renderImportPage()
+    searchLastFm('rj')
+    await screen.findByRole('option', { name: 'Books' })
+
+    // WHEN they are imported into Books
+    fireEvent.change(screen.getByLabelText('Add to category'), { target: { value: '10' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Import 3 selected' }))
+
+    // THEN the API error is shown and the interests stay listed to try again
+    expect(await screen.findByText('Unknown category id: 10')).toBeInTheDocument()
+    expect(screen.getByLabelText('Select Radiohead')).toBeChecked()
+  })
 })

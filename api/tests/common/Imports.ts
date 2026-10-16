@@ -1,6 +1,6 @@
 import { vi } from 'vitest'
 import type { LastFmTopAlbumsResponse, LastFmTopArtistsResponse } from '@/models/LastFM'
-import type { YouTubePlaylistItemsResponse } from '@/models/Youtube'
+import type { YouTubePlaylistItemsResponse, YouTubeVideosResponse } from '@/models/Youtube'
 
 /** Last.fm top albums with one largest image and one blank largest image that falls back to a smaller image. */
 export const lastFmTopAlbums: LastFmTopAlbumsResponse = {
@@ -32,6 +32,9 @@ export const lastFmTopAlbums: LastFmTopAlbumsResponse = {
 /** Last.fm's answer when the requested user does not exist. */
 export const lastFmUserNotFound: LastFmTopAlbumsResponse = { error: 6, message: 'User not found' }
 
+/** Last.fm's answer when the API key is not valid. */
+export const lastFmInvalidApiKey: LastFmTopAlbumsResponse = { error: 10, message: 'Invalid API key' }
+
 /** Last.fm top artists with one artist that has a picture. */
 export const lastFmTopArtists: LastFmTopArtistsResponse = {
   topartists: {
@@ -61,6 +64,20 @@ export const youTubePlaylistItems: YouTubePlaylistItemsResponse = {
     { snippet: { title: 'Deleted video', thumbnails: {} } },
   ],
 }
+
+/** YouTube's details of the Never Gonna Give You Up video. */
+export const youTubeVideos: YouTubeVideosResponse = {
+  items: [{
+    snippet: {
+      title: 'Never Gonna Give You Up',
+      channelTitle: 'Rick Astley',
+      thumbnails: { high: { url: 'https://i.ytimg.com/vi/dQw4w9WgXcQ/hqdefault.jpg' } },
+    },
+  }],
+}
+
+/** YouTube's answer when the daily quota of the API key is used up. */
+export const youTubeQuotaExceeded = { error: { code: 403, message: 'quotaExceeded' } }
 
 /** Replaces the global fetch with a mock that answers every call with this JSON body and status. */
 export const mockExternalApi = (body: object | ((url: string) => object), status = 200) => vi.spyOn(globalThis, 'fetch')

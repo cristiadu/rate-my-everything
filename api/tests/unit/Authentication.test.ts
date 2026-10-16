@@ -19,8 +19,8 @@ const MODERATOR_ONLY: SessionUser = { id: 8, username: 'moderator', roles: [User
 /** Builds a request carrying the given Authorization header. */
 const requestWithAuthorization = (authorization?: string) => ({ headers: { authorization } }) as Request
 
-/** Builds a request with a bearer token for the given user. */
-const requestFor = (user: SessionUser) => requestWithAuthorization(`Bearer ${jwt.sign(user, TEST_JWT_SECRET)}`)
+/** Builds a request with a bearer token signed for the given payload, usually a user. */
+const requestFor = (payload: string | object) => requestWithAuthorization(`Bearer ${jwt.sign(payload, TEST_JWT_SECRET)}`)
 
 /** Runs the authentication and returns the API error it rejected the request with. */
 const rejectionOf = async (authentication: Promise<SessionUser>) => {
@@ -69,6 +69,54 @@ describe('expressAuthentication', () => {
 
     // THEN it is unauthorized
     expect(apiError).toMatchObject({ code: ErrorCode.UNAUTHORIZED, status: 401, message: 'Invalid token' })
+  })
+
+  it('rejects a security scheme other than the bearer token with 401', async () => {
+    // GIVEN a user's token checked against an API key scheme
+    const request = requestFor(PLAIN_USER)
+
+    // WHEN the request is authenticated
+    const apiError = await rejectionOf(expressAuthentication(request, 'apiKey', [UserRole.USER]))
+
+    // THEN the scheme is unknown
+    expect(apiError).toMatchObject({ code: ErrorCode.UNAUTHORIZED, status: 401, message: 'Unknown security scheme: apiKey' })
+  })
+
+  it('rejects every token with 500 when the server has no JWT secret', async () => {
+    // GIVEN a valid user token and a server without JWT_SECRET
+    vi.stubEnv('JWT_SECRET', '')
+    const request = requestFor(PLAIN_USER)
+
+    // WHEN the request is authenticated
+    const apiError = await rejectionOf(expressAuthentication(request, BEARER_AUTH, [UserRole.USER]))
+
+    // THEN it fails as an internal error
+    expect(apiError).toMatchObject({ code: ErrorCode.INTERNAL_ERROR, status: 500, message: 'Internal server error' })
+  })
+
+  it.each([
+    ['a text payload', 'plain'],
+    ['a payload without roles', { id: 7, username: 'plain' }],
+  ])('rejects a token with %s with 401', async (_payloadKind, payload) => {
+    // GIVEN a correctly signed token whose payload is not a user
+    const request = requestFor(payload)
+
+    // WHEN the request is authenticated
+    const apiError = await rejectionOf(expressAuthentication(request, BEARER_AUTH, [UserRole.USER]))
+
+    // THEN it is unauthorized
+    expect(apiError).toMatchObject({ code: ErrorCode.UNAUTHORIZED, status: 401, message: 'Invalid user object in JWT payload' })
+  })
+
+  it('rejects a token holding a role that does not exist with 401', async () => {
+    // GIVEN a correctly signed token for a user with the role superuser
+    const request = requestFor({ ...PLAIN_USER, roles: ['superuser'] })
+
+    // WHEN the request is authenticated
+    const apiError = await rejectionOf(expressAuthentication(request, BEARER_AUTH, [UserRole.USER]))
+
+    // THEN it is unauthorized
+    expect(apiError).toMatchObject({ code: ErrorCode.UNAUTHORIZED, status: 401, message: 'Invalid roles in user object' })
   })
 
   it('rejects a user without any of the allowed roles with 403', async () => {

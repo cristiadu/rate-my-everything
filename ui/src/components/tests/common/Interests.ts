@@ -31,7 +31,7 @@ export const duneItem: ItemResponse = {
 }
 
 /** Id of the signed-in test user in rating fixtures. */
-const MY_USER_ID = 1
+export const MY_USER_ID = 1
 
 /** Id of another user in rating fixtures. */
 const OTHER_USER_ID = 2

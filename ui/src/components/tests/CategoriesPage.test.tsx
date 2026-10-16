@@ -161,4 +161,91 @@ describe('CategoriesPage', () => {
     expect(screen.getByRole('form', { name: 'Edit category' })).toBeInTheDocument()
     expect(screen.getByLabelText('Name')).toHaveValue('Books')
   })
+  test('lets non-admins suggest changes to an existing category by id', async () => {
+    // GIVEN a logged-in user without the admin role
+    loginAs([UserRole.USER])
+    renderPage()
+    const booksRow = (await screen.findByText('Books')).closest('tr') as HTMLElement
+
+    // WHEN they suggest a new description for Books
+    fireEvent.click(within(booksRow).getByRole('button', { name: 'Suggest edit' }))
+    expect(screen.getByRole('heading', { name: 'Suggest changes to Books' })).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'Novels and comics' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Send for approval' }))
+
+    // THEN an update change request names Books by id with the new description
+    expect(await screen.findByText('Your change was sent to the moderators for approval.')).toBeInTheDocument()
+    const [, options] = fetchMock.mock.calls.find(([, init]) => init?.method === 'POST') ?? []
+    expect(JSON.parse(String(options?.body))).toEqual({
+      targetType: 'category',
+      action: 'update',
+      targetId: 10,
+      changes: { name: 'Books', description: 'Novels and comics', color: '#8C3060', attributeIds: [1] },
+    })
+  })
+
+  test.each([
+    ['categories', '/categories'],
+    ['attributes', '/attributes'],
+  ])('shows the API error when the %s cannot be loaded', async (_list, failingPath) => {
+    // GIVEN an admin and an API that rejects one of the two lists
+    loginAs([UserRole.ADMIN])
+    fetchMock.mockImplementation(async (url) => {
+      if (String(url).endsWith(failingPath)) return jsonResponse({ message: 'Service unavailable' }, 503)
+      return jsonResponse(String(url).endsWith('/attributes') ? testAttributes : testCategories)
+    })
+
+    // WHEN the page loads
+    renderPage()
+
+    // THEN the API's message is shown
+    expect(await screen.findByText('Service unavailable')).toBeInTheDocument()
+  })
+
+  test('keeps a category when the admin cancels the deletion', async () => {
+    // GIVEN an admin who does not confirm the deletion prompt
+    jest.spyOn(window, 'confirm').mockReturnValue(false)
+    loginAs([UserRole.ADMIN])
+    renderPage()
+    const booksRow = (await screen.findByText('Books')).closest('tr') as HTMLElement
+
+    // WHEN deleting Books
+    fireEvent.click(within(booksRow).getByRole('button', { name: 'Delete' }))
+
+    // THEN nothing is deleted
+    expect(fetchMock.mock.calls.some(([, init]) => init?.method === 'DELETE')).toBe(false)
+  })
+
+  test('clears the form when the category being edited is deleted', async () => {
+    // GIVEN an admin editing Books who confirms the deletion prompt
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    loginAs([UserRole.ADMIN])
+    renderPage()
+    const booksRow = (await screen.findByText('Books')).closest('tr') as HTMLElement
+    fireEvent.click(within(booksRow).getByRole('button', { name: 'Edit' }))
+    expect(screen.getByLabelText('Name')).toHaveValue('Books')
+
+    // WHEN Books is deleted
+    fireEvent.click(within(booksRow).getByRole('button', { name: 'Delete' }))
+
+    // THEN the deletion is confirmed and the form goes back to a new, empty category
+    expect(await screen.findByText('Category Books deleted.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'New category' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Name')).toHaveValue('')
+  })
+
+  test('shows the API error message when deleting fails', async () => {
+    // GIVEN an admin who confirms the deletion and an API that rejects it
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    loginAs([UserRole.ADMIN])
+    renderPage()
+    const booksRow = (await screen.findByText('Books')).closest('tr') as HTMLElement
+    fetchMock.mockResolvedValueOnce(jsonResponse({ message: 'Category is used by 3 items' }, 409))
+
+    // WHEN deleting Books
+    fireEvent.click(within(booksRow).getByRole('button', { name: 'Delete' }))
+
+    // THEN the API's message is shown
+    expect(await screen.findByText('Category is used by 3 items')).toBeInTheDocument()
+  })
 })

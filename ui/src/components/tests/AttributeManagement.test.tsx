@@ -1,6 +1,6 @@
 import React from 'react'
 import {
-  fireEvent, render, screen, within,
+  fireEvent, render, screen, waitFor, within,
 } from '@testing-library/react'
 import AttributeManagement from '@/components/admin/attributes/AttributeManagement'
 import { AttributeValueType } from '@/api/generated/api'
@@ -87,5 +87,85 @@ describe('AttributeManagement', () => {
 
     // THEN the API's message is shown
     expect(await screen.findByText('valueType must be one of: string, number, boolean, date')).toBeInTheDocument()
+  })
+  test('shows the API error when the attributes cannot be loaded', async () => {
+    // GIVEN the API rejects the token
+    fetchMock.mockResolvedValueOnce(jsonResponse({ message: 'Invalid token' }, 401))
+
+    // WHEN the screen loads
+    render(<AttributeManagement />)
+
+    // THEN the message is shown and no attribute is listed
+    expect(await screen.findByText('Invalid token')).toBeInTheDocument()
+    expect(screen.getByText('No attributes yet.')).toBeInTheDocument()
+  })
+
+  test('closes the form when cancelled', async () => {
+    // GIVEN Author is being edited
+    fetchMock.mockResolvedValueOnce(jsonResponse(testAttributes))
+    render(<AttributeManagement />)
+    const authorRow = (await screen.findByText('Author')).closest('tr') as HTMLElement
+    fireEvent.click(within(authorRow).getByRole('button', { name: 'Edit' }))
+    expect(screen.getByRole('heading', { name: 'Edit Author' })).toBeInTheDocument()
+
+    // WHEN Cancel is clicked
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    // THEN the form closes without saving
+    expect(screen.queryByRole('heading', { name: 'Edit Author' })).not.toBeInTheDocument()
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+  })
+
+  test('deletes an attribute by id after confirmation and reloads the list', async () => {
+    // GIVEN the admin confirms, the delete call succeeds and only Pages is left
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(testAttributes))
+      .mockResolvedValueOnce(jsonResponse(null, 204))
+      .mockResolvedValueOnce(jsonResponse([testAttributes[1]]))
+    render(<AttributeManagement />)
+
+    // WHEN Author is deleted
+    const authorRow = (await screen.findByText('Author')).closest('tr') as HTMLElement
+    fireEvent.click(within(authorRow).getByRole('button', { name: 'Delete' }))
+
+    // THEN the delete is sent for its id and Author leaves the list
+    expect(await screen.findByText('Attribute Author deleted.')).toBeInTheDocument()
+    await waitFor(() => expect(screen.queryByRole('cell', { name: 'Author' })).not.toBeInTheDocument())
+    const [url, requestOptions] = fetchMock.mock.calls[1]
+    expect(url).toBe('http://localhost:3000/api/attributes/1')
+    expect(requestOptions?.method).toBe('DELETE')
+  })
+
+  test('keeps an attribute when the admin cancels the deletion', async () => {
+    // GIVEN the admin does not confirm
+    jest.spyOn(window, 'confirm').mockReturnValue(false)
+    fetchMock.mockResolvedValueOnce(jsonResponse(testAttributes))
+    render(<AttributeManagement />)
+
+    // WHEN deleting Author
+    const authorRow = (await screen.findByText('Author')).closest('tr') as HTMLElement
+    fireEvent.click(within(authorRow).getByRole('button', { name: 'Delete' }))
+
+    // THEN nothing is sent and Author stays listed
+    expect(fetchMock).toHaveBeenCalledTimes(1)
+    expect(screen.getByText('Author')).toBeInTheDocument()
+  })
+
+  test('shows the API error when deleting fails', async () => {
+    // GIVEN the admin confirms and the delete call is rejected
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(testAttributes))
+      .mockResolvedValueOnce(jsonResponse({ message: 'Attribute not found' }, 404))
+    render(<AttributeManagement />)
+
+    // WHEN Author is deleted
+    const authorRow = (await screen.findByText('Author')).closest('tr') as HTMLElement
+    fireEvent.click(within(authorRow).getByRole('button', { name: 'Delete' }))
+
+    // THEN the API's message is shown and Author stays listed
+    expect(await screen.findByText('Attribute not found')).toBeInTheDocument()
+    expect(screen.getByText('Author')).toBeInTheDocument()
   })
 })

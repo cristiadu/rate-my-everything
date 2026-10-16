@@ -11,6 +11,7 @@ import { loginAs } from '@/components/tests/common/Auth'
 import {
   booksCategory, duneItem, duneRating, duneRerating, moviesCategory, otherUserDuneRating,
 } from '@/components/tests/common/Interests'
+import { gradeBox } from '@/components/tests/common/Ratings'
 
 /** Longer than the form waits after typing before looking for similar names, in milliseconds. */
 const LOOKUP_WAIT_MS = 400
@@ -68,9 +69,10 @@ describe('InterestFormPage', () => {
     await screen.findByRole('option', { name: 'Books' })
     fireEvent.change(screen.getByLabelText('Category'), { target: { value: '10' } })
 
-    // WHEN the fields, Books attributes and rating are filled in and saved
+    // WHEN the fields, image, Books attributes and rating are filled in and saved
     fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Hyperion' } })
     fireEvent.change(screen.getByLabelText('Description'), { target: { value: 'Pilgrims and the Shrike' } })
+    fireEvent.change(screen.getByLabelText('Image URL'), { target: { value: 'https://example.com/hyperion.png' } })
     fireEvent.change(screen.getByLabelText('Pages'), { target: { value: '482' } })
     fireEvent.click(screen.getByLabelText('Finished'))
     fireEvent.change(screen.getByLabelText('My rating (0 to 10)'), { target: { value: '8.5' } })
@@ -83,7 +85,7 @@ describe('InterestFormPage', () => {
       ['POST', '/items', {
         name: 'Hyperion',
         description: 'Pilgrims and the Shrike',
-        imageUrl: null,
+        imageUrl: 'https://example.com/hyperion.png',
         categoryId: 10,
         attributeValues: [{ attributeId: 2, value: '482' }, { attributeId: 3, value: 'true' }],
       }],
@@ -276,5 +278,93 @@ describe('InterestFormPage', () => {
 
     // THEN the API message is shown
     expect(await screen.findByText('Unknown attribute ids: 9')).toBeInTheDocument()
+  })
+  test('shows the API error when the interest cannot be loaded', async () => {
+    // GIVEN an API that reports the item missing
+    fetchMock.mockImplementation(async (url, init) => (String(url).endsWith('/items/999')
+      ? jsonResponse({ message: 'Item not found' }, 404)
+      : respond(url, init)))
+
+    // WHEN the edit form for a missing interest opens
+    renderFormAt('/interests/999/edit')
+
+    // THEN the API message is shown
+    expect(await screen.findByText('Item not found')).toBeInTheDocument()
+  })
+
+  test('asks for a category when the interest\'s category no longer exists', async () => {
+    // GIVEN the edit form for Dune, whose Books category is no longer listed
+    fetchMock.mockImplementation(async (url, init) => (String(url).endsWith('/categories')
+      ? jsonResponse([moviesCategory])
+      : respond(url, init)))
+    renderFormAt('/interests/100/edit')
+    await screen.findByDisplayValue('Desert planet epic')
+
+    // WHEN the form is saved
+    fireEvent.click(screen.getByRole('button', { name: 'Save interest' }))
+
+    // THEN a category is asked for and nothing is sent
+    expect(await screen.findByText('Choose a category', { selector: '.message-body' })).toBeInTheDocument()
+    expect(sentWrites(fetchMock)).toEqual([])
+  })
+
+  test('keeps the interest and my ratings when I cancel removing it', async () => {
+    // GIVEN the edit form for Dune and a cancelled confirmation
+    jest.spyOn(window, 'confirm').mockReturnValue(false)
+    renderFormAt('/interests/100/edit')
+
+    // WHEN I try to remove it from my interests
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove from my interests' }))
+
+    // THEN nothing is deleted and the form stays open
+    expect(sentWrites(fetchMock)).toEqual([])
+    expect(screen.getByRole('heading', { name: 'Edit Dune' })).toBeInTheDocument()
+  })
+
+  test('shows the API error when removing the interest fails', async () => {
+    // GIVEN the edit form for Dune, a confirmed removal and an API that rejects deleting ratings
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    fetchMock.mockImplementation(async (url, init) => (init?.method === 'DELETE'
+      ? jsonResponse({ message: 'Rating not found' }, 404)
+      : respond(url, init)))
+    renderFormAt('/interests/100/edit')
+
+    // WHEN it is removed from my interests
+    fireEvent.click(await screen.findByRole('button', { name: 'Remove from my interests' }))
+
+    // THEN the error is shown and the form stays open
+    expect(await screen.findByText('Rating not found')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Edit Dune' })).toBeInTheDocument()
+  })
+
+  test('keeps my rating when I cancel removing it', async () => {
+    // GIVEN the edit form for Dune and a cancelled confirmation
+    jest.spyOn(window, 'confirm').mockReturnValue(false)
+    renderFormAt('/interests/100/edit')
+    const history = await screen.findByRole('table', { name: 'My ratings' })
+
+    // WHEN I try to remove my newest rating
+    fireEvent.click(within(history).getAllByRole('button', { name: 'Remove' })[0])
+
+    // THEN nothing is deleted and both of my ratings stay
+    expect(sentWrites(fetchMock)).toEqual([])
+    expect(within(history).getAllByRole('button', { name: 'Remove' })).toHaveLength(2)
+  })
+
+  test('shows the API error and keeps my rating when removing it fails', async () => {
+    // GIVEN the edit form for Dune, a confirmed removal and an API that rejects it
+    jest.spyOn(window, 'confirm').mockReturnValue(true)
+    fetchMock.mockImplementation(async (url, init) => (init?.method === 'DELETE'
+      ? jsonResponse({ message: 'Rating not found' }, 404)
+      : respond(url, init)))
+    renderFormAt('/interests/100/edit')
+    const history = await screen.findByRole('table', { name: 'My ratings' })
+
+    // WHEN my newest rating is removed
+    fireEvent.click(within(history).getAllByRole('button', { name: 'Remove' })[0])
+
+    // THEN the error is shown and my grade still averages both ratings
+    expect(await screen.findByText('Rating not found')).toBeInTheDocument()
+    expect(gradeBox('My grade')).toHaveTextContent('9.0')
   })
 })
