@@ -1,0 +1,57 @@
+name: Deploy to alwaysdata
+# Builds the API and the UI on each push to main, copies them to the alwaysdata account over SSH and restarts its
+# Node.js site, where the API serves the UI next to /api. Skipped until the ALWAYSDATA_ACCOUNT variable is set.
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: alwaysdata-deploy
+  cancel-in-progress: false
+jobs:
+  deploy:
+    if: vars.ALWAYSDATA_ACCOUNT != ''
+    runs-on: ubuntu-latest
+    env:
+      ALWAYSDATA_ACCOUNT: ${{ vars.ALWAYSDATA_ACCOUNT }}
+      ALWAYSDATA_SITE_ID: ${{ vars.ALWAYSDATA_SITE_ID }}
+      ALWAYSDATA_API_TOKEN: ${{ secrets.ALWAYSDATA_API_TOKEN }}
+      SSHPASS: ${{ secrets.ALWAYSDATA_PASSWORD }}
+    steps:
+      - name: Check the alwaysdata settings
+        run: |
+          : "${ALWAYSDATA_SITE_ID:?Set the ALWAYSDATA_SITE_ID repository variable}"
+          : "${ALWAYSDATA_API_TOKEN:?Set the ALWAYSDATA_API_TOKEN repository secret}"
+          : "${SSHPASS:?Set the ALWAYSDATA_PASSWORD repository secret}"
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # 7.0.1
+      - name: Setup PNPM
+        uses: pnpm/action-setup@ea17c68df8912ef543352723c149a84f56e3d413 # 6.1.0
+        with:
+          package_json_file: package.json
+          run_install: false
+      - name: Setup Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # 7.0.0
+        with:
+          node-version-file: '.nvmrc'
+          cache: 'pnpm'
+          cache-dependency-path: pnpm-lock.yaml
+      - name: Install Dependencies
+        run: pnpm install
+      - name: Build
+        run: pnpm build
+      - name: Bundle the API with its production dependencies and the UI
+        run: |
+          pnpm --filter @cristiadu/rate-my-everything-api deploy --prod --legacy --ignore-scripts release/api
+          cp -r ui/dist release/ui
+      - name: Copy the release to alwaysdata
+        run: |
+          sudo apt-get install -y sshpass
+          sshpass -e rsync -az --delete -e "ssh -o StrictHostKeyChecking=accept-new" release/ \
+            "$ALWAYSDATA_ACCOUNT@ssh-$ALWAYSDATA_ACCOUNT.alwaysdata.net:rate-my-everything/"
+      - name: Restart the site
+        run: |
+          curl --fail-with-body -X POST --basic --user "$ALWAYSDATA_API_TOKEN account=$ALWAYSDATA_ACCOUNT:" \
+            "https://api.alwaysdata.com/v1/site/$ALWAYSDATA_SITE_ID/restart/"
