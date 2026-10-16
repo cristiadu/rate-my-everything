@@ -6,10 +6,13 @@ export const DEFAULT_CATEGORY_COLOR = '#3E8ED0'
 /** Relative luminance above which dark text reads better than white text on a background. */
 const LIGHT_BACKGROUND_LUMINANCE = 0.5
 
+/** How much each sRGB channel adds to relative luminance (ITU-R BT.709 weights). */
+const LUMINANCE_WEIGHTS = { red: 0.2126, green: 0.7152, blue: 0.0722 }
+
 /** Picks dark or white text for a hex background color, whichever reads better on it. */
 export const readableTextColor = (hexColor: string): string => {
   const [red, green, blue] = [1, 3, 5].map((start) => parseInt(hexColor.slice(start, start + 2), 16) / 255)
-  const luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue
+  const luminance = LUMINANCE_WEIGHTS.red * red + LUMINANCE_WEIGHTS.green * green + LUMINANCE_WEIGHTS.blue * blue
   return luminance > LIGHT_BACKGROUND_LUMINANCE ? 'var(--bulma-text-strong)' : 'var(--bulma-white)'
 }
 

@@ -3,6 +3,9 @@ import React from 'react'
 /** Width of the open filter panel, in pixels, border included. */
 export const FILTER_PANEL_WIDTH = 300
 
+/** Stacking order of the tab, one above react-burger-menu's panel (1100) so the tab stays clickable on top of it. */
+const FILTER_TAB_Z_INDEX = 1101
+
 interface ArrowProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isOpen: boolean;
@@ -28,7 +31,7 @@ const Arrow: React.FC<ArrowProps> = ({ setIsOpen, isOpen, top }) => (
       left: isOpen ? `${FILTER_PANEL_WIDTH}px` : '0',
       // Matches react-burger-menu's slide so the tab moves with the panel
       transition: 'left 0.5s',
-      zIndex: 1101,
+      zIndex: FILTER_TAB_Z_INDEX,
       width: '28px',
       height: '32px',
       borderRadius: '0 8px 8px 0',

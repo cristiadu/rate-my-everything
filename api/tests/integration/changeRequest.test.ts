@@ -186,6 +186,9 @@ describe('Change request and moderation API Integration Tests', async () => {
     })
 
     it('rejects an unknown status filter', async () => {
+      // GIVEN a status that is not pending, approved or rejected
+      // WHEN a moderator filters by it
+      // THEN it is refused with the allowed values
       await request(app)
         .get(`${Endpoints.MODERATION_BASE_PATH}?status=archived`)
         .set('Authorization', `Bearer ${moderatorToken}`)
@@ -283,6 +286,9 @@ describe('Change request and moderation API Integration Tests', async () => {
     })
 
     it('returns 404 for an unknown request', async () => {
+      // GIVEN a change request id nobody uses
+      // WHEN a moderator approves it
+      // THEN it is not found
       await review(moderatorToken, 999999, 'approve')
         .expect(404)
         .expect(res => expect((res.body as APIError).message).toBe('Change request not found'))
@@ -310,6 +316,9 @@ describe('Change request and moderation API Integration Tests', async () => {
     })
 
     it('forbids users without a moderation role', async () => {
+      // GIVEN a plain user
+      // WHEN they reject a request
+      // THEN it is forbidden
       await review(userToken, 1, 'reject').expect(403)
     })
   })
