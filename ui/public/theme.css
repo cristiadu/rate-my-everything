@@ -139,6 +139,15 @@
   color: var(--bulma-dark-invert);
 }
 
+/* Footer links use the header's light pink so they stay readable on the dark slate, and underline on hover */
+.footer a {
+  color: var(--bulma-danger-light);
+}
+
+.footer a:hover {
+  text-decoration: underline;
+}
+
 /*
  * The interest view's header bar spans the whole top of the view, edge to edge.
  * The name fills it on berry and the category fills its right end on the category's own color, both in big capitals.
