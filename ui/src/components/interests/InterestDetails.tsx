@@ -1,7 +1,7 @@
 import React from 'react'
 import { Box } from 'react-bulma-components'
 import AttributeValueDisplay from '@/components/common/AttributeValueDisplay'
-import CategoryTag from '@/components/common/CategoryTag'
+import { categoryColorStyle } from '@/components/common/categoryColor'
 import type { ItemResponse } from '@/api/generated/api'
 
 /** Props for the interest view rectangle. */
@@ -14,16 +14,16 @@ interface InterestDetailsProps {
 }
 
 /**
- * Shows an interest as one view: its name and color-coded category as big labels across the top, its photo next to its grades,
+ * Shows an interest as one view: its name and color-coded category filling the header bar across the top, its photo next to its grades,
  * its description next to its rating history, and its category attributes as "Field: Value" pairs in two columns.
  */
 const InterestDetails: React.FC<InterestDetailsProps> = ({ item, grades, history }) => (
   <Box className="interest-view">
-    <header className="is-flex is-align-items-center is-justify-content-space-between interest-view-header">
-      <h2 className="mb-0">
-        <span className="tag is-primary is-large is-uppercase has-text-weight-bold interest-view-label">{item.name}</span>
-      </h2>
-      {item.category && <CategoryTag category={item.category} isLarge />}
+    <header className="is-flex interest-view-header">
+      <h2 className="interest-view-name">{item.name}</h2>
+      {item.category && (
+        <p className="interest-view-category" style={categoryColorStyle(item.category.color)}>{item.category.name}</p>
+      )}
     </header>
     <div className="columns">
       <div className="column is-half">
