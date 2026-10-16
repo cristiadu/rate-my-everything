@@ -11,6 +11,12 @@ const finishedAttribute: AttributeResponse = { id: 3, name: 'Finished', valueTyp
 /** The shared Books category, linked to Author, Pages and Finished. */
 export const booksCategory: CategoryResponse = { ...testCategories[0], attributes: [authorAttribute, pagesAttribute, finishedAttribute] }
 
+/** Date attribute recording when a film came out. */
+const releasedAttribute: AttributeResponse = { id: 4, name: 'Released', valueType: AttributeValueType.DATE }
+
+/** Category whose only attribute is a date, so Books and Films together hold every attribute value type. */
+export const filmsCategory: CategoryResponse = { id: 30, name: 'Films', description: null, attributes: [releasedAttribute] }
+
 /** Category without attributes. */
 export const moviesCategory: CategoryResponse = { id: 20, name: 'Movies', description: null, attributes: [] }
 

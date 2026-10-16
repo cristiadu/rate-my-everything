@@ -1,5 +1,5 @@
 import {
-  Body, Controller, Delete, Get, Path, Post, Put, Request, Response, Route, Security, SuccessResponse, Tags,
+  Body, Controller, Delete, Get, Path, Post, Put, Queries, Request, Response, Route, Security, SuccessResponse, Tags,
 } from 'tsoa'
 import RatedItemService from '@/services/RatedItemService'
 import APIError, { NewApiError } from '@/models/APIError'
@@ -7,7 +7,10 @@ import UserRole from '@/models/UserRole'
 import ErrorCode from '@/errors/ErrorCode'
 import { RequestRejected } from '@/errors/RequestRejected'
 import RatedItem from '@/models/RatedItem'
-import type { NewRatingInput, RatedItemResponse, RatingUpdate } from '@/models/RatedItem'
+import type {
+  NewRatingInput, RatedItemResponse, RatingQuery, RatingUpdate,
+} from '@/models/RatedItem'
+import { parseRatingFilters } from '@/helpers/RatingFilterHelper'
 import { BEARER_AUTH } from '@/helpers/Authentication'
 import type { AuthenticatedRequest } from '@/helpers/Authentication'
 import {
@@ -31,10 +34,14 @@ import type { ResourceId } from '@/models/ResourceId'
 export class RatedItemController extends Controller {
   private ratedItemService = new RatedItemService()
 
-  /** @summary Lists every rating */
+  /**
+   * Every rating of the items matching the filters, so each item's grades stay complete. Without filters, every rating.
+   * @summary Lists the ratings of the items matching the filters
+   */
   @Get()
-  public async getRatings(): Promise<RatedItemResponse[]> {
-    return this.ratedItemService.getAll()
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async getRatings(@Request() request: AuthenticatedRequest, @Queries() query: RatingQuery): Promise<RatedItemResponse[]> {
+    return this.ratedItemService.getAll(parseRatingFilters(query), request.user.id)
   }
 
   /**
