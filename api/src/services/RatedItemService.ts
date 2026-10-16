@@ -1,3 +1,4 @@
+import { SelectQueryBuilder } from 'typeorm'
 import RatedItem, {
   AttributeFilter, MAX_GRADE, MIN_GRADE, RatingFilters, RatingUpdate,
 } from '@/models/RatedItem'
@@ -17,13 +18,22 @@ const PERSONAL_GRADE_SQL = `item.id IN (
   GROUP BY personal.item_id
   HAVING AVG(personal.rating) BETWEEN :minGrade AND :maxGrade)`
 
-/** SQL keeping the items whose collective grade, the average of each user's personal grade, is within :minGrade and :maxGrade. */
+/** SQL listing the id, item, user and grade of the latest rating each user gave each item. */
+const LATEST_RATINGS_SQL = `SELECT DISTINCT ON (item_id, user_id) id, item_id, user_id, rating FROM rated_item
+  ORDER BY item_id, user_id, rated_at DESC, id DESC`
+
+/** SQL keeping the items whose collective grade, the average of each user's latest rating, is within :minGrade and :maxGrade. */
 const COLLECTIVE_GRADE_SQL = `item.id IN (
-  SELECT personal.item_id FROM (
-    SELECT item_id, AVG(rating) AS grade FROM rated_item GROUP BY item_id, user_id
-  ) personal
-  GROUP BY personal.item_id
-  HAVING AVG(personal.grade) BETWEEN :minGrade AND :maxGrade)`
+  SELECT latest.item_id FROM (${LATEST_RATINGS_SQL}) latest
+  GROUP BY latest.item_id
+  HAVING AVG(latest.rating) BETWEEN :minGrade AND :maxGrade)`
+
+/**
+ * SQL keeping the ratings the signed-in user :viewerId may see: all of their own, and only the latest one each other user
+ * gave an item, the one that counts toward its collective grade.
+ */
+const VISIBLE_RATING_SQL = `("ratedItem"."user_id" = :viewerId
+  OR "ratedItem"."id" IN (SELECT latest.id FROM (${LATEST_RATINGS_SQL}) latest))`
 
 /** SQL keeping the items holding the value for attribute filter number `index`: text contains it, other types equal it. */
 const attributeFilterSql = (index: number): string => `EXISTS (
@@ -84,14 +94,12 @@ class RatedItemService extends BaseService<RatedItem> {
   }
 
   /**
-   * Get every rating of the items matching the filters, which the database applies.
-   * userId is the signed-in user, whose ratings the MINE scope is about.
+   * Get the ratings of the items matching the filters, which the database applies; of other users' ratings, only
+   * the latest each gave an item. userId is the signed-in user, whose ratings the MINE scope is about.
    */
   public async getAll(filters: RatingFilters, userId: number): Promise<RatedItem[]> {
     const { name, categoryIds, attributes, scope } = filters
-    const query = this.repository.createQueryBuilder('ratedItem')
-      .innerJoinAndSelect('ratedItem.item', 'item')
-      .leftJoinAndSelect('item.category', 'category')
+    const query = this.visibleRatingsQuery(userId)
     if (name) {
       query.andWhere('strpos(lower(item.name), lower(:name)) > 0', { name })
     }
@@ -111,14 +119,22 @@ class RatedItemService extends BaseService<RatedItem> {
     return query.orderBy('ratedItem.id', 'ASC').getMany()
   }
 
-  /** Get every user's ratings of one item. */
-  public async getAllByItemId(itemId: number): Promise<RatedItem[]> {
-    return this.repository.find({ where: { item: { id: itemId } }, relations: RATING_RELATIONS })
+  /** Get the ratings of one item that viewerId may see: all of their own and each other user's latest. */
+  public async getAllByItemId(itemId: number, viewerId: number): Promise<RatedItem[]> {
+    return this.visibleRatingsQuery(viewerId).andWhere('item.id = :itemId', { itemId }).getMany()
   }
 
-  /** Get all RatedItems by user_id. */
-  public async getAllByUserId(userId: number): Promise<RatedItem[]> {
-    return this.repository.find({ where: { user: { id: userId } }, relations: RATING_RELATIONS })
+  /** Get a user's ratings that viewerId may see: all of them when it is viewerId, otherwise the latest of each item. */
+  public async getAllByUserId(userId: number, viewerId: number): Promise<RatedItem[]> {
+    return this.visibleRatingsQuery(viewerId).andWhere('"ratedItem"."user_id" = :userId', { userId }).getMany()
+  }
+
+  /** Starts a query of the ratings viewerId may see, each with its item and the item's category. */
+  private visibleRatingsQuery(viewerId: number): SelectQueryBuilder<RatedItem> {
+    return this.repository.createQueryBuilder('ratedItem')
+      .innerJoinAndSelect('ratedItem.item', 'item')
+      .leftJoinAndSelect('item.category', 'category')
+      .where(VISIBLE_RATING_SQL, { viewerId })
   }
 }
 

@@ -1679,8 +1679,12 @@ paths:
                     code: INTERNAL_ERROR
                     status: 500
                     message: An internal server error occurred
-      description: Every rating of the items matching the filters, so each item's
-        grades stay complete. Without filters, every rating.
+      description: >-
+        The ratings of the items matching the filters: all of the signed-in
+        user's, and the latest each other user gave,
+
+        which is the one that counts toward the collective grade. Without
+        filters, every item's.
       summary: Lists the ratings of the items matching the filters
       tags:
         - Ratings
@@ -1949,6 +1953,8 @@ paths:
                     code: INTERNAL_ERROR
                     status: 500
                     message: An internal server error occurred
+      description: All of a user's ratings when it is the signed-in user; for anyone
+        else, only their latest rating of each item.
       summary: Lists the ratings of a user
       tags:
         - Ratings
@@ -2058,8 +2064,9 @@ paths:
                     code: INTERNAL_ERROR
                     status: 500
                     message: An internal server error occurred
-      summary: Lists every user's ratings of an item, used to work out its collective
-        grade
+      description: All of the signed-in user's ratings of the item and each other
+        user's latest, the ones its collective grade counts.
+      summary: Lists the ratings of an item, used to work out its collective grade
       tags:
         - Ratings
       security:

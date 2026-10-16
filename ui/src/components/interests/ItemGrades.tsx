@@ -1,6 +1,6 @@
 import React from 'react'
 import type { RatedItemResponse } from '@/api/generated/api'
-import { collectiveGrade, gradeColor, personalGrade } from '@/components/rankings/rankingData'
+import { collectiveGrade, gradeColor, personalGrade, raterCount } from '@/components/rankings/rankingData'
 import { NOT_RATED } from '@/components/rankings/RankingTableItem'
 
 /** Props for one big, color-coded grade. */
@@ -46,7 +46,7 @@ const ItemGrades: React.FC<ItemGradesProps> = ({ itemRatings, userId }) => {
         <GradeBox
           label="Everyone's grade"
           grade={itemRatings.length > 0 ? collectiveGrade(itemRatings) : null}
-          detail={`from ${itemRatings.length} ratings`}
+          detail={`from ${raterCount(itemRatings)} ${raterCount(itemRatings) === 1 ? 'user' : 'users'}`}
         />
       </div>
     </div>

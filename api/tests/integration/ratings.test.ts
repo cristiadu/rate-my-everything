@@ -195,27 +195,33 @@ describe('RatedItem API Integration Tests', async () => {
   })
 
   describe(`GET ${Endpoints.RATINGS_BASE_PATH}/item/:item_id`, () => {
-    it('should list every rating of the item, keeping each time a user rated it', async () => {
+    it('should list all of my ratings of the item and only the latest of each other user', async () => {
       // GIVEN the admin rated the test item 5 and another user rated it 6 and then 8
       const adminRating = await createTestRating(app, testAuthToken, testItem.id, 5)
       const otherUserToken = await getUserRoleAuthToken(app)
       await createTestRating(app, otherUserToken, testItem.id, 6)
       await createTestRating(app, otherUserToken, testItem.id, 8)
 
-      // WHEN the item's ratings are listed
-      const res = await request(app)
+      // WHEN the admin and the other user each list the item's ratings
+      const adminRes = await request(app)
         .get(`${Endpoints.RATINGS_BASE_PATH}/item/${testItem.id}`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect('Content-Type', /json/)
         .expect(200)
+      const otherUserRes = await request(app)
+        .get(`${Endpoints.RATINGS_BASE_PATH}/item/${testItem.id}`)
+        .set('Authorization', `Bearer ${otherUserToken}`)
+        .expect(200)
 
-      // THEN the admin's rating and both of the other user's ratings come back, each with its rater and date
-      const ratedItems = (res.body as RatedItem[]).sort((a, b) => a.id - b.id)
-      expect(ratedItems.map((ratedItem) => ratedItem.rating)).toEqual([5, 6, 8])
-      expect(ratedItems[0].userId).toBe(adminRating.userId)
-      expect(ratedItems[1].userId).not.toBe(adminRating.userId)
-      expect(ratedItems[2].userId).toBe(ratedItems[1].userId)
-      expect(Number.isNaN(Date.parse(String(ratedItems[2].ratedAt)))).toBe(false)
+      // THEN the admin sees their own rating and only the other user's latest 8, each with its rater and date,
+      // and the other user sees both of their own ratings next to the admin's
+      const adminView = (adminRes.body as RatedItem[]).sort((a, b) => a.id - b.id)
+      expect(adminView.map((ratedItem) => ratedItem.rating)).toEqual([5, 8])
+      expect(adminView[0].userId).toBe(adminRating.userId)
+      expect(adminView[1].userId).not.toBe(adminRating.userId)
+      expect(Number.isNaN(Date.parse(String(adminView[1].ratedAt)))).toBe(false)
+      const otherUserView = (otherUserRes.body as RatedItem[]).sort((a, b) => a.id - b.id)
+      expect(otherUserView.map((ratedItem) => ratedItem.rating)).toEqual([5, 6, 8])
     })
 
     it('should return no ratings for an item nobody rated', async () => {

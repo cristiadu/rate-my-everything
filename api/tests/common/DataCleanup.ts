@@ -63,16 +63,19 @@ export const cleanupAllItems = async (app: Express) => {
 
 export const cleanupAllRatedItems = async (app: Express) => {
   const testAuthToken = await getAuthTokenFromFile()
-  const ratedItemsRes = await request(app)
-    .get(Endpoints.RATINGS_BASE_PATH)
-    .set('Authorization', `Bearer ${testAuthToken}`)
-    .expect(200)
-    
-  const ratedItems = ratedItemsRes.body as RatedItem[]
-  for (const rated of ratedItems) {
-    await request(app)
-      .delete(`${Endpoints.RATINGS_BASE_PATH}/${rated.id}`)
+  // Other users' older ratings only show up once their latest one is gone, so keep going until none are left
+  let ratedItems: RatedItem[]
+  do {
+    const ratedItemsRes = await request(app)
+      .get(Endpoints.RATINGS_BASE_PATH)
       .set('Authorization', `Bearer ${testAuthToken}`)
-      .expect(204)
-  }
+      .expect(200)
+    ratedItems = ratedItemsRes.body as RatedItem[]
+    for (const rated of ratedItems) {
+      await request(app)
+        .delete(`${Endpoints.RATINGS_BASE_PATH}/${rated.id}`)
+        .set('Authorization', `Bearer ${testAuthToken}`)
+        .expect(204)
+    }
+  } while (ratedItems.length > 0)
 }
