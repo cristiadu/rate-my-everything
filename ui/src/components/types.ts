@@ -17,12 +17,6 @@ export interface RankingItem {
     rating_count: number;
 }
 
-/** Which ratings a rankings page shows: the signed-in user's own, or everyone's averaged per item. */
-export enum RankingScope {
-    MINE = 'mine',
-    ALL = 'all',
-}
-
 /** Roles that may review change requests and change shared interests directly; mirrors the API's MODERATION_ROLES. */
 export const MODERATION_ROLES = [UserRole.ADMIN, UserRole.MODERATOR]
 
@@ -98,4 +92,21 @@ export type ReviewDecision = ChangeRequestStatus.APPROVED | ChangeRequestStatus.
 export type SimilarRecordsLookup<T> = {
     query: string;
     records: T[];
+}
+
+/**
+ * Filters chosen in the filter panel. Attribute values are keyed by attribute id; grades are kept as typed, and an
+ * empty text means no filter.
+ */
+export interface InterestFilters {
+    name: string;
+    categoryIds: number[];
+    attributeValues: Record<number, string>;
+    minGrade: string;
+    maxGrade: string;
+}
+
+/** Filters that keep every interest. */
+export const NO_INTEREST_FILTERS: InterestFilters = {
+    name: '', categoryIds: [], attributeValues: {}, minGrade: '', maxGrade: '',
 }

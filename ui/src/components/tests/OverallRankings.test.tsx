@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import OverallRankings from '@/components/rankings/OverallRankings'
 import { AuthProvider } from '@/components/users/AuthContext'
 import { UserRole } from '@/api/generated/api'
-import { RankingScope } from '@/components/types'
+import { RankingScope } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import {
@@ -38,7 +38,7 @@ describe('OverallRankings', () => {
 
     // THEN only Dune shows, with my grade, everyone's grade, its rating count and an edit link
     const rows = await screen.findAllByRole('row')
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings'])
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings?scope=mine'])
     expect(screen.getAllByRole('columnheader').map((header) => header.textContent))
       .toEqual(['Image', 'Name', 'Category', 'My grade', 'Everyone\'s grade', 'Ratings', ''])
     expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.07.53Edit'])
@@ -57,7 +57,7 @@ describe('OverallRankings', () => {
     // THEN items are ordered by everyone's grade, and Alien has no grade of mine
     const rows = await screen.findAllByRole('row')
     expect(rows.slice(1).map((row) => row.textContent)).toEqual(['DuneBooks9.07.53', 'AlienMovies-7.01'])
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings'])
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/ratings?scope=all'])
     expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
   })
 
