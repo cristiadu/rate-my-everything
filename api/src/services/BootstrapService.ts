@@ -27,7 +27,7 @@ export default class BootstrapService {
       return
     }
     await this.userService.create({ username, email, password, roles: [UserRole.ADMIN, UserRole.USER], ratedItems: [] } as Omit<User, 'id'>)
-    logger.info(`Created bootstrap admin user ${username}`)
+    logger.info('Created the bootstrap admin user')
   }
 
   /** Creates each starter category that does not exist yet, reusing attributes with the same name and value type. */
