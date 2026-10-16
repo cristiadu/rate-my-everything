@@ -156,6 +156,62 @@ components:
       description: Numeric id of a stored resource, such as an item, an attribute or a
         rating.
       minimum: 1
+    RankingScope:
+      description: "Whose grade a rankings list is about: the signed-in user's
+        personal grade, or everyone's collective grade."
+      enum:
+        - mine
+        - all
+      type: string
+      x-enum-varnames:
+        - MINE
+        - ALL
+    RatingQuery:
+      description: Query parameters that narrow down the ratings list.
+      properties:
+        name:
+          type: string
+          description: Part of the item's name, in any case.
+          example: dune
+        categoryId:
+          items:
+            $ref: "#/components/schemas/ResourceId"
+          type: array
+          description: Categories the item must be in; repeat the parameter for several.
+        attribute:
+          items:
+            type: string
+          type: array
+          description: >-
+            Attribute values the item must hold, each as
+            `<attributeId>:<value>`; repeat the parameter for several.
+
+            Text attributes match when they contain the value, other types when
+            they equal it.
+          example:
+            - 3:Frank Herbert
+        minGrade:
+          type: number
+          format: double
+          description: "Lowest grade: the signed-in user's own grade for the `mine` scope,
+            the collective grade for `all`."
+          example: 6.5
+          minimum: 0
+          maximum: 10
+        maxGrade:
+          type: number
+          format: double
+          description: "Highest grade: the signed-in user's own grade for the `mine`
+            scope, the collective grade for `all`."
+          example: 9
+          minimum: 0
+          maximum: 10
+        scope:
+          $ref: "#/components/schemas/RankingScope"
+          description: Whose grade the range applies to. `mine` also keeps only the items
+            the signed-in user rated. Defaults to `all`.
+      type: object
+      additionalProperties: true
     NewRatingInput:
       description: Fields accepted when rating an item.
       properties:
@@ -880,6 +936,19 @@ paths:
                 items:
                   $ref: "#/components/schemas/RatedItemResponse"
                 type: array
+        "400":
+          description: The path, query or body is invalid; the message names each invalid
+            field
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: VALIDATION_ERROR
+                    status: 400
+                    message: "Invalid request: input.name: 'name' is required"
         "401":
           description: The bearer token is missing or invalid
           content:
@@ -950,14 +1019,75 @@ paths:
                     code: INTERNAL_ERROR
                     status: 500
                     message: An internal server error occurred
-      summary: Lists every rating
+      description: Every rating of the items matching the filters, so each item's
+        grades stay complete. Without filters, every rating.
+      summary: Lists the ratings of the items matching the filters
       tags:
         - Ratings
       security:
         - bearerAuth:
             - user
             - admin
-      parameters: []
+      parameters:
+        - description: Part of the item's name, in any case.
+          in: query
+          name: name
+          required: false
+          schema:
+            type: string
+          example: dune
+        - description: Categories the item must be in; repeat the parameter for several.
+          in: query
+          name: categoryId
+          required: false
+          schema:
+            type: array
+            items:
+              $ref: "#/components/schemas/ResourceId"
+        - description: >-
+            Attribute values the item must hold, each as
+            `<attributeId>:<value>`; repeat the parameter for several.
+
+            Text attributes match when they contain the value, other types when
+            they equal it.
+          in: query
+          name: attribute
+          required: false
+          schema:
+            type: array
+            items:
+              type: string
+          example:
+            - 3:Frank Herbert
+        - description: "Lowest grade: the signed-in user's own grade for the `mine` scope,
+            the collective grade for `all`."
+          in: query
+          name: minGrade
+          required: false
+          schema:
+            format: double
+            type: number
+            minimum: 0
+            maximum: 10
+          example: 6.5
+        - description: "Highest grade: the signed-in user's own grade for the `mine`
+            scope, the collective grade for `all`."
+          in: query
+          name: maxGrade
+          required: false
+          schema:
+            format: double
+            type: number
+            minimum: 0
+            maximum: 10
+          example: 9
+        - description: Whose grade the range applies to. `mine` also keeps only the items
+            the signed-in user rated. Defaults to `all`.
+          in: query
+          name: scope
+          required: false
+          schema:
+            $ref: "#/components/schemas/RankingScope"
     post:
       operationId: createRating
       responses:

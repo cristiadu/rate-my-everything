@@ -11,10 +11,9 @@ export const MIN_PASSWORD_LENGTH = 6
 /** Longest comment body the comments API accepts, in characters. */
 export const MAX_COMMENT_LENGTH = 2000
 
-/** Which ratings a rankings page shows: the signed-in user's own, or everyone's averaged per item. */
-export enum RankingScope {
-    MINE = 'mine',
-    ALL = 'all',
+/** Filters that keep every interest. */
+export const NO_INTEREST_FILTERS: InterestFilters = {
+    name: '', categoryIds: [], attributeValues: {}, minGrade: '', maxGrade: '',
 }
 
 /**
@@ -63,4 +62,16 @@ export type ChangeRequestLookups = {
 export type SimilarRecordsLookup<T> = {
     query: string;
     records: T[];
+}
+
+/**
+ * Filters chosen in the filter panel. Attribute values are keyed by attribute id; grades are kept as typed, and an
+ * empty text means no filter.
+ */
+export interface InterestFilters {
+    name: string;
+    categoryIds: number[];
+    attributeValues: Record<number, string>;
+    minGrade: string;
+    maxGrade: string;
 }
