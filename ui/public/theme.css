@@ -47,12 +47,14 @@
  * without making the menu bar taller, and it is only hidden while closed instead of removed from the layout.
  */
 @media screen and (min-width: 1024px) {
+  /* The menu item stacks its label over a zero-height row that holds the dropdown */
   .navbar-item.has-dropdown {
     display: grid;
     grid-template-rows: auto 0;
     row-gap: 0;
   }
 
+  /* The dropdown stays in the layout so it counts towards the item's width, and is only hidden while closed */
   .navbar-item.has-dropdown .navbar-dropdown {
     align-self: start;
     display: block;
@@ -124,6 +126,7 @@
   text-transform: uppercase;
 }
 
+/* The name fills the rest of the bar in the primary color */
 .interest-view-header .interest-view-name {
   background-color: var(--bulma-primary);
   color: var(--bulma-primary-invert);
@@ -144,6 +147,7 @@
   overflow: hidden;
 }
 
+/* The whole photo shows, letterboxed, instead of being cropped to the frame */
 .interest-view-photo img {
   object-fit: contain;
 }

@@ -36,6 +36,11 @@ describe('changeRequestText', () => {
   })
 
   test('lists nothing for a removal', () => {
-    expect(listChanges(null, lookups)).toEqual([])
+    // GIVEN a removal, which carries no changes
+    // WHEN its changes are listed
+    const rows = listChanges(null, lookups)
+
+    // THEN there are no rows
+    expect(rows).toEqual([])
   })
 })

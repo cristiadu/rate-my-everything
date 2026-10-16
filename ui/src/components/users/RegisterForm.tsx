@@ -28,7 +28,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
       // Default to no roles, admin can add roles later
       await register({ username, email, password, roles: [] })
       onSuccess()
-    } catch (err: unknown) {
+    } catch (err) {
       if (err instanceof Error) {
         setError(err.message || 'An error occurred during registration')
       } else {
