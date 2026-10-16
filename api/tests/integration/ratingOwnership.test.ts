@@ -77,15 +77,16 @@ describe('Rating ownership', async () => {
     })
 
     it('should keep the rating on its item and author whatever else the body sends', async () => {
-      // GIVEN a 5 rating by its author
+      // GIVEN a 5 rating by its author and a rating by another user, whose id the body will send
       const ratedItem = await createTestRating(app, ownerToken, testItem.id, 5)
+      const otherUserRating = await createTestRating(app, otherUserToken, otherItem.id, 3)
 
-      // WHEN the author sends another item and user along with a new grade
+      // WHEN the author sends the other item and the other user along with a new grade
       // THEN only the grade changes
       await request(app)
         .put(`${Endpoints.RATINGS_BASE_PATH}/${ratedItem.id}`)
         .set('Authorization', `Bearer ${ownerToken}`)
-        .send({ rating: 7, item: { id: otherItem.id }, user: { id: ratedItem.userId + 1 } })
+        .send({ rating: 7, item: { id: otherItem.id }, user: { id: otherUserRating.userId } })
         .expect(200)
         .expect(res => {
           const updated = res.body as RatedItem
@@ -113,19 +114,26 @@ describe('Rating ownership', async () => {
         .expect(200)
     })
 
-    it('should let the author and an admin delete a rating', async () => {
-      // GIVEN two ratings by the same author
-      const firstRating = await createTestRating(app, ownerToken, testItem.id, 5)
-      const secondRating = await createTestRating(app, ownerToken, testItem.id, 6)
+    it('should let the author delete their rating', async () => {
+      // GIVEN a 5 rating by its author
+      const ratedItem = await createTestRating(app, ownerToken, testItem.id, 5)
 
-      // WHEN the author deletes the first and the admin deletes the second
-      // THEN both deletes succeed
+      // WHEN the author deletes it
+      // THEN the delete succeeds
       await request(app)
-        .delete(`${Endpoints.RATINGS_BASE_PATH}/${firstRating.id}`)
+        .delete(`${Endpoints.RATINGS_BASE_PATH}/${ratedItem.id}`)
         .set('Authorization', `Bearer ${ownerToken}`)
         .expect(204)
+    })
+
+    it('should let an admin delete another user\'s rating', async () => {
+      // GIVEN a 5 rating by a user who is not the admin
+      const ratedItem = await createTestRating(app, ownerToken, testItem.id, 5)
+
+      // WHEN the admin deletes it
+      // THEN the delete succeeds
       await request(app)
-        .delete(`${Endpoints.RATINGS_BASE_PATH}/${secondRating.id}`)
+        .delete(`${Endpoints.RATINGS_BASE_PATH}/${ratedItem.id}`)
         .set('Authorization', `Bearer ${adminToken}`)
         .expect(204)
     })

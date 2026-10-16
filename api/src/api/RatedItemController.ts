@@ -111,20 +111,18 @@ export class RatedItemController extends Controller {
     @Request() request: AuthenticatedRequest, @Path() id: ResourceId, @Body() input: RatingUpdate,
   ): Promise<RatedItemResponse> {
     // Copy only the editable fields so a request body can never move a rating to another item or user
-    const { rating, notes } = input
-    const changes = { ...(rating !== undefined && { rating }), ...(notes !== undefined && { notes }) }
-    try {
-      const data = await this.ratedItemService.update(id, changes, request.user)
-      if (!data) {
-        throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
-      }
-      return data
-    } catch (error) {
-      if (error instanceof RatingNotOwned) {
-        throw new RequestRejected(NewApiError(ErrorCode.FORBIDDEN, 403, error.message))
-      }
-      throw error
+    const changes: RatingUpdate = {}
+    if (input.rating !== undefined) {
+      changes.rating = input.rating
     }
+    if (input.notes !== undefined) {
+      changes.notes = input.notes
+    }
+    const data = await this.rejectUnlessAllowed(() => this.ratedItemService.update(id, changes, request.user))
+    if (!data) {
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
+    }
+    return data
   }
 
   /**
@@ -136,9 +134,14 @@ export class RatedItemController extends Controller {
   @SuccessResponse(204, 'Rating deleted')
   @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
   public async deleteRating(@Request() request: AuthenticatedRequest, @Path() id: ResourceId): Promise<void> {
+    await this.rejectUnlessAllowed(() => this.ratedItemService.delete(id, request.user))
+    this.setStatus(204)
+  }
+
+  /** Runs a change to a rating, answering 403 when the signed-in user may not make it. */
+  private async rejectUnlessAllowed<Result>(change: () => Promise<Result>): Promise<Result> {
     try {
-      await this.ratedItemService.delete(id, request.user)
-      this.setStatus(204)
+      return await change()
     } catch (error) {
       if (error instanceof RatingNotOwned) {
         throw new RequestRejected(NewApiError(ErrorCode.FORBIDDEN, 403, error.message))
