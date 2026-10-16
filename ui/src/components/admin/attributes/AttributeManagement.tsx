@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import {
-  createAttribute, deleteAttribute, getAttributes, updateAttribute, type AttributeResponse,
+  createAttribute, deleteAttribute, getAttributes, updateAttribute, type AttributeInput, type AttributeResponse,
 } from '@/api/generated/api'
-import type { AttributeEditorState, AttributeFormValues, StatusMessage } from '@/components/types'
+import type { AttributeEditorState, StatusMessage } from '@/components/types'
 import AttributeForm from '@/components/admin/attributes/AttributeForm'
 
 /** Admin screen to list, create, edit and delete the attributes categories can use. */
@@ -30,7 +30,7 @@ const AttributeManagement: React.FC = () => {
   }, [loadAttributes])
 
   /** Creates or updates the attribute in the open form, then reloads the list. */
-  const handleSave = async (values: AttributeFormValues) => {
+  const handleSave = async (values: AttributeInput) => {
     if (!editor) return
     setIsSaving(true)
     setStatus(null)

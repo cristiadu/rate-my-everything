@@ -1,9 +1,6 @@
 import type { RatedItemResponse } from '@/api/generated/api'
 import type { RankingItem } from '@/components/types'
 
-/** Category label for items saved before categories were required. */
-const UNCATEGORIZED = 'Uncategorized'
-
 /** Groups ratings by the key each one maps to, keeping the order they came in. */
 const groupRatings = (ratings: RatedItemResponse[], keyOf: (ratedItem: RatedItemResponse) => number): RatedItemResponse[][] => {
   const groups = new Map<number, RatedItemResponse[]>()
@@ -31,20 +28,17 @@ export const collectiveGrade = (ratings: RatedItemResponse[]): number => average
 /** Builds one ranking row per rated item, with its collective grade and the given user's personal grade. */
 const toRankingItems = (ratings: RatedItemResponse[], userId: number | null): RankingItem[] => (
   groupRatings(ratings, (ratedItem) => ratedItem.item.id).map((itemRatings) => ({
-    item_id: itemRatings[0].item.id,
-    item_name: itemRatings[0].item.name,
-    item_img_url: itemRatings[0].item.imageUrl,
-    category: itemRatings[0].item.category?.name ?? UNCATEGORIZED,
+    item: itemRatings[0].item,
     rating: collectiveGrade(itemRatings),
-    my_rating: personalGrade(itemRatings, userId),
-    rating_count: itemRatings.length,
+    myRating: personalGrade(itemRatings, userId),
+    ratingCount: itemRatings.length,
   }))
 )
 
 /** Lists the items the given user rated, best personal grade first, each with its collective grade too. */
 export const toMyRankings = (ratings: RatedItemResponse[], userId: number | null): RankingItem[] => toRankingItems(ratings, userId)
-  .filter((ranking) => ranking.my_rating !== null)
-  .sort((a, b) => (b.my_rating ?? 0) - (a.my_rating ?? 0))
+  .filter((ranking) => ranking.myRating !== null)
+  .sort((a, b) => (b.myRating ?? 0) - (a.myRating ?? 0))
 
 /** Lists every rated item, best collective grade first, each with the given user's personal grade too. */
 export const toOverallRankings = (ratings: RatedItemResponse[], userId: number | null): RankingItem[] => toRankingItems(ratings, userId)

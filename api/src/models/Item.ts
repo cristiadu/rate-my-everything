@@ -26,9 +26,9 @@ export interface ItemInput extends Partial<Pick<Item, 'name' | 'description' | '
   attributeValues?: AttributeValueInput[]
 }
 
-/** An item as the API returns it with its category, which is null when the item has none. */
+/** An item as the API returns it with its category. */
 export interface ItemSummary extends Pick<Item, 'id' | 'name' | 'description' | 'imageUrl'> {
-  category: CategorySummary | null
+  category: CategorySummary
 }
 
 /** An item as the API returns it, with its category and the values of that category's attributes. */

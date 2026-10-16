@@ -5,10 +5,15 @@ import {
   ImportSource, createItem, findImportItems, getCategories, type CategoryResponse, type ImportedItem, type ItemInput,
   type ItemResponse,
 } from '@/api/generated/api'
-import { IMPORT_SOURCES } from '@/components/types'
 
 /** Side length, in pixels, of the pictures shown next to found interests. */
 const IMPORTED_IMAGE_SIZE = 48
+
+/** What the import screen shows for each source the generated API client lists. */
+const IMPORT_SOURCE_LABELS: Record<ImportSource, { label: string, queryLabel: string }> = {
+  [ImportSource.LASTFM]: { label: 'Last.fm artists and albums', queryLabel: 'Last.fm username' },
+  [ImportSource.YOUTUBE]: { label: 'YouTube', queryLabel: 'Video or playlist URL' },
+}
 
 /**
  * Screen to find interests on Last.fm or YouTube and add the chosen ones as items of a category,
@@ -114,13 +119,13 @@ const ImportPage: React.FC = () => {
               <div className="select">
                 <select id="import-source" value={source} onChange={(e) => setSource(e.target.value as ImportSource)}>
                   {Object.values(ImportSource).map((importSource) => (
-                    <option key={importSource} value={importSource}>{IMPORT_SOURCES[importSource].label}</option>
+                    <option key={importSource} value={importSource}>{IMPORT_SOURCE_LABELS[importSource].label}</option>
                   ))}
                 </select>
               </div>
             </div>
             <div className="control is-expanded">
-              <label className="label" htmlFor="import-query">{IMPORT_SOURCES[source].queryLabel}</label>
+              <label className="label" htmlFor="import-query">{IMPORT_SOURCE_LABELS[source].queryLabel}</label>
               <input className="input" id="import-query" value={query} onChange={(e) => setQuery(e.target.value)} required />
             </div>
             <div className="control">

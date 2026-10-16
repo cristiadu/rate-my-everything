@@ -1,12 +1,11 @@
 import React, { useState } from 'react'
-import { AttributeValueType, type AttributeResponse } from '@/api/generated/api'
-import type { AttributeFormValues } from '@/components/types'
+import { AttributeValueType, type AttributeInput, type AttributeResponse } from '@/api/generated/api'
 
 /** Props for the admin attribute form; pass an attribute to edit it, or none to create one. */
 interface AttributeFormProps {
   attribute?: AttributeResponse;
   isSaving: boolean;
-  onSubmit: (values: AttributeFormValues) => void;
+  onSubmit: (values: AttributeInput) => void;
   onCancel: () => void;
 }
 
@@ -15,7 +14,7 @@ const AttributeForm: React.FC<AttributeFormProps> = ({
   attribute, isSaving, onSubmit, onCancel,
 }) => {
   const isEditing = !!attribute
-  const [values, setValues] = useState<AttributeFormValues>({
+  const [values, setValues] = useState<AttributeInput>({
     name: attribute?.name ?? '',
     valueType: attribute?.valueType ?? AttributeValueType.STRING,
   })

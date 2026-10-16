@@ -1,8 +1,8 @@
 import {
-  ChangeRequestAction, ChangeRequestStatus, ChangeRequestTarget, type AttributeResponse, type CategoryResponse,
-  type ChangeRequestChanges, type ChangeRequestResponse, type ItemInput,
+  ChangeRequestAction, ChangeRequestStatus, ChangeRequestTarget, type AttributeResponse, type CategoryInput,
+  type CategoryResponse, type ChangeRequestChanges, type ChangeRequestResponse, type ItemInput,
 } from '@/api/generated/api'
-import type { CategoryFormValues, ChangeRequestLookups } from '@/components/types'
+import type { ChangeRequestLookups } from '@/components/types'
 
 /** Verb shown for each proposed action. */
 const ACTION_LABELS: Record<ChangeRequestAction, string> = {
@@ -51,7 +51,7 @@ export const listChanges = (
   }
   const { name, description } = changes
   const { imageUrl, categoryId, attributeValues } = changes as Partial<ItemInput>
-  const { attributeIds } = changes as Partial<CategoryFormValues>
+  const { attributeIds } = changes as Partial<CategoryInput>
   const rows: [string, string | null | undefined][] = [
     ['Name', name],
     ['Description', description],

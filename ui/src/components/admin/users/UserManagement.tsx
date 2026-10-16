@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { createUser, deleteUser, getUsers, updateUser, type UserInput, type UserResponse } from '@/api/generated/api'
-import type { StatusMessage, UserEditorState, UserFormValues } from '@/components/types'
+import type { StatusMessage, UserEditorState } from '@/components/types'
 import CreateUserForm from '@/components/users/CreateUserForm'
 
 /** Admin screen to list, create, edit and delete users. */
@@ -28,7 +28,7 @@ const UserManagement: React.FC = () => {
   }, [loadUsers])
 
   /** Creates or updates the user in the open form, then reloads the list. */
-  const handleSave = async (values: UserFormValues) => {
+  const handleSave = async (values: UserInput) => {
     if (!editor) return
     setIsSaving(true)
     setStatus(null)

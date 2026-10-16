@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useState } from 'react'
 import {
   ChangeRequestStatus, approveChangeRequest, getChangeRequests, rejectChangeRequest, type ChangeRequestResponse,
 } from '@/api/generated/api'
-import type { ReviewDecision, StatusMessage } from '@/components/types'
+import type { StatusMessage } from '@/components/types'
 import ChangeRequestList from '@/components/moderation/ChangeRequestList'
 import { describeChangeRequest } from '@/components/moderation/changeRequestText'
 import { useChangeRequestLookups } from '@/components/moderation/useChangeRequestLookups'
@@ -32,7 +32,7 @@ const ModerationPage: React.FC = () => {
   }, [loadChangeRequests])
 
   /** Approves or rejects a request with an optional note for its author, then reloads the list. */
-  const handleReview = async (changeRequest: ChangeRequestResponse, decision: ReviewDecision) => {
+  const handleReview = async (changeRequest: ChangeRequestResponse, decision: ChangeRequestStatus) => {
     const verb = decision === ChangeRequestStatus.APPROVED ? 'Approve' : 'Reject'
     const reviewNote = window.prompt(
       `${verb} ${describeChangeRequest(changeRequest)}? Add an optional note for ${changeRequest.requestedBy.username}.`,

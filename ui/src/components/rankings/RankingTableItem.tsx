@@ -13,18 +13,18 @@ interface RankingTableItemProps {
 }
 
 const RankingTableItem: React.FC<RankingTableItemProps> = ({ ranking, canEdit }) => (
-  <tr key={ranking.item_id}>
+  <tr key={ranking.item.id}>
     <td>
-      {ranking.item_img_url && <Image size={64} alt={ranking.item_name} src={ranking.item_img_url} />}
+      {ranking.item.imageUrl && <Image size={64} alt={ranking.item.name} src={ranking.item.imageUrl} />}
     </td>
-    <td><Link to={`/interests/${ranking.item_id}`}><strong>{ranking.item_name}</strong></Link></td>
-    <td>{ranking.category}</td>
-    <td>{ranking.my_rating === null ? NOT_RATED : ranking.my_rating.toFixed(1)}</td>
+    <td><Link to={`/interests/${ranking.item.id}`}><strong>{ranking.item.name}</strong></Link></td>
+    <td>{ranking.item.category.name}</td>
+    <td>{ranking.myRating === null ? NOT_RATED : ranking.myRating.toFixed(1)}</td>
     <td>{ranking.rating.toFixed(1)}</td>
-    <td>{ranking.rating_count}</td>
+    <td>{ranking.ratingCount}</td>
     {canEdit && (
       <td>
-        <Link className="button is-small" to={`/interests/${ranking.item_id}/edit`}>Edit</Link>
+        <Link className="button is-small" to={`/interests/${ranking.item.id}/edit`}>Edit</Link>
       </td>
     )}
   </tr>
