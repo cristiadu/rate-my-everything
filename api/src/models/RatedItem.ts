@@ -6,6 +6,7 @@ import User from '@/models/User'
 import Item, { ItemSummary } from '@/models/Item'
 import { decimalToNumber } from '@/helpers/DecimalHelper'
 import RankingScope from '@/models/RankingScope'
+import type { ResourceId } from '@/models/ResourceId'
 
 /** Lowest grade a rating can give. */
 export const MIN_GRADE = 0
@@ -31,6 +32,39 @@ export interface RatingFilters {
   minGrade?: number
   maxGrade?: number
   scope: RankingScope
+}
+
+/** Query parameters that narrow down the ratings list. */
+export interface RatingQuery {
+  /**
+   * Part of the item's name, in any case.
+   * @example "dune"
+   */
+  name?: string
+  /** Categories the item must be in; repeat the parameter for several. */
+  categoryId?: ResourceId[]
+  /**
+   * Attribute values the item must hold, each as `<attributeId>:<value>`; repeat the parameter for several.
+   * Text attributes match when they contain the value, other types when they equal it.
+   * @example ["3:Frank Herbert"]
+   */
+  attribute?: string[]
+  /**
+   * Lowest grade: the signed-in user's own grade for the `mine` scope, the collective grade for `all`.
+   * @minimum 0
+   * @maximum 10
+   * @example 6.5
+   */
+  minGrade?: number
+  /**
+   * Highest grade: the signed-in user's own grade for the `mine` scope, the collective grade for `all`.
+   * @minimum 0
+   * @maximum 10
+   * @example 9
+   */
+  maxGrade?: number
+  /** Whose grade the range applies to. `mine` also keeps only the items the signed-in user rated. Defaults to `all`. */
+  scope?: RankingScope
 }
 
 /** A rating as the API returns it, with its item and the item's category. */

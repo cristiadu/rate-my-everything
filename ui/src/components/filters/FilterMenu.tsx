@@ -2,9 +2,8 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Block } from 'react-bulma-components'
 import { slide as SlideMenu } from 'react-burger-menu'
 import Arrow, { FILTER_PANEL_WIDTH } from '@/components/filters/Arrow'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
-import { NO_INTEREST_FILTERS, type Category, type InterestFilters } from '@/components/types'
+import { getCategories, type CategoryResponse } from '@/api/generated/api'
+import { NO_INTEREST_FILTERS, type InterestFilters } from '@/components/types'
 import MultiSelectDropdown from '@/components/common/MultiSelectDropdown'
 import AttributeField from '@/components/interests/AttributeField'
 import { MAX_RATING, MIN_RATING } from '@/components/interests/interestForm'
@@ -27,7 +26,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
   const { isAuthenticated } = useAuth()
   const { filters, setFilters } = useFilters()
   const [draft, setDraft] = useState<InterestFilters>(filters)
-  const [categories, setCategories] = useState<Category[]>([])
+  const [categories, setCategories] = useState<CategoryResponse[]>([])
   const [error, setError] = useState('')
 
   const attributes = filterAttributes(categories, draft.categoryIds)
@@ -61,7 +60,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
   /** Loads the categories, with their attributes, to filter by. */
   const loadCategories = useCallback(async () => {
     try {
-      setCategories(await ApiService.get<Category[]>(ApiConfig.ENDPOINTS.CATEGORIES))
+      setCategories(await getCategories())
       setError('')
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load the categories')

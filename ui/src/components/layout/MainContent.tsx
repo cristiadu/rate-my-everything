@@ -16,7 +16,7 @@ import ModerationPage from '@/components/moderation/ModerationPage'
 import MyChangeRequestsPage from '@/components/moderation/MyChangeRequestsPage'
 import ImportPage from '@/components/interests/ImportPage'
 import InterestPage from '@/components/interests/InterestPage'
-import { RankingScope } from '@/components/types'
+import { RankingScope } from '@/api/generated/api'
 
 const MainContent = () => (
   <Content id="content" key="content">

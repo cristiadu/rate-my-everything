@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom'
 import OverallRankings from '@/components/rankings/OverallRankings'
 import { AuthProvider } from '@/components/users/AuthContext'
 import { UserRole } from '@/api/generated/api'
-import { RankingScope } from '@/components/types'
+import { RankingScope } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import {

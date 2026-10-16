@@ -17,12 +17,6 @@ export interface RankingItem {
     rating_count: number;
 }
 
-/** Which ratings a rankings page shows: the signed-in user's own, or everyone's averaged per item; mirrors the API's RankingScope enum. */
-export enum RankingScope {
-    MINE = 'mine',
-    ALL = 'all',
-}
-
 /** Roles that may review change requests and change shared interests directly; mirrors the API's MODERATION_ROLES. */
 export const MODERATION_ROLES = [UserRole.ADMIN, UserRole.MODERATOR]
 

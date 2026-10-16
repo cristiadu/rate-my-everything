@@ -120,7 +120,7 @@ describe(`GET ${Endpoints.RATINGS_BASE_PATH} with filters`, async () => {
       .expect(400)
       .expect(res => {
         const apiError = res.body as APIError
-        expect(apiError.message).toBe('Invalid value for minGrade: it must be a number from 0 to 10')
+        expect(apiError.message).toContain('query.minGrade')
         expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
       })
   })

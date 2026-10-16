@@ -1,19 +1,19 @@
 import { describe, it, expect } from 'vitest'
 import { parseRatingFilters } from '@/helpers/RatingFilterHelper'
 import RankingScope from '@/models/RankingScope'
-import { InvalidQueryParameter } from '@/errors/InvalidQueryParameter'
+import { RequestRejected } from '@/errors/RequestRejected'
 
 describe('parseRatingFilters', () => {
   it('reads every filter, keeping repeated categories and attributes', () => {
     // GIVEN a query with every filter, two categories and two attributes, one value holding the separator
     const query = {
-      name: ' dune ', categoryId: ['1', '2'], attribute: ['3:Frank Herbert', '4:12:30'], minGrade: '6.5', maxGrade: '9', scope: 'mine',
+      name: ' dune ', categoryId: [1, 2], attribute: ['3:Frank Herbert', '4:12:30'], minGrade: 6.5, maxGrade: 9, scope: RankingScope.MINE,
     }
 
     // WHEN it is read
     const filters = parseRatingFilters(query)
 
-    // THEN each filter comes back typed and trimmed
+    // THEN each filter comes back trimmed, with the attributes split into id and value
     expect(filters).toEqual({
       name: 'dune',
       categoryIds: [1, 2],
@@ -35,18 +35,11 @@ describe('parseRatingFilters', () => {
     })
   })
 
-  it.each([
-    [{ minGrade: '-1' }, 'Invalid value for minGrade: it must be a number from 0 to 10'],
-    [{ maxGrade: '' }, 'Invalid value for maxGrade: it must be a number from 0 to 10'],
-    [{ categoryId: '1.5' }, 'Invalid value for categoryId: it must be an integer'],
-    [{ attribute: 'x:Herbert' }, 'Invalid value for attribute: it must be an integer'],
-    [{ attribute: '3: ' }, 'Invalid value for attribute: it must be an attribute id and a value, as in 3:Frank Herbert'],
-    [{ scope: 'theirs' }, 'Invalid value for scope: it must be one of: mine, all'],
-  ])('rejects %o', (query, message) => {
-    // GIVEN a query with a value that cannot be used
+  it.each(['x:Herbert', '3: ', 'Herbert', ':Herbert'])('rejects the attribute filter %s', (attribute) => {
+    // GIVEN an attribute filter without a numeric id and a value
     // WHEN it is read
-    // THEN it fails naming the parameter
-    expect(() => parseRatingFilters(query)).toThrow(InvalidQueryParameter)
-    expect(() => parseRatingFilters(query)).toThrow(message)
+    // THEN the request is rejected naming the filter
+    expect(() => parseRatingFilters({ attribute: [attribute] })).toThrow(RequestRejected)
+    expect(() => parseRatingFilters({ attribute: [attribute] })).toThrow(`Invalid attribute filter "${attribute}"`)
   })
 })

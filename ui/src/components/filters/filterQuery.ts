@@ -1,9 +1,10 @@
 import {
-  AttributeValueType, type Attribute, type Category, type InterestFilters, type RankingScope,
-} from '@/components/types'
+  AttributeValueType, type AttributeResponse, type CategoryResponse, type GetRatingsParams, type RankingScope,
+} from '@/api/generated/api'
+import type { InterestFilters } from '@/components/types'
 
 /** Attributes of the chosen categories, each listed once even when several categories share it. */
-export const filterAttributes = (categories: Category[], categoryIds: number[]): Attribute[] => {
+export const filterAttributes = (categories: CategoryResponse[], categoryIds: number[]): AttributeResponse[] => {
   const attributes = categories.filter((category) => categoryIds.includes(category.id)).flatMap((category) => category.attributes)
   return attributes.filter((attribute, index) => attributes.findIndex((other) => other.id === attribute.id) === index)
 }
@@ -12,7 +13,7 @@ export const filterAttributes = (categories: Category[], categoryIds: number[]):
  * Filters to apply from the ones typed in the panel: keeps only filled-in values of the shown attributes,
  * and a yes/no attribute only when ticked, since an unticked box means "any".
  */
-export const toAppliedFilters = (draft: InterestFilters, attributes: Attribute[]): InterestFilters => ({
+export const toAppliedFilters = (draft: InterestFilters, attributes: AttributeResponse[]): InterestFilters => ({
   ...draft,
   name: draft.name.trim(),
   attributeValues: Object.fromEntries(attributes
@@ -28,19 +29,14 @@ export const hasFilters = (filters: InterestFilters): boolean => filters.name !=
   || filters.minGrade !== ''
   || filters.maxGrade !== ''
 
-/** Query string the ratings API filters by: the scope, then each filter that is set, as the API's query parameters. */
-export const toRatingQuery = (filters: InterestFilters, scope: RankingScope): string => {
-  const params = new URLSearchParams({ scope })
-  if (filters.name) {
-    params.append('name', filters.name)
-  }
-  filters.categoryIds.forEach((categoryId) => params.append('categoryId', String(categoryId)))
-  Object.entries(filters.attributeValues).forEach(([attributeId, value]) => params.append('attribute', `${attributeId}:${value}`))
-  if (filters.minGrade) {
-    params.append('minGrade', filters.minGrade)
-  }
-  if (filters.maxGrade) {
-    params.append('maxGrade', filters.maxGrade)
-  }
-  return params.toString()
-}
+/** Parameters the ratings API filters by: the scope, plus each filter that is set. */
+export const toRatingParams = (filters: InterestFilters, scope: RankingScope): GetRatingsParams => ({
+  scope,
+  ...(filters.name && { name: filters.name }),
+  ...(filters.categoryIds.length > 0 && { categoryId: filters.categoryIds }),
+  ...(Object.keys(filters.attributeValues).length > 0 && {
+    attribute: Object.entries(filters.attributeValues).map(([attributeId, value]) => `${attributeId}:${value}`),
+  }),
+  ...(filters.minGrade && { minGrade: Number(filters.minGrade) }),
+  ...(filters.maxGrade && { maxGrade: Number(filters.maxGrade) }),
+})

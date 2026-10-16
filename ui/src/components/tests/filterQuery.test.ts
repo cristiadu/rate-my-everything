@@ -1,6 +1,7 @@
-import { NO_INTEREST_FILTERS, RankingScope, type InterestFilters } from '@/components/types'
+import { RankingScope } from '@/api/generated/api'
+import { NO_INTEREST_FILTERS, type InterestFilters } from '@/components/types'
 import {
-  filterAttributes, hasFilters, toAppliedFilters, toRatingQuery,
+  filterAttributes, hasFilters, toAppliedFilters, toRatingParams,
 } from '@/components/filters/filterQuery'
 import { booksCategory, moviesCategory } from '@/components/tests/common/Interests'
 import { testCategories } from '@/components/tests/common/Categories'
@@ -50,24 +51,26 @@ describe('hasFilters', () => {
   })
 })
 
-describe('toRatingQuery', () => {
+describe('toRatingParams', () => {
   test('sends the scope and each filter that is set as the API query parameters', () => {
     // GIVEN applied filters with a name, two categories, two attributes and a lowest grade
     const filters: InterestFilters = {
       name: 'dune', categoryIds: [10, 20], attributeValues: { 1: 'Frank Herbert', 2: '412' }, minGrade: '6', maxGrade: '',
     }
 
-    // WHEN building the query for my interests
-    const query = toRatingQuery(filters, RankingScope.MINE)
+    // WHEN building the parameters for my interests
+    const params = toRatingParams(filters, RankingScope.MINE)
 
-    // THEN every filter is a parameter, repeated for categories and attributes, and the empty highest grade is left out
-    expect(query).toBe('scope=mine&name=dune&categoryId=10&categoryId=20&attribute=1%3AFrank+Herbert&attribute=2%3A412&minGrade=6')
+    // THEN every filter is a parameter, attributes as id:value, grades as numbers, and the empty highest grade is left out
+    expect(params).toEqual({
+      scope: RankingScope.MINE, name: 'dune', categoryId: [10, 20], attribute: ['1:Frank Herbert', '2:412'], minGrade: 6,
+    })
   })
 
   test('sends only the scope without filters', () => {
     // GIVEN no filters
     // WHEN building the query for all rankings
     // THEN only the scope is sent
-    expect(toRatingQuery(NO_INTEREST_FILTERS, RankingScope.ALL)).toBe('scope=all')
+    expect(toRatingParams(NO_INTEREST_FILTERS, RankingScope.ALL)).toEqual({ scope: RankingScope.ALL })
   })
 })

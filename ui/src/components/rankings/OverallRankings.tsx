@@ -1,14 +1,14 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Block, Message } from 'react-bulma-components'
-import { getRatings } from '@/api/generated/api'
-import { RankingScope, type RankingItem } from '@/components/types'
+import { getRatings, RankingScope } from '@/api/generated/api'
+import type { RankingItem } from '@/components/types'
 import RankingTable from '@/components/rankings/RankingTable'
 import { toMyRankings, toOverallRankings } from '@/components/rankings/rankingData'
 import { useAuth } from '@/components/users/AuthContext'
 import { getUserIdFromToken } from '@/components/admin/RequireAdmin'
 import { useFilters } from '@/components/filters/FilterContext'
-import { hasFilters, toRatingQuery } from '@/components/filters/filterQuery'
+import { hasFilters, toRatingParams } from '@/components/filters/filterQuery'
 
 /** Props for the rankings page. */
 interface OverallRankingsProps {
@@ -29,7 +29,7 @@ const OverallRankings: React.FC<OverallRankingsProps> = ({ scope }) => {
 
   const loadRankings = useCallback(async () => {
     try {
-      const ratings = await getRatings()
+      const ratings = await getRatings(toRatingParams(filters, scope))
       setRankings(isMine ? toMyRankings(ratings, userId) : toOverallRankings(ratings, userId))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load rankings')
