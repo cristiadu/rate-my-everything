@@ -84,8 +84,7 @@ components:
       type: object
       additionalProperties: true
     ItemSummary:
-      description: An item as the API returns it with its category, which is null when
-        the item has none.
+      description: An item as the API returns it with its category.
       properties:
         id:
           type: integer
@@ -103,9 +102,7 @@ components:
           description: Picture shown next to the item in rankings.
           example: https://example.com/images/dune.jpg
         category:
-          allOf:
-            - $ref: "#/components/schemas/CategorySummary"
-          nullable: true
+          $ref: "#/components/schemas/CategorySummary"
       required:
         - id
         - name
@@ -347,9 +344,7 @@ components:
           description: Picture shown next to the item in rankings.
           example: https://example.com/images/dune.jpg
         category:
-          allOf:
-            - $ref: "#/components/schemas/CategorySummary"
-          nullable: true
+          $ref: "#/components/schemas/CategorySummary"
         attributes:
           items:
             $ref: "#/components/schemas/ItemAttributeValue"
