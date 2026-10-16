@@ -133,9 +133,13 @@
   color: var(--bulma-primary);
 }
 
-/* The footer uses the user bar's dark slate so the page is framed top and bottom */
+/*
+ * The footer uses the user bar's dark slate so the page is framed top and bottom.
+ * Bulma's 3rem top and 6rem bottom padding is split evenly so the text sits in the middle at the same height.
+ */
 .footer {
   --bulma-footer-background-color: var(--bulma-dark);
+  --bulma-footer-padding: 4.5rem 1.5rem;
   color: var(--bulma-dark-invert);
 }
 
