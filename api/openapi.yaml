@@ -580,7 +580,8 @@ components:
       type: object
       additionalProperties: true
     RegisterInput:
-      description: Fields accepted when signing up.
+      description: Fields accepted when signing up; every new account gets the user
+        role, and only admins grant others.
       properties:
         username:
           type: string
@@ -593,10 +594,6 @@ components:
           description: Plain-text password when sent to the API; stored only as a hash and
             never returned.
           example: correct-horse-battery-staple
-        roles:
-          items:
-            $ref: "#/components/schemas/UserRole"
-          type: array
       required:
         - username
         - email
@@ -2389,6 +2386,7 @@ paths:
                     code: INTERNAL_ERROR
                     status: 500
                     message: An internal server error occurred
+      description: Changes a rating; 403 when it belongs to another user.
       summary: Changes a rating
       tags:
         - Ratings
@@ -2497,6 +2495,8 @@ paths:
                     code: INTERNAL_ERROR
                     status: 500
                     message: An internal server error occurred
+      description: Deletes a rating; 403 unless it is the signed-in user's own or they
+        moderate.
       summary: Deletes a rating
       tags:
         - Ratings
@@ -3070,8 +3070,8 @@ paths:
                     code: INTERNAL_ERROR
                     status: 500
                     message: An internal server error occurred
-      description: Creates an account; 400 when a field is missing and 422 when the
-        username is taken.
+      description: Creates an account with the user role; 400 when a field is missing
+        and 422 when the username is taken.
       summary: Creates an account
       tags:
         - Login
