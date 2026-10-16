@@ -23,12 +23,13 @@ export const getAuthTokenFromFile = (): Promise<string> => {
     })
   })
 }
-/** Registers a fresh user with the given roles (only "user" by default) and returns its token. */
+/** Has the admin create a fresh user with the given roles (only "user" by default) and returns its token. */
 export const getUserRoleAuthToken = async (app: Express, roles: UserRole[] = [UserRole.USER]): Promise<string> => {
   const username = `plain-${roles.join('-')}-${Date.now()}`
   const password = 'Password123!'
   await request(app)
-    .post('/api/login/register')
+    .post('/api/users')
+    .set('Authorization', `Bearer ${await getAuthTokenFromFile()}`)
     .send({ username, email: `${username}@example.com`, password, roles })
     .expect(201)
 
