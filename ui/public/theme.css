@@ -34,10 +34,66 @@
   border-bottom-color: var(--bulma-primary);
 }
 
-/* Top menu dropdowns get a pink border so they stand apart from the page behind them */
+/* Top menu dropdowns hang from the menu bar with a thin berry outline instead of floating borderless */
 .navbar-dropdown {
-  border: 1px solid var(--bulma-danger);
-  border-top: 3px solid var(--bulma-danger);
+  border: 1px solid var(--bulma-primary);
+  border-top: none;
+  border-radius: 0 0 var(--bulma-radius-large) var(--bulma-radius-large);
+}
+
+/*
+ * On desktop a menu item with a dropdown grows to its dropdown's natural width.
+ * The dropdown sits in a zero-height grid row under the menu item, so it counts towards the item's width
+ * without making the menu bar taller, and it is only hidden while closed instead of removed from the layout.
+ */
+@media screen and (min-width: 1024px) {
+  .navbar-item.has-dropdown {
+    display: grid;
+    grid-template-rows: auto 0;
+    row-gap: 0;
+  }
+
+  .navbar-item.has-dropdown .navbar-dropdown {
+    align-self: start;
+    display: block;
+    inset: auto;
+    position: relative;
+    visibility: hidden;
+  }
+
+  .navbar-item.has-dropdown.is-active .navbar-dropdown,
+  .navbar-item.has-dropdown.is-hoverable:hover .navbar-dropdown,
+  .navbar-item.has-dropdown.is-hoverable:focus-within .navbar-dropdown {
+    visibility: visible;
+  }
+
+  /* A menu item with a dropdown has the same berry outline as its dropdown, so the two read as one shape when open */
+  .navbar .navbar-item.has-dropdown > .navbar-link {
+    border: 1px solid var(--bulma-primary);
+  }
+
+  /* While its dropdown is open the menu item fills with a berry a bit lighter than the outline, and drops its bottom edge to join the dropdown */
+  .navbar .navbar-item.has-dropdown.is-active > .navbar-link,
+  .navbar .navbar-item.has-dropdown.is-hoverable:hover > .navbar-link,
+  .navbar .navbar-item.has-dropdown.is-hoverable:focus-within > .navbar-link {
+    background-color: hsl(var(--bulma-primary-h), var(--bulma-primary-s), var(--bulma-primary-45-l));
+    border-bottom-color: transparent;
+    color: var(--bulma-primary-invert);
+  }
+}
+
+/* Dropdown items use Bulma's plain strong text color instead of the menu's dark red, so the open menu reads as one calm panel */
+.navbar .navbar-dropdown {
+  --bulma-navbar-dropdown-item-h: var(--bulma-text-h);
+  --bulma-navbar-dropdown-item-s: var(--bulma-text-s);
+  --bulma-navbar-dropdown-item-color-l: var(--bulma-text-strong-l);
+}
+
+/* Hovered and current dropdown items get the header's light pink with berry text */
+.navbar .navbar-dropdown .navbar-item:hover,
+.navbar .navbar-dropdown .navbar-item.is-active {
+  background-color: var(--bulma-danger-light);
+  color: var(--bulma-primary);
 }
 
 /* The footer uses the user bar's dark slate so the page is framed top and bottom */
