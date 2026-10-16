@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { findChangeRequestError, isChangeRequestStatus, pickChanges } from '@/helpers/ChangeRequestHelper'
+import { findChangeRequestError, pickChanges } from '@/helpers/ChangeRequestHelper'
 import { ChangeRequestInput } from '@/models/ChangeRequest'
 import ChangeRequestAction from '@/models/ChangeRequestAction'
 import ChangeRequestTarget from '@/models/ChangeRequestTarget'
@@ -25,12 +25,6 @@ describe('findChangeRequestError', () => {
     // WHEN it is checked
     // THEN the attribute ids are named as the problem
     expect(findChangeRequestError(input)).toBe('attributeIds must be an array of integers')
-  })
-})
-
-describe('isChangeRequestStatus', () => {
-  it.each([['pending', true], ['approved', true], ['archived', false]])('returns %s -> %s', (status, expected) => {
-    expect(isChangeRequestStatus(status)).toBe(expected)
   })
 })
 

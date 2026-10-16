@@ -2,18 +2,12 @@ import { CategoryInput } from '@/models/Category'
 import { ItemInput } from '@/models/Item'
 import { ChangeRequestChanges, ChangeRequestInput, SUPPORTED_ACTIONS } from '@/models/ChangeRequest'
 import ChangeRequestAction from '@/models/ChangeRequestAction'
-import ChangeRequestStatus from '@/models/ChangeRequestStatus'
 import ChangeRequestTarget from '@/models/ChangeRequestTarget'
 import { isValidAttributeIds } from '@/helpers/CategoryHelper'
 
 /** Whether the value is one of the ChangeRequestTarget values. */
 const isChangeRequestTarget = (targetType: string): targetType is ChangeRequestTarget => (
   Object.values<string>(ChangeRequestTarget).includes(targetType)
-)
-
-/** Whether the value is one of the ChangeRequestStatus values. */
-export const isChangeRequestStatus = (status: string): status is ChangeRequestStatus => (
-  Object.values<string>(ChangeRequestStatus).includes(status)
 )
 
 /** Returns why a submitted change request is invalid, or null when it can be saved. */

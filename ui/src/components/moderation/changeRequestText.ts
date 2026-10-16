@@ -1,7 +1,8 @@
 import {
-  type Attribute, type Category, type CategoryFormValues, type ChangeRequest, ChangeRequestAction, type ChangeRequestChanges,
-  type ChangeRequestLookups, ChangeRequestStatus, ChangeRequestTarget, type ItemInput,
-} from '@/components/types'
+  ChangeRequestAction, ChangeRequestStatus, ChangeRequestTarget, type AttributeResponse, type CategoryResponse,
+  type ChangeRequestChanges, type ChangeRequestResponse, type ItemInput,
+} from '@/api/generated/api'
+import type { CategoryFormValues, ChangeRequestLookups } from '@/components/types'
 
 /** Verb shown for each proposed action. */
 const ACTION_LABELS: Record<ChangeRequestAction, string> = {
@@ -24,7 +25,7 @@ export const STATUS_TAG_CLASSES: Record<ChangeRequestStatus, string> = {
 }
 
 /** One sentence naming what a change request proposes, such as `Edit interest "Dune"`. */
-export const describeChangeRequest = ({ action, targetType, targetName }: ChangeRequest): string => (
+export const describeChangeRequest = ({ action, targetType, targetName }: ChangeRequestResponse): string => (
   `${ACTION_LABELS[action]} ${TARGET_LABELS[targetType]} "${targetName ?? ''}"`
 )
 
@@ -32,12 +33,12 @@ export const describeChangeRequest = ({ action, targetType, targetName }: Change
 const EMPTY_LIST_TEXT = 'None'
 
 /** Name of an attribute by id, or its id when it no longer exists. */
-const attributeName = (attributes: Attribute[], attributeId: number): string => (
+const attributeName = (attributes: AttributeResponse[], attributeId: number): string => (
   attributes.find((attribute) => attribute.id === attributeId)?.name ?? `#${attributeId}`
 )
 
 /** Name of a category by id, or its id when it no longer exists. */
-const categoryName = (categories: Category[], categoryId: number): string => (
+const categoryName = (categories: CategoryResponse[], categoryId: number): string => (
   categories.find((category) => category.id === categoryId)?.name ?? `#${categoryId}`
 )
 

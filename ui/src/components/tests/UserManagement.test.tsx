@@ -3,11 +3,11 @@ import {
   fireEvent, render, screen, waitFor,
 } from '@testing-library/react'
 import UserManagement from '@/components/admin/users/UserManagement'
-import { AdminUser, UserRole } from '@/components/types'
+import { UserRole, type UserResponse } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 
 /** Users returned by the mocked list endpoint. */
-const users: AdminUser[] = [
+const users: UserResponse[] = [
   { id: 1, username: 'alice', email: 'alice@example.com', roles: [UserRole.ADMIN] },
   { id: 2, username: 'bob', email: 'bob@example.com', roles: [UserRole.USER] },
 ]

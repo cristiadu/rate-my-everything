@@ -1,145 +1,152 @@
-import { Request, Response, Router } from 'express'
+import {
+  Body, Controller, Delete, Get, Path, Post, Put, Query, Request, Response, Route, Security, SuccessResponse, Tags,
+} from 'tsoa'
 import ItemService from '@/services/ItemService'
-import { ItemInput } from '@/models/Item'
-import { NewApiError } from '@/models/APIError'
+import type { ItemInput, ItemResponse } from '@/models/Item'
+import APIError, { NewApiError } from '@/models/APIError'
+import UserRole from '@/models/UserRole'
 import ErrorCode from '@/errors/ErrorCode'
-import { SessionUser } from '@/models/User'
+import { RequestRejected } from '@/errors/RequestRejected'
 import { canModerate } from '@/helpers/RouteHelper'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { isValidSimilarName } from '@/helpers/SimilarityHelper'
-import { logger } from '@/helpers/Logger'
+import { BEARER_AUTH } from '@/helpers/Authentication'
+import type { AuthenticatedRequest } from '@/helpers/Authentication'
+import {
+  BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE, INTERNAL_ERROR_DESCRIPTION,
+  INTERNAL_ERROR_EXAMPLE, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+  UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE, UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE,
+} from '@/api/ApiDocumentation'
+import type { RateLimitHeaders } from '@/api/ApiDocumentation'
+import type { ResourceId } from '@/models/ResourceId'
 
 /** Message returned when a user without a moderation role tries to change a shared interest directly. */
 const MODERATION_REQUIRED_MESSAGE = 'Only moderators can change interests directly; send a change request instead'
 
-export default class ItemController {
-  public router = Router()
-
+/** Items are the interests users rate; users add them and moderators change or delete them. */
+@Route('items')
+@Tags('Items')
+@Security(BEARER_AUTH, [UserRole.USER, UserRole.ADMIN])
+@Response<APIError>(401, UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE)
+@Response<APIError>(403, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE)
+@Response<APIError, { [Header in keyof RateLimitHeaders]: RateLimitHeaders[Header] }>(
+  429, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+)
+@Response<APIError>(500, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE)
+export class ItemController extends Controller {
   private itemService = new ItemService()
 
-  constructor() {
-    this.initializeRoutes()
-  }
-
-  public initializeRoutes() {
-    this.router.get('/', (req, res) => this.getAll(req, res))
-    this.router.get('/category/:category', (req, res) => this.getAllByCategory(req, res))
-    this.router.get('/similar', (req, res) => this.getSimilar(req, res))
-    this.router.get('/:id', (req, res) => this.getById(req, res))
-    this.router.post('/', (req, res) => this.create(req, res))
-    this.router.put('/:id', (req, res) => this.update(req, res))
-    this.router.delete('/:id', (req, res) => this.delete(req, res))
-  }
-
-  public async getAll(req: Request, res: Response) {
-    try {
-      const data = await this.itemService.getAll()
-      res.status(200).json(data)
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
-  }
-
-  public async getAllByCategory(req: Request, res: Response) {
-    try {
-      const data = await this.itemService.getAllByCategory(req.params.category)
-      res.status(200).json(data)
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /** @summary Lists every item */
+  @Get()
+  public async getItems(): Promise<ItemResponse[]> {
+    return this.itemService.getAll()
   }
 
   /**
-   * Lists the items whose name is likely a duplicate of ?name=, most similar first, only in ?categoryId= when sent;
+   * @summary Lists the items of a category
+   * @param category Name of the category
+   * @example category "Books"
+   */
+  @Get('category/{category}')
+  public async getItemsByCategory(@Path() category: string): Promise<ItemResponse[]> {
+    return this.itemService.getAllByCategory(category)
+  }
+
+  /**
+   * Lists the items whose name is likely a duplicate of `name`, most similar first, only in `categoryId` when sent;
    * 400 when name is empty or categoryId is not an integer.
+   * @summary Lists items with a name similar to the one given
+   * @param name Name to compare with existing items
+   * @param categoryId Only compare with the items of this category
+   * @example name "Dune"
    */
-  public async getSimilar(req: Request, res: Response) {
-    const { name, categoryId } = req.query
+  @Get('similar')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async getSimilarItems(@Query() name: string, @Query() categoryId?: ResourceId): Promise<ItemResponse[]> {
     if (!isValidSimilarName(name)) {
-      return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Invalid value for name: it must be a non-empty text'))
+      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Invalid value for name: it must be a non-empty text'))
     }
-    const categoryIdNumber = categoryId === undefined ? undefined : Number(categoryId)
-    if (categoryIdNumber !== undefined && !Number.isInteger(categoryIdNumber)) {
-      return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Invalid value for categoryId: it must be an integer'))
-    }
-
-    try {
-      res.status(200).json(await this.itemService.getSimilar(name, categoryIdNumber))
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+    return this.itemService.getSimilar(name, categoryId)
   }
 
-  public async getById(req: Request, res: Response) {
-    try {
-      const data = await this.itemService.get(parseInt(req.params.id, 10))
-      if (data) {
-        res.status(200).json(data)
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Item not found'))
-      }
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /**
+   * @summary Gets an item
+   * @param id Id of the item
+   */
+  @Get('{id}')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  public async getItem(@Path() id: ResourceId): Promise<ItemResponse> {
+    const data = await this.itemService.get(id)
+    if (!data) {
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Item not found'))
     }
+    return data
   }
 
-  /** Creates an item with its attribute values; 400 when name or categoryId is missing, 422 for an unknown category or attribute. */
-  public async create(req: Request, res: Response) {
+  /** @summary Creates an item with its attribute values; 422 for an unknown category or attribute */
+  @Post()
+  @SuccessResponse(201, 'Item created')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(422, UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE)
+  public async createItem(@Body() input: ItemInput): Promise<ItemResponse> {
+    if (!input.name || input.categoryId === undefined) {
+      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, categoryId'))
+    }
+
     try {
-      const itemInput = req.body as ItemInput
-      if (!itemInput.name || itemInput.categoryId === undefined) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: name, categoryId'))
-      }
-      const data = await this.itemService.create(itemInput)
-      res.status(201).json(data)
+      const data = await this.itemService.create(input)
+      this.setStatus(201)
+      return data
     } catch (error) {
       if (error instanceof UnknownResource) {
-        return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
+        throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+      throw error
     }
   }
 
   /**
-   * Updates the fields sent for an item; 403 for users without a moderation role, 404 when it does not exist,
-   * 422 for an unknown category or attribute.
+   * @summary Changes the fields sent for an item; 403 for users without a moderation role, 422 for an unknown category or attribute
+   * @param id Id of the item
    */
-  public async update(req: Request, res: Response) {
+  @Put('{id}')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  @Response<APIError>(422, UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE)
+  public async updateItem(
+    @Request() request: AuthenticatedRequest, @Path() id: ResourceId, @Body() input: ItemInput,
+  ): Promise<ItemResponse> {
+    if (!canModerate(request.user.roles)) {
+      throw new RequestRejected(NewApiError(ErrorCode.FORBIDDEN, 403, MODERATION_REQUIRED_MESSAGE))
+    }
+
     try {
-      if (!canModerate((res.locals.user as SessionUser).roles)) {
-        return res.status(403).json(NewApiError(ErrorCode.FORBIDDEN, 403, MODERATION_REQUIRED_MESSAGE))
+      const data = await this.itemService.update(id, input)
+      if (!data) {
+        throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Item not found'))
       }
-      const data = await this.itemService.update(parseInt(req.params.id, 10), req.body as ItemInput)
-      if (data) {
-        res.status(200).json(data)
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Item not found'))
-      }
+      return data
     } catch (error) {
       if (error instanceof UnknownResource) {
-        return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
+        throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+      throw error
     }
   }
 
-  /** Deletes an item; 403 for users without a moderation role. */
-  public async delete(req: Request, res: Response) {
-    try {
-      if (!canModerate((res.locals.user as SessionUser).roles)) {
-        return res.status(403).json(NewApiError(ErrorCode.FORBIDDEN, 403, MODERATION_REQUIRED_MESSAGE))
-      }
-      await this.itemService.delete(parseInt(req.params.id, 10))
-      res.status(204).json()
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /**
+   * @summary Deletes an item; 403 for users without a moderation role
+   * @param id Id of the item
+   */
+  @Delete('{id}')
+  @SuccessResponse(204, 'Item deleted')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async deleteItem(@Request() request: AuthenticatedRequest, @Path() id: ResourceId): Promise<void> {
+    if (!canModerate(request.user.roles)) {
+      throw new RequestRejected(NewApiError(ErrorCode.FORBIDDEN, 403, MODERATION_REQUIRED_MESSAGE))
     }
+    await this.itemService.delete(id)
+    this.setStatus(204)
   }
 }

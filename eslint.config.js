@@ -40,6 +40,8 @@ export default [
       '**/dist/**',
       '**/build/**',
       '**/coverage/**',
+      'api/src/routes/generated/**',
+      'ui/src/api/generated/**',
     ],
   },
   {
@@ -70,6 +72,9 @@ export default [
       '@typescript-eslint/no-shadow': 'error',
       'no-unused-vars': 'off',
       '@typescript-eslint/no-unused-vars': 'error',
+      // API models are named interfaces over entity fields (`interface ItemReference extends Pick<Item, 'id'> {}`) so the
+      // OpenAPI spec names their schemas after them
+      '@typescript-eslint/no-empty-object-type': ['error', { allowInterfaces: 'with-single-extends' }],
     },
   },
   {

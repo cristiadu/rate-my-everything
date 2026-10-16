@@ -1,77 +1,92 @@
-import { Request, Response, Router } from 'express'
+import {
+  Body, Controller, Delete, Get, Path, Post, Request, Response, Route, Security, SuccessResponse, Tags,
+} from 'tsoa'
 import CommentService from '@/services/CommentService'
-import { MAX_COMMENT_LENGTH } from '@/models/Comment'
-import { SessionUser } from '@/models/User'
-import { NewApiError } from '@/models/APIError'
+import type { CommentInput, CommentResponse } from '@/models/Comment'
+import APIError, { NewApiError } from '@/models/APIError'
+import UserRole from '@/models/UserRole'
 import ErrorCode from '@/errors/ErrorCode'
+import { RequestRejected } from '@/errors/RequestRejected'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { CommentNotOwned } from '@/errors/CommentNotOwned'
-import { logger } from '@/helpers/Logger'
+import { BEARER_AUTH } from '@/helpers/Authentication'
+import type { AuthenticatedRequest } from '@/helpers/Authentication'
+import {
+  BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE, INTERNAL_ERROR_DESCRIPTION,
+  INTERNAL_ERROR_EXAMPLE, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+  UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE,
+} from '@/api/ApiDocumentation'
+import type { RateLimitHeaders } from '@/api/ApiDocumentation'
+import type { ResourceId } from '@/models/ResourceId'
 
 /** Discussion threads on items: list an item's comments, post one, and delete one. */
-export default class CommentController {
-  public router = Router()
-
+@Route('comments')
+@Tags('Comments')
+@Security(BEARER_AUTH, [UserRole.USER, UserRole.ADMIN])
+@Response<APIError>(401, UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE)
+@Response<APIError>(403, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE)
+@Response<APIError, { [Header in keyof RateLimitHeaders]: RateLimitHeaders[Header] }>(
+  429, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+)
+@Response<APIError>(500, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE)
+export class CommentController extends Controller {
   private commentService = new CommentService()
 
-  constructor() {
-    this.initializeRoutes()
+  /**
+   * @summary Lists the comments on an item, oldest first
+   * @param itemId Id of the item
+   */
+  @Get('item/{item_id}')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async getCommentsByItem(@Path('item_id') itemId: ResourceId): Promise<CommentResponse[]> {
+    return this.commentService.getAllByItemId(itemId)
   }
 
-  public initializeRoutes() {
-    this.router.get('/item/:item_id', (req, res) => this.getAllByItemId(req, res))
-    this.router.post('/item/:item_id', (req, res) => this.create(req, res))
-    this.router.delete('/:id', (req, res) => this.delete(req, res))
-  }
-
-  /** Lists the comments on an item, oldest first. */
-  public async getAllByItemId(req: Request, res: Response) {
-    try {
-      const data = await this.commentService.getAllByItemId(parseInt(req.params.item_id, 10))
-      res.status(200).json(data)
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /**
+   * @summary Posts a comment to an item as the signed-in user; 400 when the body is missing or too long
+   * @param itemId Id of the item
+   */
+  @Post('item/{item_id}')
+  @SuccessResponse(201, 'Comment posted')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  public async createComment(
+    @Request() request: AuthenticatedRequest, @Path('item_id') itemId: ResourceId, @Body() input: CommentInput,
+  ): Promise<CommentResponse> {
+    const trimmedBody = typeof input.body === 'string' ? input.body.trim() : ''
+    if (!Number.isInteger(itemId) || itemId <= 0 || !trimmedBody) {
+      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: item_id, body'))
     }
-  }
 
-  /** Posts a comment to an item by the signed-in user; 400 when the body is missing or too long, 404 for an unknown item. */
-  public async create(req: Request, res: Response) {
     try {
-      const itemId = parseInt(req.params.item_id, 10)
-      const { body } = req.body
-      const trimmedBody = typeof body === 'string' ? body.trim() : ''
-      if (!Number.isInteger(itemId) || itemId <= 0 || !trimmedBody) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: item_id, body'))
-      }
-      if (trimmedBody.length > MAX_COMMENT_LENGTH) {
-        const message = `Comment body must be at most ${MAX_COMMENT_LENGTH} characters`
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, message))
-      }
-      const sessionUser = res.locals.user as SessionUser
-      const data = await this.commentService.create(itemId, sessionUser.id, trimmedBody)
-      res.status(201).json(data)
+      const data = await this.commentService.create(itemId, request.user.id, trimmedBody)
+      this.setStatus(201)
+      return data
     } catch (error) {
       if (error instanceof UnknownResource) {
         const resourceName = `${error.resource[0].toUpperCase()}${error.resource.slice(1)}`
-        return res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, `${resourceName} not found`))
+        throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, `${resourceName} not found`))
       }
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+      throw error
     }
   }
 
-  /** Deletes a comment; 403 unless the signed-in user wrote it or is an admin or moderator. */
-  public async delete(req: Request, res: Response) {
+  /**
+   * @summary Deletes a comment; 403 unless the signed-in user wrote it or is an admin or moderator
+   * @param id Id of the comment
+   */
+  @Delete('{id}')
+  @SuccessResponse(204, 'Comment deleted')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async deleteComment(@Request() request: AuthenticatedRequest, @Path() id: ResourceId): Promise<void> {
     try {
-      await this.commentService.delete(parseInt(req.params.id, 10), res.locals.user as SessionUser)
-      res.status(204).json()
+      await this.commentService.delete(id, request.user)
+      this.setStatus(204)
     } catch (error) {
       if (error instanceof CommentNotOwned) {
-        return res.status(403).json(NewApiError(ErrorCode.FORBIDDEN, 403, error.message))
+        throw new RequestRejected(NewApiError(ErrorCode.FORBIDDEN, 403, error.message))
       }
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+      throw error
     }
   }
 }

@@ -1,9 +1,9 @@
 import React from 'react'
-import { AttributeValueType, type Attribute } from '@/components/types'
+import { AttributeValueType, type AttributeResponse } from '@/api/generated/api'
 
 /** Props for one attribute value field: the attribute, its current value and the change handler. */
 interface AttributeFieldProps {
-  attribute: Attribute;
+  attribute: AttributeResponse;
   value: string;
   onChange: (value: string) => void;
 }

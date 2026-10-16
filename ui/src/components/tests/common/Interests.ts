@@ -1,21 +1,21 @@
 import {
-  AttributeValueType, type Attribute, type Category, type Item, type RatedItem,
-} from '@/components/types'
+  AttributeValueType, type AttributeResponse, type CategoryResponse, type ItemResponse, type RatedItemResponse,
+} from '@/api/generated/api'
 import { testAttributes, testCategories } from '@/components/tests/common/Categories'
 
 const [authorAttribute, pagesAttribute] = testAttributes
 
 /** Boolean attribute recording whether a book was finished. */
-const finishedAttribute: Attribute = { id: 3, name: 'Finished', valueType: AttributeValueType.BOOLEAN }
+const finishedAttribute: AttributeResponse = { id: 3, name: 'Finished', valueType: AttributeValueType.BOOLEAN }
 
 /** The shared Books category, linked to Author, Pages and Finished. */
-export const booksCategory: Category = { ...testCategories[0], attributes: [authorAttribute, pagesAttribute, finishedAttribute] }
+export const booksCategory: CategoryResponse = { ...testCategories[0], attributes: [authorAttribute, pagesAttribute, finishedAttribute] }
 
 /** Category without attributes. */
-export const moviesCategory: Category = { id: 20, name: 'Movies', description: null, attributes: [] }
+export const moviesCategory: CategoryResponse = { id: 20, name: 'Movies', description: null, attributes: [] }
 
 /** A book the signed-in user rated, with its Pages value filled in. */
-export const duneItem: Item = {
+export const duneItem: ItemResponse = {
   id: 100,
   name: 'Dune',
   description: 'Desert planet epic',
@@ -31,22 +31,22 @@ const MY_USER_ID = 1
 const OTHER_USER_ID = 2
 
 /** The signed-in user's first rating of Dune. */
-export const duneRating: RatedItem = {
+export const duneRating: RatedItemResponse = {
   id: 900, rating: 9.5, notes: 'Reread every year', userId: MY_USER_ID, ratedAt: '2026-09-01T10:00:00.000Z', item: duneItem,
 }
 
 /** The signed-in user's later, second rating of Dune. */
-export const duneRerating: RatedItem = {
+export const duneRerating: RatedItemResponse = {
   ...duneRating, id: 903, rating: 8.5, notes: 'Slower the second time', ratedAt: '2026-10-01T10:00:00.000Z',
 }
 
 /** Another user's rating of Dune. */
-export const otherUserDuneRating: RatedItem = {
+export const otherUserDuneRating: RatedItemResponse = {
   ...duneRating, id: 902, rating: 6, notes: null, userId: OTHER_USER_ID, ratedAt: '2026-09-15T10:00:00.000Z',
 }
 
 /** A movie rated by another user, without an image. */
-export const alienRating: RatedItem = {
+export const alienRating: RatedItemResponse = {
   id: 901,
   rating: 7,
   notes: null,

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import ApiConfig from '@/config/ApiConfig'
+import { register } from '@/api/generated/api'
 
 interface RegisterFormProps {
   onSuccess: () => void;
@@ -25,25 +25,8 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ onSuccess }) => {
     setError('')
 
     try {
-      const response = await fetch(`${ApiConfig.API_URL}${ApiConfig.ENDPOINTS.REGISTER}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          username,
-          email,
-          password,
-          roles: [], // Default to no roles, admin can add roles later
-        }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to register')
-      }
-
+      // Default to no roles, admin can add roles later
+      await register({ username, email, password, roles: [] })
       onSuccess()
     } catch (err: unknown) {
       if (err instanceof Error) {

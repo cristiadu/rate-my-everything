@@ -3,13 +3,13 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import InterestPage from '@/components/interests/InterestPage'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { AttributeValueType, UserRole, type Item } from '@/components/types'
+import { AttributeValueType, UserRole, type ItemResponse } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import { myComment } from '@/components/tests/common/Comments'
 import { duneItem } from '@/components/tests/common/Interests'
 
-const typedDuneItem: Item = {
+const typedDuneItem: ItemResponse = {
   ...duneItem,
   attributes: [
     ...duneItem.attributes,

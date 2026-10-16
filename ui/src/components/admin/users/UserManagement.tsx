@@ -1,14 +1,11 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
-import type {
-  AdminUser, StatusMessage, UserEditorState, UserFormValues,
-} from '@/components/types'
+import { createUser, deleteUser, getUsers, updateUser, type UserInput, type UserResponse } from '@/api/generated/api'
+import type { StatusMessage, UserEditorState, UserFormValues } from '@/components/types'
 import CreateUserForm from '@/components/users/CreateUserForm'
 
 /** Admin screen to list, create, edit and delete users. */
 const UserManagement: React.FC = () => {
-  const [users, setUsers] = useState<AdminUser[]>([])
+  const [users, setUsers] = useState<UserResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [editor, setEditor] = useState<UserEditorState>(null)
@@ -18,7 +15,7 @@ const UserManagement: React.FC = () => {
   const loadUsers = useCallback(async () => {
     setIsLoading(true)
     try {
-      setUsers(await ApiService.get<AdminUser[]>(ApiConfig.ENDPOINTS.USERS))
+      setUsers(await getUsers())
     } catch (err) {
       setStatus({ message: err instanceof Error ? err.message : 'Failed to load users', isSuccess: false })
     } finally {
@@ -38,14 +35,14 @@ const UserManagement: React.FC = () => {
 
     // Only send a password when one was typed, so editing keeps the current one
     const { password, ...rest } = values
-    const body: Partial<UserFormValues> = password ? values : rest
+    const body: UserInput = password ? values : rest
 
     try {
       if (editor.mode === 'create') {
-        await ApiService.post<AdminUser>(ApiConfig.ENDPOINTS.USERS, body)
+        await createUser(body)
         setStatus({ message: `User ${values.username} created.`, isSuccess: true })
       } else {
-        await ApiService.put<AdminUser>(`${ApiConfig.ENDPOINTS.USERS}/${editor.user.id}`, body)
+        await updateUser(editor.user.id, body)
         setStatus({ message: `User ${values.username} updated.`, isSuccess: true })
       }
       setEditor(null)
@@ -58,12 +55,12 @@ const UserManagement: React.FC = () => {
   }
 
   /** Deletes the user after the admin confirms, then reloads the list. */
-  const handleDelete = async (user: AdminUser) => {
+  const handleDelete = async (user: UserResponse) => {
     if (!window.confirm(`Delete user ${user.username}? This cannot be undone.`)) return
     setStatus(null)
 
     try {
-      await ApiService.delete<void>(`${ApiConfig.ENDPOINTS.USERS}/${user.id}`)
+      await deleteUser(user.id)
       setStatus({ message: `User ${user.username} deleted.`, isSuccess: true })
       await loadUsers()
     } catch (err) {

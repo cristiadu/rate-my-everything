@@ -1,101 +1,109 @@
-import { Request, Response, Router } from 'express'
+import {
+  Body, Controller, Delete, Get, Path, Post, Put, Response, Route, Security, SuccessResponse, Tags,
+} from 'tsoa'
 import UserService from '@/services/UserService'
-import { NewApiError } from '@/models/APIError'
+import APIError, { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
+import { RequestRejected } from '@/errors/RequestRejected'
 import User from '@/models/User'
-import { logger } from '@/helpers/Logger'
+import type { UserInput, UserResponse, UserUpdate } from '@/models/User'
+import UserRole from '@/models/UserRole'
+import { BEARER_AUTH } from '@/helpers/Authentication'
+import {
+  BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE, INTERNAL_ERROR_DESCRIPTION,
+  INTERNAL_ERROR_EXAMPLE, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+  UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE,
+} from '@/api/ApiDocumentation'
+import type { RateLimitHeaders } from '@/api/ApiDocumentation'
+import type { ResourceId } from '@/models/ResourceId'
 
 /** Removes the password hash so it is never sent in an API response. */
-const withoutPassword = (user: User) => ({ ...user, password: undefined })
+const withoutPassword = (user: User) => ({ ...user, password: undefined }) as UserResponse
 
-export default class UserController {
-  public router = Router()
-
+/** Account management for admins. */
+@Route('users')
+@Tags('Users')
+@Security(BEARER_AUTH, [UserRole.ADMIN])
+@Response<APIError>(401, UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE)
+@Response<APIError>(403, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE)
+@Response<APIError, { [Header in keyof RateLimitHeaders]: RateLimitHeaders[Header] }>(
+  429, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+)
+@Response<APIError>(500, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE)
+export class UserController extends Controller {
   private userService = new UserService()
 
-  constructor() {
-    this.initializeRoutes()
+  /** @summary Lists every user */
+  @Get()
+  public async getUsers(): Promise<UserResponse[]> {
+    const data = await this.userService.getAll()
+    return data.map(withoutPassword)
   }
 
-  public initializeRoutes() {
-    this.router.get('/', (req, res) => this.getAll(req, res))
-    this.router.get('/username/:username', (req, res) => this.getByUsername(req, res))
-    this.router.get('/:id', (req, res) => this.getById(req, res))
-    this.router.post('/', (req, res) => this.create(req, res))
-    this.router.put('/:id', (req, res) => this.update(req, res))
-    this.router.delete('/:id', (req, res) => this.delete(req, res))
-  }
-
-  public async getAll(req: Request, res: Response) {
-    // Implement the logic for getting all users
-    try {
-      const data = await this.userService.getAll()
-      res.status(200).json(data.map(withoutPassword))
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /**
+   * @summary Finds a user by username
+   * @param username Username to look for
+   * @example username "ada"
+   */
+  @Get('username/{username}')
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  public async getUserByUsername(@Path() username: string): Promise<UserResponse> {
+    const data = await this.userService.getByUsername(username)
+    if (!data) {
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
     }
+    return withoutPassword(data)
   }
 
-  public async getByUsername(req: Request, res: Response) {
-    try {
-      const data = await this.userService.getByUsername(req.params.username)
-      if (data) {
-        res.status(200).json(withoutPassword(data))
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
-      }
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /**
+   * @summary Gets a user
+   * @param id Id of the user
+   */
+  @Get('{id}')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  public async getUser(@Path() id: ResourceId): Promise<UserResponse> {
+    const data = await this.userService.getById(id)
+    if (!data) {
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
     }
+    return withoutPassword(data)
   }
 
-  public async getById(req: Request, res: Response) {
-    try {
-      const data = await this.userService.getById(parseInt(req.params.id, 10))
-      if (data) {
-        res.status(200).json(withoutPassword(data))
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
-      }
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /** @summary Creates a user */
+  @Post()
+  @SuccessResponse(201, 'User created')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async createUser(@Body() input: UserInput): Promise<UserResponse> {
+    const data = await this.userService.create(input as Omit<User, 'id'>)
+    this.setStatus(201)
+    return withoutPassword(data)
   }
 
-  public async create(req: Request, res: Response) {
-    try {
-      const data = await this.userService.create(req.body)
-      res.status(201).json(withoutPassword(data))
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /**
+   * @summary Changes a user; without a password, the current one is kept
+   * @param id Id of the user
+   */
+  @Put('{id}')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  public async updateUser(@Path() id: ResourceId, @Body() input: UserUpdate): Promise<UserResponse> {
+    const data = await this.userService.update(id, input)
+    if (!data) {
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
     }
+    return withoutPassword(data)
   }
 
-  public async update(req: Request, res: Response) {
-    try {
-      const data = await this.userService.update(parseInt(req.params.id, 10), req.body)
-      if (data) {
-        res.status(200).json(withoutPassword(data))
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'User not found'))
-      }
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
-  }
-
-  public async delete(req: Request, res: Response) {
-    try {
-      await this.userService.delete(parseInt(req.params.id, 10))
-      res.status(204).json()
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /**
+   * @summary Deletes a user
+   * @param id Id of the user
+   */
+  @Delete('{id}')
+  @SuccessResponse(204, 'User deleted')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async deleteUser(@Path() id: ResourceId): Promise<void> {
+    await this.userService.delete(id)
+    this.setStatus(204)
   }
 }

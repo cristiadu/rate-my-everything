@@ -1,11 +1,11 @@
 import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import CreateUserForm from '@/components/users/CreateUserForm'
-import { AdminUser, UserRole } from '@/components/types'
+import { UserRole, type UserResponse } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 
 /** Existing user passed to the form in edit mode. */
-const bob: AdminUser = { id: 2, username: 'bob', email: 'bob@example.com', roles: [UserRole.USER] }
+const bob: UserResponse = { id: 2, username: 'bob', email: 'bob@example.com', roles: [UserRole.USER] }
 
 describe('CreateUserForm', () => {
   let fetchMock: jest.MockedFunction<typeof fetch>

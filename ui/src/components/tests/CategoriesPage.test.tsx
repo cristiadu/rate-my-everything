@@ -4,7 +4,7 @@ import {
 } from '@testing-library/react'
 import CategoriesPage from '@/components/categories/CategoriesPage'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { UserRole } from '@/components/types'
+import { UserRole } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import { testAttributes, testCategories } from '@/components/tests/common/Categories'

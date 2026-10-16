@@ -3,7 +3,7 @@ import {
   Heading, Level, Form, Button,
 } from 'react-bulma-components'
 import { useAuth } from '@/components/users/AuthContext'
-import ApiConfig from '@/config/ApiConfig'
+import { login as signIn } from '@/api/generated/api'
 
 const UserHeaderMenu = () => {
   const [username, setUsername] = useState('')
@@ -21,21 +21,8 @@ const UserHeaderMenu = () => {
     setError('')
 
     try {
-      const response = await fetch(`${ApiConfig.API_URL}${ApiConfig.ENDPOINTS.LOGIN}`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ username, password }),
-      })
-
-      const data = await response.json()
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Invalid credentials')
-      }
-
-      login(data.token)
+      const { token } = await signIn({ username, password })
+      login(token)
       setUsername('')
       setPassword('')
     } catch (err) {

@@ -66,8 +66,8 @@ describe('Login API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Username and password are required')
-          expect(apiError.code).toBe(ErrorCode.MISSING_CREDENTIALS)
+          expect(apiError.message).toBe("Invalid request: credentials.password: 'password' is required")
+          expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
           expect(apiError.status).toBe(400)
         })
     })

@@ -49,7 +49,7 @@ describe('Attribute API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Missing required fields: name, valueType')
+          expect(apiError.message).toBe("Invalid request: input.name: 'name' is required; input.valueType: 'valueType' is required")
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
           expect(apiError.status).toBe(400)
         })
@@ -69,7 +69,8 @@ describe('Attribute API Integration Tests', async () => {
       const apiError = res.body as APIError
       expect(res.status).toBe(400)
       expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
-      expect(apiError.message).toBe(`valueType must be one of: ${Object.values(AttributeValueType).join(', ')}`)
+      const allowedValueTypes = Object.values(AttributeValueType).join("','")
+      expect(apiError.message).toBe(`Invalid request: input.valueType: should be one of the following; ['${allowedValueTypes}']`)
     })
   })
 
@@ -224,7 +225,7 @@ describe('Attribute API Integration Tests', async () => {
         .delete(`${Endpoints.ATTRIBUTES_BASE_PATH}/999999`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(204)
-        .expect(res => { expect(res.body).toEqual({}) })
+        .expect(res => { expect(res.text).toBe('') })
     })
   })
 

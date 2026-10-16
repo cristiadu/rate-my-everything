@@ -2,7 +2,7 @@ import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
 import UserHeaderMenu from '@/components/users/UserHeaderMenu'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { UserRole } from '@/components/types'
+import { UserRole } from '@/api/generated/api'
 import { makeTestToken } from '@/components/tests/common/Auth'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 

@@ -1,23 +1,23 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
 import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
-import type { Category } from '@/components/types'
+import { getSimilarItems } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
-import { testCategories } from '@/components/tests/common/Categories'
+import { duneItem } from '@/components/tests/common/Interests'
 
 /** Longer than the warning waits after typing before looking for similar names, in milliseconds. */
 const LOOKUP_WAIT_MS = 400
 
-/** Renders the warning for categories similar to the given name. */
+/** Renders the warning for items of category 1 similar to the given name. */
 const renderWarning = (name: string, isEnabled = true) => render(
-  <SimilarRecordsWarning<Category>
-    endpoint="/categories/similar"
+  <SimilarRecordsWarning
+    findSimilar={getSimilarItems}
     name={name}
     isEnabled={isEnabled}
-    filters={{ parentId: '1' }}
-    label="Similar categories"
-    message="Similar categories already exist."
-    renderRecord={(category) => <span>{category.name}</span>}
+    filters={{ categoryId: 1 }}
+    label="Similar interests"
+    message="Similar interests already exist."
+    renderRecord={(item) => <span>{item.name}</span>}
   />,
 )
 
@@ -29,18 +29,18 @@ describe('SimilarRecordsWarning', () => {
 
   beforeEach(() => {
     fetchMock = mockFetch()
-    fetchMock.mockImplementation(async () => jsonResponse(testCategories))
+    fetchMock.mockImplementation(async () => jsonResponse([duneItem]))
   })
 
   test('lists the similar records the endpoint returns for the trimmed name and filters', async () => {
-    // GIVEN an endpoint that finds Books
-    // WHEN " book " is typed
-    renderWarning(' book ')
+    // GIVEN an endpoint that finds Dune
+    // WHEN " dun " is typed
+    renderWarning(' dun ')
 
-    // THEN Books is listed under the message, after asking for "book" with the filters
-    const warning = await screen.findByRole('status', { name: 'Similar categories' })
-    expect(warning).toHaveTextContent('Similar categories already exist.Books')
-    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/categories/similar?parentId=1&name=book'])
+    // THEN Dune is listed under the message, after asking for "dun" with the filters
+    const warning = await screen.findByRole('status', { name: 'Similar interests' })
+    expect(warning).toHaveTextContent('Similar interests already exist.Dune')
+    expect(fetchMock.mock.calls.map(([url]) => url)).toEqual(['http://localhost:3000/api/items/similar?categoryId=1&name=dun'])
   })
 
   test('shows nothing when no record is similar', async () => {
@@ -58,7 +58,7 @@ describe('SimilarRecordsWarning', () => {
 
   test.each([
     ['the name is shorter than 3 characters', 'bo', true],
-    ['the warning is disabled', 'Books', false],
+    ['the warning is disabled', 'Dune', false],
   ])('does not look up similar records when %s', async (_case, name, isEnabled) => {
     // GIVEN a name that should not be checked
     // WHEN it is typed and the lookup delay passes
