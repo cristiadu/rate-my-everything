@@ -2,7 +2,7 @@ import React from 'react'
 import { render, screen } from '@testing-library/react'
 import HeaderMenu from '@/components/layout/HeaderMenu'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { UserRole } from '@/components/types'
+import { UserRole } from '@/api/generated/api'
 import { loginAs } from '@/components/tests/common/Auth'
 
 /** Renders the top menu inside the auth provider. */
@@ -65,5 +65,19 @@ describe('HeaderMenu', () => {
     // THEN no area links are shown
     expect(screen.queryByText('My Account')).not.toBeInTheDocument()
     expect(screen.queryByText('Admin')).not.toBeInTheDocument()
+  })
+
+  test('marks the current page and the admin menu as active', () => {
+    // GIVEN an admin is on the users page
+    loginAs([UserRole.ADMIN])
+    window.history.pushState({}, '', '/admin/users')
+
+    // WHEN the menu renders
+    renderMenu()
+
+    // THEN the users item and the admin menu are marked, and other items are not
+    expect(screen.getByText('Users').closest('a')).toHaveClass('is-active')
+    expect(screen.getByText('Admin').closest('a')).toHaveClass('is-active')
+    expect(screen.getByText('My Account').closest('a')).not.toHaveClass('is-active')
   })
 })

@@ -68,7 +68,7 @@ describe('Comment API Integration Tests', async () => {
       // THEN a validation error states the limit
       const apiError = res.body as APIError
       expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
-      expect(apiError.message).toBe('Comment body must be at most 2000 characters')
+      expect(apiError.message).toBe(`Invalid request: input.body: maxLength ${MAX_COMMENT_LENGTH}`)
     })
 
     it('should return 404 for an unknown item', async () => {

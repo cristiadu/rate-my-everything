@@ -14,7 +14,9 @@ import AttributeValue from '@/models/AttributeValue'
 import Category from '@/models/Category'
 import ChangeRequest from '@/models/ChangeRequest'
 import Comment from '@/models/Comment'
-import { routes, authenticationFilter, addDefaultHeaders } from '@/routes/RouterAuthConfig'
+import { RegisterRoutes } from '@/routes/generated/routes'
+import { addDefaultHeaders, errorHandler, notFoundHandler } from '@/helpers/RequestHandlers'
+import { TOO_MANY_REQUESTS_EXAMPLE } from '@/api/ApiDocumentation'
 import { enableSimilarityExtensions } from '@/helpers/SimilarityHelper'
 import path from 'path'
 import http from 'http'
@@ -52,13 +54,13 @@ let server: http.Server
 const limiter = rateLimit({
   windowMs: RATE_LIMIT_WINDOW_MS,
   max: RATE_LIMIT_MAX_REQUESTS,
+  message: TOO_MANY_REQUESTS_EXAMPLE,
 })
 
 app.use(limiter)
 app.use(cors())
 app.use(bodyParser.json())
 app.use(addDefaultHeaders)
-app.use(authenticationFilter)
 
 const DBConnection: DataSource = new DataSource({
   name: 'default',
@@ -87,7 +89,10 @@ const initializeApp = async (): Promise<typeof app> => {
     throw err
   }
   logger.info('Data Source has been initialized')
-  routes.forEach((route) => app.use(route.path, route.controller()))
+  const apiRouter = express.Router()
+  RegisterRoutes(apiRouter)
+  app.use('/api', apiRouter, notFoundHandler)
+  app.use(errorHandler)
   return app
 }
 

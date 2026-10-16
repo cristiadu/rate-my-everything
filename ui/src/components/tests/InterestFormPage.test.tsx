@@ -5,7 +5,7 @@ import {
 import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import InterestFormPage from '@/components/interests/InterestFormPage'
 import { AuthProvider } from '@/components/users/AuthContext'
-import { UserRole } from '@/components/types'
+import { UserRole } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs } from '@/components/tests/common/Auth'
 import {

@@ -100,7 +100,7 @@ describe('Import API Integration Tests', async () => {
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(400)
         .expect(res => {
-          expect((res.body as APIError).message).toBe('Unknown import source: googleplay')
+          expect((res.body as APIError).message).toBe("Invalid request: source: should be one of the following; ['lastfm','youtube']")
         })
     })
 
@@ -112,7 +112,7 @@ describe('Import API Integration Tests', async () => {
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(400)
         .expect(res => {
-          expect((res.body as APIError).message).toBe('Missing required query parameter: query')
+          expect((res.body as APIError).message).toBe("Invalid request: query: 'query' is required")
         })
     })
   })

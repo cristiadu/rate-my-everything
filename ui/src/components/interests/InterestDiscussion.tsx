@@ -1,8 +1,7 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Message } from 'react-bulma-components'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
-import { MAX_COMMENT_LENGTH, UserRole, type Comment } from '@/components/types'
+import { UserRole, createComment, deleteComment, getCommentsByItem, type CommentResponse } from '@/api/generated/api'
+import { MAX_COMMENT_LENGTH } from '@/components/types'
 import { getRolesFromToken, getUsernameFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
 
@@ -19,14 +18,14 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
   const { token } = useAuth()
   const username = getUsernameFromToken(token)
   const isModerator = getRolesFromToken(token).some((role) => MODERATING_ROLES.includes(role))
-  const [comments, setComments] = useState<Comment[] | null>(null)
+  const [comments, setComments] = useState<CommentResponse[] | null>(null)
   const [draft, setDraft] = useState('')
   const [error, setError] = useState('')
   const [isPosting, setIsPosting] = useState(false)
 
   const loadComments = useCallback(async () => {
     try {
-      setComments(await ApiService.get<Comment[]>(`${ApiConfig.ENDPOINTS.COMMENTS}/item/${itemId}`))
+      setComments(await getCommentsByItem(itemId))
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to load the discussion')
     }
@@ -41,7 +40,7 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
     setIsPosting(true)
     setError('')
     try {
-      await ApiService.post<Comment>(`${ApiConfig.ENDPOINTS.COMMENTS}/item/${itemId}`, { body: draft })
+      await createComment(itemId, { body: draft })
       setDraft('')
       await loadComments()
     } catch (err) {
@@ -51,14 +50,14 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
     }
   }
 
-  const handleDelete = async (comment: Comment) => {
+  const handleDelete = async (comment: CommentResponse) => {
     if (!window.confirm('Delete this comment?')) {
       return
     }
 
     setError('')
     try {
-      await ApiService.delete(`${ApiConfig.ENDPOINTS.COMMENTS}/${comment.id}`)
+      await deleteComment(comment.id)
       await loadComments()
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to delete the comment')

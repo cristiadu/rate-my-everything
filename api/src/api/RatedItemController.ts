@@ -1,136 +1,121 @@
-import { Request, Response, Router } from 'express'
+import {
+  Body, Controller, Delete, Get, Path, Post, Put, Request, Response, Route, Security, SuccessResponse, Tags,
+} from 'tsoa'
 import RatedItemService from '@/services/RatedItemService'
-import { NewApiError } from '@/models/APIError'
+import APIError, { NewApiError } from '@/models/APIError'
+import UserRole from '@/models/UserRole'
 import ErrorCode from '@/errors/ErrorCode'
+import { RequestRejected } from '@/errors/RequestRejected'
 import RatedItem from '@/models/RatedItem'
-import { SessionUser } from '@/models/User'
-import { logger } from '@/helpers/Logger'
-import { parseRatingFilters } from '@/helpers/RatingFilterHelper'
-import { InvalidQueryParameter } from '@/errors/InvalidQueryParameter'
+import type { NewRatingInput, RatedItemResponse, RatingUpdate } from '@/models/RatedItem'
+import { BEARER_AUTH } from '@/helpers/Authentication'
+import type { AuthenticatedRequest } from '@/helpers/Authentication'
+import {
+  BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE, INTERNAL_ERROR_DESCRIPTION,
+  INTERNAL_ERROR_EXAMPLE, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+  UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE,
+} from '@/api/ApiDocumentation'
+import type { RateLimitHeaders } from '@/api/ApiDocumentation'
+import type { ResourceId } from '@/models/ResourceId'
 
-export default class RatedItemController {
-  public router = Router()
-
+/** Users' grades for items, from 0 to 10, with optional notes. */
+@Route('ratings')
+@Tags('Ratings')
+@Security(BEARER_AUTH, [UserRole.USER, UserRole.ADMIN])
+@Response<APIError>(401, UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE)
+@Response<APIError>(403, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE)
+@Response<APIError, { [Header in keyof RateLimitHeaders]: RateLimitHeaders[Header] }>(
+  429, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+)
+@Response<APIError>(500, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE)
+export class RatedItemController extends Controller {
   private ratedItemService = new RatedItemService()
 
-  constructor() {
-    this.initializeRoutes()
-  }
-
-  public initializeRoutes() {
-    this.router.get('/', (req, res) => this.getAll(req, res))
-    this.router.get('/user/:user_id', (req, res) => this.getAllByUserId(req, res))
-    this.router.get('/item/:item_id', (req, res) => this.getAllByItemId(req, res))
-    this.router.get('/mine', (req, res) => this.getMine(req, res))
-    this.router.get('/:id', (req, res) => this.getById(req, res))
-    this.router.post('/', (req, res) => this.create(req, res))
-    this.router.put('/:id', (req, res) => this.update(req, res))
-    this.router.delete('/:id', (req, res) => this.delete(req, res))
+  /** @summary Lists every rating */
+  @Get()
+  public async getRatings(): Promise<RatedItemResponse[]> {
+    return this.ratedItemService.getAll()
   }
 
   /**
-   * Lists every rating of the items matching the filters in the query (see parseRatingFilters), each with its item
-   * and category; 400 when a filter has a value it cannot use.
+   * @summary Lists the ratings of a user
+   * @param userId Id of the user
    */
-  public async getAll(req: Request, res: Response) {
-    try {
-      const sessionUser = res.locals.user as SessionUser
-      const data = await this.ratedItemService.getAll(parseRatingFilters(req.query), sessionUser.id)
-      res.status(200).json(data)
-    } catch (error) {
-      if (error instanceof InvalidQueryParameter) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, error.message))
-      }
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  @Get('user/{user_id}')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async getRatingsByUser(@Path('user_id') userId: ResourceId): Promise<RatedItemResponse[]> {
+    return this.ratedItemService.getAllByUserId(userId)
   }
 
-  public async getAllByUserId(req: Request, res: Response) {
-    try {
-      const data = await this.ratedItemService.getAllByUserId(parseInt(req.params.user_id, 10))
-      res.status(200).json(data)
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /**
+   * @summary Lists every user's ratings of an item, used to work out its collective grade
+   * @param itemId Id of the item
+   */
+  @Get('item/{item_id}')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async getRatingsByItem(@Path('item_id') itemId: ResourceId): Promise<RatedItemResponse[]> {
+    return this.ratedItemService.getAllByItemId(itemId)
   }
 
-  /** Lists every user's ratings of one item, used to work out its collective grade. */
-  public async getAllByItemId(req: Request, res: Response) {
-    try {
-      const data = await this.ratedItemService.getAllByItemId(parseInt(req.params.item_id, 10))
-      res.status(200).json(data)
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /** @summary Lists the signed-in user's ratings, each with its item and category */
+  @Get('mine')
+  public async getMyRatings(@Request() request: AuthenticatedRequest): Promise<RatedItemResponse[]> {
+    return this.ratedItemService.getAllByUserId(request.user.id)
   }
 
-  /** Lists the signed-in user's ratings, each with its item and category. */
-  public async getMine(_req: Request, res: Response) {
-    try {
-      const sessionUser = res.locals.user as SessionUser
-      const data = await this.ratedItemService.getAllByUserId(sessionUser.id)
-      res.status(200).json(data)
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /**
+   * @summary Gets a rating
+   * @param id Id of the rating
+   */
+  @Get('{id}')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  public async getRating(@Path() id: ResourceId): Promise<RatedItemResponse> {
+    const data = await this.ratedItemService.get(id)
+    if (!data) {
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
     }
+    return data
   }
 
-  public async getById(req: Request, res: Response) {
-    try {
-      const data = await this.ratedItemService.get(parseInt(req.params.id, 10))
-      if (data) {
-        res.status(200).json(data)
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
-      }
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Rates an item as the signed-in user */
+  @Post()
+  @SuccessResponse(201, 'Rating created')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async createRating(@Request() request: AuthenticatedRequest, @Body() input: NewRatingInput): Promise<RatedItemResponse> {
+    const { item_id: itemId, rating, notes } = input
+    if (!itemId || typeof rating !== 'number') {
+      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: item_id, rating'))
     }
+    const data = await this.ratedItemService.create(itemId, request.user.id, rating, notes ?? undefined)
+    this.setStatus(201)
+    return data
   }
 
-  /** Creates a rating of an item for the signed-in user; 400 when item_id or a numeric rating is missing. */
-  public async create(req: Request, res: Response) {
-    try {
-      const { item_id, rating, notes } = req.body
-      if (!item_id || typeof rating !== 'number') {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields: item_id, rating'))
-      }
-      const sessionUser = res.locals.user as SessionUser
-      const data = await this.ratedItemService.create(item_id, sessionUser.id, rating, notes)
-      res.status(201).json(data)
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /**
+   * @summary Changes a rating
+   * @param id Id of the rating
+   */
+  @Put('{id}')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(404, NOT_FOUND_DESCRIPTION, NOT_FOUND_EXAMPLE)
+  public async updateRating(@Path() id: ResourceId, @Body() input: RatingUpdate): Promise<RatedItemResponse> {
+    const data = await this.ratedItemService.update(id, input as RatedItem)
+    if (!data) {
+      throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
     }
+    return data
   }
 
-  public async update(req: Request, res: Response) {
-    try {
-      const ratedItemBody = req.body as RatedItem
-      const data = await this.ratedItemService.update(parseInt(req.params.id, 10), ratedItemBody)
-      if (data) {
-        res.status(200).json(data)
-      } else {
-        res.status(404).json(NewApiError(ErrorCode.RESOURCE_NOT_FOUND, 404, 'Rated item not found'))
-      }
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
-  }
-
-  public async delete(req: Request, res: Response) {
-    try {
-      await this.ratedItemService.delete(parseInt(req.params.id, 10))
-      res.status(204).json()
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
-    }
+  /**
+   * @summary Deletes a rating
+   * @param id Id of the rating
+   */
+  @Delete('{id}')
+  @SuccessResponse(204, 'Rating deleted')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  public async deleteRating(@Path() id: ResourceId): Promise<void> {
+    await this.ratedItemService.delete(id)
+    this.setStatus(204)
   }
 }

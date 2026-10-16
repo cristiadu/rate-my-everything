@@ -1,57 +1,62 @@
-import { Request, Response, Router } from 'express'
+import { Body, Controller, Get, Post, Request, Response, Route, Security, SuccessResponse, Tags } from 'tsoa'
 import ChangeRequestService from '@/services/ChangeRequestService'
-import { ChangeRequestInput } from '@/models/ChangeRequest'
-import { SessionUser } from '@/models/User'
-import { NewApiError } from '@/models/APIError'
+import type { ChangeRequestInput, ChangeRequestResponse } from '@/models/ChangeRequest'
+import APIError, { NewApiError } from '@/models/APIError'
+import UserRole from '@/models/UserRole'
 import ErrorCode from '@/errors/ErrorCode'
+import { RequestRejected } from '@/errors/RequestRejected'
 import { UnknownResource } from '@/errors/UnknownResource'
 import { findChangeRequestError } from '@/helpers/ChangeRequestHelper'
-import { logger } from '@/helpers/Logger'
+import { BEARER_AUTH } from '@/helpers/Authentication'
+import type { AuthenticatedRequest } from '@/helpers/Authentication'
+import {
+  BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE, INTERNAL_ERROR_DESCRIPTION,
+  INTERNAL_ERROR_EXAMPLE, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE, UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE,
+  UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE,
+} from '@/api/ApiDocumentation'
+import type { RateLimitHeaders } from '@/api/ApiDocumentation'
 
 /** Lets signed-in users propose changes to interests and categories and follow their own requests. */
-export default class ChangeRequestController {
-  public router = Router()
-
+@Route('change-requests')
+@Tags('Change requests')
+@Security(BEARER_AUTH, [UserRole.USER, UserRole.ADMIN, UserRole.MODERATOR])
+@Response<APIError>(401, UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE)
+@Response<APIError>(403, FORBIDDEN_DESCRIPTION, FORBIDDEN_EXAMPLE)
+@Response<APIError, { [Header in keyof RateLimitHeaders]: RateLimitHeaders[Header] }>(
+  429, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE,
+)
+@Response<APIError>(500, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE)
+export class ChangeRequestController extends Controller {
   private changeRequestService = new ChangeRequestService()
 
-  constructor() {
-    this.initializeRoutes()
+  /** @summary Lists the signed-in user's change requests, newest first */
+  @Get()
+  public async getMyChangeRequests(@Request() request: AuthenticatedRequest): Promise<ChangeRequestResponse[]> {
+    return this.changeRequestService.getAllByRequester(request.user.id)
   }
 
-  public initializeRoutes() {
-    this.router.get('/', (req, res) => this.getMine(req, res))
-    this.router.post('/', (req, res) => this.create(req, res))
-  }
-
-  /** Lists the signed-in user's change requests, newest first. */
-  public async getMine(_req: Request, res: Response) {
-    try {
-      const sessionUser = res.locals.user as SessionUser
-      const data = await this.changeRequestService.getAllByRequester(sessionUser.id)
-      res.status(200).json(data)
-    } catch (error) {
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+  /** @summary Proposes a change to an interest or category; 422 when its item or category does not exist */
+  @Post()
+  @SuccessResponse(201, 'Change request saved as pending')
+  @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
+  @Response<APIError>(422, UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE)
+  public async createChangeRequest(
+    @Request() request: AuthenticatedRequest, @Body() input: ChangeRequestInput,
+  ): Promise<ChangeRequestResponse> {
+    const changeRequestError = findChangeRequestError(input)
+    if (changeRequestError) {
+      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, changeRequestError))
     }
-  }
 
-  /** Saves a pending change request; 400 when it is malformed, 422 when its item or category does not exist. */
-  public async create(req: Request, res: Response) {
     try {
-      const changeRequestInput = req.body as ChangeRequestInput
-      const validationError = findChangeRequestError(changeRequestInput)
-      if (validationError) {
-        return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, validationError))
-      }
-      const sessionUser = res.locals.user as SessionUser
-      const data = await this.changeRequestService.create(sessionUser.id, changeRequestInput)
-      res.status(201).json(data)
+      const data = await this.changeRequestService.create(request.user.id, input)
+      this.setStatus(201)
+      return data
     } catch (error) {
       if (error instanceof UnknownResource) {
-        return res.status(422).json(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
+        throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 422, error.message))
       }
-      logger.error(error)
-      res.status(500).json(NewApiError(ErrorCode.INTERNAL_ERROR, 500, 'An internal server error occurred'))
+      throw error
     }
   }
 }

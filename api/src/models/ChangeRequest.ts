@@ -1,7 +1,7 @@
 import {
   Column, CreateDateColumn, Entity, JoinColumn, ManyToOne, PrimaryGeneratedColumn,
 } from 'typeorm'
-import User from '@/models/User'
+import User, { UserSummary } from '@/models/User'
 import { ItemInput } from '@/models/Item'
 import { CategoryInput } from '@/models/Category'
 import ChangeRequestAction from '@/models/ChangeRequestAction'
@@ -18,21 +18,36 @@ export const SUPPORTED_ACTIONS: Record<ChangeRequestTarget, ChangeRequestAction[
 export type ChangeRequestChanges = ItemInput | CategoryInput
 
 /** Fields accepted when a user submits a change request. */
-export type ChangeRequestInput = {
-  targetType: ChangeRequestTarget
-  action: ChangeRequestAction
+export interface ChangeRequestInput extends Pick<ChangeRequest, 'targetType' | 'action'> {
+  /**
+   * Id of the item or category being changed; left out when creating one.
+   * @isInt
+   * @example 12
+   */
   targetId?: number
   changes?: ChangeRequestChanges
 }
 
 /** Fields accepted when a moderator approves or rejects a change request. */
-export type ChangeRequestReview = {
+export interface ChangeRequestReview {
+  /** @example "Thanks, the year was wrong." */
   reviewNote?: string
+}
+
+/** A change request as the API returns it, with the requester and reviewer reduced to their id and username. */
+export interface ChangeRequestResponse extends Pick<ChangeRequest,
+  'id' | 'targetType' | 'action' | 'targetId' | 'targetName' | 'changes' | 'status' | 'reviewNote' | 'createdAt' | 'reviewedAt'> {
+  requestedBy: UserSummary
+  reviewedBy: UserSummary | null
 }
 
 /** A user's proposed change to shared data, applied only once a moderator approves it. */
 @Entity()
 export default class ChangeRequest {
+    /**
+     * @isInt
+     * @example 7
+     */
     @PrimaryGeneratedColumn()
       id!: number
 
@@ -42,11 +57,18 @@ export default class ChangeRequest {
     @Column('varchar')
       action!: ChangeRequestAction
 
-    /** Id of the item or category being changed; empty when creating one. */
+    /**
+     * Id of the item or category being changed; empty when creating one.
+     * @isInt
+     * @example 12
+     */
     @Column('int', { nullable: true })
       targetId!: number | null
 
-    /** Name of the target when the request was made, so moderators can tell what it is about. */
+    /**
+     * Name of the target when the request was made, so moderators can tell what it is about.
+     * @example "Abbey Road"
+     */
     @Column('varchar', { nullable: true })
       targetName!: string | null
 
@@ -64,6 +86,7 @@ export default class ChangeRequest {
     @JoinColumn({ name: 'reviewed_by' })
       reviewedBy!: User | null
 
+    /** @example "Thanks, the year was wrong." */
     @Column('varchar', { nullable: true })
       reviewNote!: string | null
 

@@ -321,7 +321,7 @@ describe('Category API Integration Tests', async () => {
         .delete(`${Endpoints.CATEGORIES_BASE_PATH}/non-existent-category`)
         .set('Authorization', `Bearer ${testAuthToken}`)
         .expect(204)
-        .expect(res => expect(res.body).toEqual({}))
+        .expect(res => expect(res.text).toBe(''))
     })
 
     it('should fail to delete a category when unauthorized', async () => {
@@ -445,7 +445,7 @@ describe('Category API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('attributeIds must be an array of integers')
+          expect(apiError.message).toContain('attributeIds.$0: invalid integer number')
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
         })
     })
@@ -555,7 +555,7 @@ describe('Category API Integration Tests', async () => {
         .expect(400)
         .expect(res => {
           const apiError = res.body as APIError
-          expect(apiError.message).toBe('Invalid value for name: it must be a non-empty text')
+          expect(apiError.message).toBe("Invalid request: name: 'name' is required")
           expect(apiError.code).toBe(ErrorCode.VALIDATION_ERROR)
         })
     })

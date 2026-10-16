@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from 'react'
-import ApiService from '@/config/ApiService'
 import type { SimilarRecordsLookup } from '@/components/types'
 
 /** Wait after the last keystroke before asking the API for similar names, in milliseconds. */
@@ -9,14 +8,14 @@ const SIMILAR_LOOKUP_DELAY_MS = 300
 const MIN_LOOKUP_LENGTH = 3
 
 /** Props for the warning listing existing records whose name is close to the one being typed. */
-interface SimilarRecordsWarningProps<T> {
-  /** API path of a /similar endpoint, such as /items/similar. */
-  endpoint: string;
+interface SimilarRecordsWarningProps<T, P extends { name: string }> {
+  /** Generated API client function of a /similar endpoint, such as getSimilarItems. */
+  findSimilar: (params: P) => Promise<T[]>;
   name: string;
   /** False on edit forms, where the record being edited would match itself. */
   isEnabled: boolean;
   /** Extra query values sent with the name, such as a categoryId. */
-  filters?: Record<string, string>;
+  filters?: Omit<P, 'name'>;
   /** Accessible name of the warning, such as "Similar interests". */
   label: string;
   message: string;
@@ -27,12 +26,13 @@ interface SimilarRecordsWarningProps<T> {
  * Asks a /similar endpoint, once the user stops typing, for records whose name is likely a duplicate of the given name,
  * and lists them under a warning so the user can pick one instead of adding a duplicate. Shows nothing when none match.
  */
-const SimilarRecordsWarning = <T extends { id: number }>({
-  endpoint, name, isEnabled, filters = {}, label, message, renderRecord,
-}: SimilarRecordsWarningProps<T>) => {
+const SimilarRecordsWarning = <T extends { id: number }, P extends { name: string }>({
+  findSimilar, name, isEnabled, filters, label, message, renderRecord,
+}: SimilarRecordsWarningProps<T, P>) => {
   const trimmedName = name.trim()
   const isLookupNeeded = isEnabled && trimmedName.length >= MIN_LOOKUP_LENGTH
-  const query = new URLSearchParams({ ...filters, name: trimmedName }).toString()
+  const params = { ...filters, name: trimmedName } as P
+  const query = JSON.stringify(params)
   // Records are kept with the query they answer so an answer to an older query is never shown
   const [lookup, setLookup] = useState<SimilarRecordsLookup<T>>({ query: '', records: [] })
 
@@ -44,7 +44,7 @@ const SimilarRecordsWarning = <T extends { id: number }>({
     let isCurrent = true
     const timer = setTimeout(async () => {
       try {
-        const records = await ApiService.get<T[]>(`${endpoint}?${query}`)
+        const records = await findSimilar(params)
         if (isCurrent) {
           setLookup({ query, records })
         }
@@ -57,7 +57,7 @@ const SimilarRecordsWarning = <T extends { id: number }>({
       isCurrent = false
       clearTimeout(timer)
     }
-  }, [endpoint, query, isLookupNeeded])
+  }, [findSimilar, query, isLookupNeeded])
 
   const similarRecords = isLookupNeeded && lookup.query === query ? lookup.records : []
   if (similarRecords.length === 0) {

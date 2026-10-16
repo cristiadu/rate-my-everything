@@ -7,4 +7,6 @@ export const IMPORT_PAGE_SIZE = 50
 export type ImportedItemType = string
 
 /** An interest found on an external service, with the item fields it fills in. */
-export type ImportedItem = Pick<Item, 'name' | 'description' | 'imageUrl'> & { type: ImportedItemType }
+export interface ImportedItem extends Pick<Item, 'name' | 'description' | 'imageUrl'> {
+  type: ImportedItemType
+}

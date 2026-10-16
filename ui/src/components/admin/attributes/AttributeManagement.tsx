@@ -1,14 +1,13 @@
 import React, { useCallback, useEffect, useState } from 'react'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
-import type {
-  Attribute, AttributeEditorState, AttributeFormValues, StatusMessage,
-} from '@/components/types'
+import {
+  createAttribute, deleteAttribute, getAttributes, updateAttribute, type AttributeResponse,
+} from '@/api/generated/api'
+import type { AttributeEditorState, AttributeFormValues, StatusMessage } from '@/components/types'
 import AttributeForm from '@/components/admin/attributes/AttributeForm'
 
 /** Admin screen to list, create, edit and delete the attributes categories can use. */
 const AttributeManagement: React.FC = () => {
-  const [attributes, setAttributes] = useState<Attribute[]>([])
+  const [attributes, setAttributes] = useState<AttributeResponse[]>([])
   const [isLoading, setIsLoading] = useState(true)
   const [isSaving, setIsSaving] = useState(false)
   const [editor, setEditor] = useState<AttributeEditorState>(null)
@@ -18,7 +17,7 @@ const AttributeManagement: React.FC = () => {
   const loadAttributes = useCallback(async () => {
     setIsLoading(true)
     try {
-      setAttributes(await ApiService.get<Attribute[]>(ApiConfig.ENDPOINTS.ATTRIBUTES))
+      setAttributes(await getAttributes())
     } catch (err) {
       setStatus({ message: err instanceof Error ? err.message : 'Failed to load attributes', isSuccess: false })
     } finally {
@@ -38,10 +37,10 @@ const AttributeManagement: React.FC = () => {
 
     try {
       if (editor.mode === 'create') {
-        await ApiService.post<Attribute>(ApiConfig.ENDPOINTS.ATTRIBUTES, values)
+        await createAttribute(values)
         setStatus({ message: `Attribute ${values.name} created.`, isSuccess: true })
       } else {
-        await ApiService.put<Attribute>(`${ApiConfig.ENDPOINTS.ATTRIBUTES}/${editor.attribute.id}`, values)
+        await updateAttribute(editor.attribute.id, values)
         setStatus({ message: `Attribute ${values.name} updated.`, isSuccess: true })
       }
       setEditor(null)
@@ -54,12 +53,12 @@ const AttributeManagement: React.FC = () => {
   }
 
   /** Deletes the attribute after the admin confirms, then reloads the list. */
-  const handleDelete = async (attribute: Attribute) => {
+  const handleDelete = async (attribute: AttributeResponse) => {
     if (!window.confirm(`Delete attribute ${attribute.name}? It will be removed from every category that uses it.`)) return
     setStatus(null)
 
     try {
-      await ApiService.delete<void>(`${ApiConfig.ENDPOINTS.ATTRIBUTES}/${attribute.id}`)
+      await deleteAttribute(attribute.id)
       setStatus({ message: `Attribute ${attribute.name} deleted.`, isSuccess: true })
       await loadAttributes()
     } catch (err) {

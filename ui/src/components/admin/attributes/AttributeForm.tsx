@@ -1,9 +1,10 @@
 import React, { useState } from 'react'
-import { type Attribute, type AttributeFormValues, AttributeValueType } from '@/components/types'
+import { AttributeValueType, type AttributeResponse } from '@/api/generated/api'
+import type { AttributeFormValues } from '@/components/types'
 
 /** Props for the admin attribute form; pass an attribute to edit it, or none to create one. */
 interface AttributeFormProps {
-  attribute?: Attribute;
+  attribute?: AttributeResponse;
   isSaving: boolean;
   onSubmit: (values: AttributeFormValues) => void;
   onCancel: () => void;

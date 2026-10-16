@@ -3,18 +3,15 @@ import {
   Form, Button,
   Message,
 } from 'react-bulma-components'
-import ApiConfig from '@/config/ApiConfig'
-import ApiService from '@/config/ApiService'
-import {
-  type AdminUser, MIN_PASSWORD_LENGTH, type StatusMessage, type UserFormValues, UserRole,
-} from '@/components/types'
+import { UserRole, createUser, updateUser, type UserInput, type UserResponse } from '@/api/generated/api'
+import { MIN_PASSWORD_LENGTH, type StatusMessage, type UserFormValues } from '@/components/types'
 
 /**
  * Props for the user form; pass a user to edit it, or none to create one.
  * Without onSubmit the form saves through the API itself; with onSubmit the parent saves the values.
  */
 interface CreateUserFormProps {
-  user?: AdminUser;
+  user?: UserResponse;
   isSaving?: boolean;
   onSubmit?: (values: UserFormValues) => void;
   onCancel?: () => void;
@@ -65,13 +62,13 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
 
     // Only send a password when one was typed, so editing keeps the current one
     const { password, ...rest } = formFields
-    const body: Partial<UserFormValues> = password ? formFields : rest
+    const body: UserInput = password ? formFields : rest
 
     try {
       if (isEditing) {
-        await ApiService.put<AdminUser>(`${ApiConfig.ENDPOINTS.USERS}/${user.id}`, body)
+        await updateUser(user.id, body)
       } else {
-        await ApiService.post<AdminUser>(ApiConfig.ENDPOINTS.USERS, body)
+        await createUser(body)
       }
       setSubmitStatus({
         message: isEditing ? 'User updated successfully!' : 'User created successfully!',

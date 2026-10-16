@@ -1,16 +1,16 @@
 import React from 'react'
 import { Box } from 'react-bulma-components'
-import type { RatedItem } from '@/components/types'
+import type { RatedItemResponse } from '@/api/generated/api'
 import { collectiveGrade, personalGrade } from '@/components/rankings/rankingData'
 import { formatDate } from '@/components/common/formatDate'
 
 /** Props for an item's grades and the signed-in user's rating history of it. */
 interface RatingHistoryProps {
   /** Every user's ratings of the item, the signed-in user's included. */
-  itemRatings: RatedItem[];
+  itemRatings: RatedItemResponse[];
   /** Id of the signed-in user, whose ratings are listed. */
   userId: number | null;
-  onRemove?: (ratedItem: RatedItem) => void;
+  onRemove?: (ratedItem: RatedItemResponse) => void;
 }
 
 /** Shows an item's personal and collective grades and lists each time the signed-in user rated it, newest first. */
