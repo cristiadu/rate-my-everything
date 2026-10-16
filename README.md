@@ -37,6 +37,8 @@ This is a monorepo with two main apps:
 | --- | --- | --- |
 | `LASTFM_API_KEY` | none | Importing all pages of a Last.fm user's most played artists and albums. Create a key at https://www.last.fm/api/account/create. |
 | `YOUTUBE_API_KEY` | none | Importing a public YouTube video or every available video in a playlist. Create a key for the YouTube Data API v3 in the Google Cloud console. |
+| `SEED_BOOTSTRAP_DATA` | `false` | When `true`, every start creates the bootstrap admin and the starter categories (Movies, Music, Books, Games, Restaurants) with their attributes. Rows that already exist are kept, so it is safe to leave on. |
+| `BOOTSTRAP_ADMIN_USERNAME`, `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | none | The bootstrap admin's login. Required when `SEED_BOOTSTRAP_DATA` is `true`; the API refuses to start without them. `api/.env.example` has local development values. |
 
 ## Importing interests
 
