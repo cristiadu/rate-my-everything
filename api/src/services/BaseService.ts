@@ -1,5 +1,5 @@
 import { EntityTarget, Repository } from 'typeorm'
-import { DBConnection } from '@/index'
+import { DBConnection } from '@/Database'
 
 export default class BaseService<T extends object> {
   private privateRepository: Repository<T> | null = null

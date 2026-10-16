@@ -1,4 +1,4 @@
-import { DBConnection } from '@/index'
+import { DBConnection } from '@/Database'
 import Attribute from '@/models/Attribute'
 import AttributeValue from '@/models/AttributeValue'
 import BaseService from '@/services/BaseService'
