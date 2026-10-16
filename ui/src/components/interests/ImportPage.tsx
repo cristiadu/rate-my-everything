@@ -2,12 +2,18 @@ import React, { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Box, Message } from 'react-bulma-components'
 import {
-  ImportSource, createItem, findImportItems, getCategories, getImportSources, type CategoryResponse, type ImportedItem,
-  type ImportSourceDescription, type ItemInput, type ItemResponse,
+  ImportSource, createItem, findImportItems, getCategories, type CategoryResponse, type ImportedItem, type ItemInput,
+  type ItemResponse,
 } from '@/api/generated/api'
 
 /** Side length, in pixels, of the pictures shown next to found interests. */
 const IMPORTED_IMAGE_SIZE = 48
+
+/** What the import screen shows for each source the generated API client lists. */
+const IMPORT_SOURCE_LABELS: Record<ImportSource, { label: string, queryLabel: string }> = {
+  [ImportSource.LASTFM]: { label: 'Last.fm artists and albums', queryLabel: 'Last.fm username' },
+  [ImportSource.YOUTUBE]: { label: 'YouTube', queryLabel: 'Video or playlist URL' },
+}
 
 /**
  * Screen to find interests on Last.fm or YouTube and add the chosen ones as items of a category,
@@ -19,28 +25,23 @@ const ImportPage: React.FC = () => {
   const [foundItems, setFoundItems] = useState<ImportedItem[]>([])
   const [selectedIndexes, setSelectedIndexes] = useState<number[]>([])
   const [categories, setCategories] = useState<CategoryResponse[]>([])
-  const [sources, setSources] = useState<ImportSourceDescription[]>([])
   const [categoryId, setCategoryId] = useState('')
   const [importedItems, setImportedItems] = useState<ItemResponse[]>([])
   const [error, setError] = useState('')
   const [isSearching, setIsSearching] = useState(false)
   const [isImporting, setIsImporting] = useState(false)
 
-  const loadCategoriesAndSources = useCallback(async () => {
+  const loadCategories = useCallback(async () => {
     try {
-      const [loadedCategories, loadedSources] = await Promise.all([getCategories(), getImportSources()])
-      setCategories(loadedCategories)
-      setSources(loadedSources)
+      setCategories(await getCategories())
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to load categories and import sources')
+      setError(err instanceof Error ? err.message : 'Failed to load categories')
     }
   }, [])
 
   useEffect(() => {
-    loadCategoriesAndSources()
-  }, [loadCategoriesAndSources])
-
-  const selectedSource = sources.find((description) => description.source === source)
+    loadCategories()
+  }, [loadCategories])
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -117,14 +118,14 @@ const ImportPage: React.FC = () => {
               <label className="label" htmlFor="import-source">Import from</label>
               <div className="select">
                 <select id="import-source" value={source} onChange={(e) => setSource(e.target.value as ImportSource)}>
-                  {sources.map((description) => (
-                    <option key={description.source} value={description.source}>{description.label}</option>
+                  {Object.values(ImportSource).map((importSource) => (
+                    <option key={importSource} value={importSource}>{IMPORT_SOURCE_LABELS[importSource].label}</option>
                   ))}
                 </select>
               </div>
             </div>
             <div className="control is-expanded">
-              <label className="label" htmlFor="import-query">{selectedSource?.queryLabel ?? 'Search'}</label>
+              <label className="label" htmlFor="import-query">{IMPORT_SOURCE_LABELS[source].queryLabel}</label>
               <input className="input" id="import-query" value={query} onChange={(e) => setQuery(e.target.value)} required />
             </div>
             <div className="control">

@@ -1,7 +1,7 @@
 import { Controller, Get, Path, Query, Response, Route, Security, Tags } from 'tsoa'
 import ImportService from '@/services/imports/ImportService'
 import ImportSource from '@/models/ImportSource'
-import type { ImportedItem, ImportSourceDescription } from '@/models/ImportedItem'
+import type { ImportedItem } from '@/models/ImportedItem'
 import APIError, { NewApiError } from '@/models/APIError'
 import UserRole from '@/models/UserRole'
 import ErrorCode from '@/errors/ErrorCode'
@@ -31,12 +31,6 @@ import type { RateLimitHeaders } from '@/api/ApiDocumentation'
 @Response<APIError>(500, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE)
 export class ImportController extends Controller {
   private importService = new ImportService()
-
-  /** @summary Lists the sources items can be imported from, with the labels to show for each */
-  @Get()
-  public async getImportSources(): Promise<ImportSourceDescription[]> {
-    return this.importService.getSources()
-  }
 
   /**
    * Lists the items found on an external source for `query`, without saving them.

@@ -2,8 +2,7 @@ import { describe, it, expect, afterEach, vi } from 'vitest'
 import request from 'supertest'
 import { appReady } from '@/index'
 import APIError from '@/models/APIError'
-import { ImportedItem, ImportSourceDescription } from '@/models/ImportedItem'
-import ImportSource from '@/models/ImportSource'
+import { ImportedItem } from '@/models/ImportedItem'
 import ErrorCode from '@/errors/ErrorCode'
 import { getAuthTokenFromFile, getUserRoleAuthToken } from '@@/testutils/common/Auth'
 import { Endpoints } from '@@/testutils/common/constants'
@@ -18,24 +17,6 @@ describe('Import API Integration Tests', async () => {
 
   afterEach(() => {
     vi.restoreAllMocks()
-  })
-
-  describe(`GET ${Endpoints.IMPORTS_BASE_PATH}`, () => {
-    it('should list every import source with its labels to a regular user', async () => {
-      // GIVEN a regular user
-      // WHEN they list the import sources
-      // THEN Last.fm and YouTube come back with the labels the import screen shows
-      await request(app)
-        .get(Endpoints.IMPORTS_BASE_PATH)
-        .set('Authorization', `Bearer ${userAuthToken}`)
-        .expect(200)
-        .expect(res => {
-          expect(res.body as ImportSourceDescription[]).toEqual([
-            { source: ImportSource.LASTFM, label: 'Last.fm artists and albums', queryLabel: 'Last.fm username' },
-            { source: ImportSource.YOUTUBE, label: 'YouTube', queryLabel: 'Video or playlist URL' },
-          ])
-        })
-    })
   })
 
   describe(`GET ${Endpoints.IMPORTS_BASE_PATH}/:source`, () => {
