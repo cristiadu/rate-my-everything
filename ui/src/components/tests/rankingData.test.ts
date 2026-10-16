@@ -1,4 +1,4 @@
-import { personalGrade, toMyRankings, toOverallRankings } from '@/components/rankings/rankingData'
+import { gradeColor, personalGrade, toMyRankings, toOverallRankings } from '@/components/rankings/rankingData'
 import {
   alienRating, duneRating, duneRerating, otherUserDuneRating,
 } from '@/components/tests/common/Interests'
@@ -39,4 +39,15 @@ test('works out a personal grade from one user\'s ratings only', () => {
 
   // THEN each grade only uses that user's ratings
   expect(grades).toEqual([9, 6, null])
+})
+
+test('colors grades green from 7, yellow from 4, red below that and grey when there is none', () => {
+  // GIVEN grades on each side of the color thresholds, and no grade
+  const grades = [10, 7, 6.9, 4, 3.9, 0, null]
+
+  // WHEN each one gets its color
+  const colors = grades.map(gradeColor)
+
+  // THEN good grades are green, average ones yellow, bad ones red and a missing grade grey
+  expect(colors).toEqual(['success', 'success', 'warning', 'warning', 'danger', 'danger', 'light'])
 })

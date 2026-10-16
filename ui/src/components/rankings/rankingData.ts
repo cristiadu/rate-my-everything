@@ -1,5 +1,5 @@
 import type { RatedItemResponse } from '@/api/generated/api'
-import type { RankingItem } from '@/components/types'
+import type { GradeColor, RankingItem } from '@/components/types'
 
 /** Groups ratings by the key each one maps to, keeping the order they came in. */
 const groupRatings = (ratings: RatedItemResponse[], keyOf: (ratedItem: RatedItemResponse) => number): RatedItemResponse[][] => {
@@ -43,3 +43,20 @@ export const toMyRankings = (ratings: RatedItemResponse[], userId: number | null
 /** Lists every rated item, best collective grade first, each with the given user's personal grade too. */
 export const toOverallRankings = (ratings: RatedItemResponse[], userId: number | null): RankingItem[] => toRankingItems(ratings, userId)
   .sort((a, b) => b.rating - a.rating)
+
+/** Lowest grade shown in green as a good grade. */
+const GOOD_GRADE = 7
+
+/** Lowest grade shown in yellow as an average grade; lower grades are shown in red. */
+const AVERAGE_GRADE = 4
+
+/** Picks the color a grade is shown in: green from 7, yellow from 4, red below that, and grey when there is no grade. */
+export const gradeColor = (grade: number | null): GradeColor => {
+  if (grade === null) {
+    return 'light'
+  }
+  if (grade >= GOOD_GRADE) {
+    return 'success'
+  }
+  return grade >= AVERAGE_GRADE ? 'warning' : 'danger'
+}

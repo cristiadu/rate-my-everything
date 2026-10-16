@@ -223,9 +223,9 @@ describe('InterestFormPage', () => {
 
     // THEN my grade averages my two ratings and everyone's grade averages each user's grade
     const history = await screen.findByRole('table', { name: 'My ratings' })
-    expect(screen.getByText('My grade').nextSibling).toHaveTextContent('9.0')
+    expect(screen.getByText('My grade').previousSibling).toHaveTextContent('9.0')
     expect(screen.getByText('from 2 of my ratings')).toBeInTheDocument()
-    expect(screen.getByText('Everyone\'s grade').nextSibling).toHaveTextContent('7.5')
+    expect(screen.getByText('Everyone\'s grade').previousSibling).toHaveTextContent('7.5')
     expect(screen.getByText('from 3 ratings')).toBeInTheDocument()
     const rows = within(history).getAllByRole('row').slice(1)
     expect(rows.map((row) => within(row).getAllByRole('cell').slice(1, 3).map((cell) => cell.textContent))).toEqual([
@@ -244,9 +244,9 @@ describe('InterestFormPage', () => {
     fireEvent.click(within(history).getAllByRole('button', { name: 'Remove' })[0])
 
     // THEN only that rating is deleted and my grade falls back to my remaining rating
-    await waitFor(() => expect(screen.getByText('My grade').nextSibling).toHaveTextContent('9.5'))
+    await waitFor(() => expect(screen.getByText('My grade').previousSibling).toHaveTextContent('9.5'))
     expect(sentWrites(fetchMock)).toEqual([['DELETE', '/ratings/903', null]])
-    expect(screen.getByText('Everyone\'s grade').nextSibling).toHaveTextContent('7.8')
+    expect(screen.getByText('Everyone\'s grade').previousSibling).toHaveTextContent('7.8')
   })
 
   test('removes the interest from my list by deleting all my ratings', async () => {

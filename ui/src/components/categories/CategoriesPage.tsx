@@ -9,12 +9,14 @@ import { getRolesFromToken } from '@/components/admin/RequireAdmin'
 import { useAuth } from '@/components/users/AuthContext'
 import MultiSelectDropdown from '@/components/common/MultiSelectDropdown'
 import SimilarRecordsWarning from '@/components/common/SimilarRecordsWarning'
+import CategoryTag from '@/components/common/CategoryTag'
+import { DEFAULT_CATEGORY_COLOR } from '@/components/common/categoryColor'
 
 /** Form values for a new category. */
 /** Values edited in the category form: every field of the categories API body, all filled in. */
-type CategoryFormValues = { [Field in 'name' | 'description' | 'attributeIds']-?: NonNullable<CategoryInput[Field]> }
+type CategoryFormValues = { [Field in 'name' | 'description' | 'color' | 'attributeIds']-?: NonNullable<CategoryInput[Field]> }
 
-const emptyForm: CategoryFormValues = { name: '', description: '', attributeIds: [] }
+const emptyForm: CategoryFormValues = { name: '', description: '', color: DEFAULT_CATEGORY_COLOR, attributeIds: [] }
 
 /** Message shown after a user's proposed change to a category is saved for moderators. */
 const SENT_FOR_APPROVAL_MESSAGE = 'Your change was sent to the moderators for approval.'
@@ -105,6 +107,7 @@ const CategoriesPage: React.FC = () => {
     setFormFields({
       name: category.name,
       description: category.description ?? '',
+      color: category.color ?? DEFAULT_CATEGORY_COLOR,
       attributeIds: category.attributes.map((attribute) => attribute.id),
     })
     setEditingName(category.name)
@@ -177,6 +180,20 @@ const CategoriesPage: React.FC = () => {
             </div>
           </div>
           <div className="field">
+            <label className="label" htmlFor="category-color">Color</label>
+            <div className="control is-flex is-align-items-center">
+              <input
+                className="category-color-input mr-3"
+                id="category-color"
+                name="color"
+                type="color"
+                value={formFields.color}
+                onChange={(e) => setFormFields({ ...formFields, color: e.target.value.toUpperCase() })}
+              />
+              <CategoryTag category={{ name: formFields.name || 'Preview', color: formFields.color }} />
+            </div>
+          </div>
+          <div className="field">
             <label className="label" htmlFor="category-attributes">Attributes</label>
             {attributes.length === 0 ? (
               <p className="is-size-7">
@@ -239,7 +256,7 @@ const CategoriesPage: React.FC = () => {
           )}
           {categories.map((category) => (
             <tr key={category.id}>
-              <td>{category.name}</td>
+              <td><CategoryTag category={category} /></td>
               <td>{category.description}</td>
               <td>
                 <div className="tags">

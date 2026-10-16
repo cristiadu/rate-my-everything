@@ -26,6 +26,12 @@ export type RankingItem = Pick<RatedItemResponse, 'item' | 'rating'> & {
     ratingCount: number;
 }
 
+/** Bulma color of a grade box: green for good grades, yellow for average ones, red for bad ones and grey when there is no grade. */
+export type GradeColor = 'success' | 'warning' | 'danger' | 'light'
+
+/** Whose ratings an interest's rating history lists: the signed-in user's own, or everyone's. */
+export type RatingHistoryScope = 'personal' | 'all'
+
 /** Which user form the admin screen shows: none, a new user, or an existing user being edited. */
 export type UserEditorState = { mode: 'create' } | { mode: 'edit', user: UserResponse } | null
 

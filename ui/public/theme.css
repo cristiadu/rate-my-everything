@@ -101,3 +101,95 @@
   --bulma-footer-background-color: var(--bulma-dark);
   color: var(--bulma-dark-invert);
 }
+
+/*
+ * The interest view's header bar spans the whole top of the view, edge to edge.
+ * The name fills it on berry and the category fills its right end on the category's own color, both in big capitals.
+ */
+.interest-view-header {
+  border-radius: var(--bulma-box-radius) var(--bulma-box-radius) 0 0;
+  margin: calc(-1 * var(--bulma-box-padding)) calc(-1 * var(--bulma-box-padding)) var(--bulma-box-padding);
+  overflow: hidden;
+}
+
+/* Scoped under the header so the page's .content heading styles don't shrink or recolor the name */
+.interest-view-header .interest-view-name,
+.interest-view-header .interest-view-category {
+  font-size: 2.25rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+  margin-bottom: 0;
+  padding: 1.25rem var(--bulma-box-padding);
+  text-transform: uppercase;
+}
+
+.interest-view-header .interest-view-name {
+  background-color: var(--bulma-primary);
+  color: var(--bulma-primary-invert);
+  flex-grow: 1;
+}
+
+/* A category without a color of its own fills its part of the bar with light grey */
+.interest-view-header .interest-view-category {
+  background-color: var(--bulma-scheme-main-ter);
+  color: var(--bulma-text-strong);
+  flex-shrink: 0;
+}
+
+/* The photo fits inside its frame without cropping, on a light background when its shape differs */
+.interest-view-photo {
+  background-color: var(--bulma-scheme-main-bis);
+  border-radius: var(--bulma-radius);
+  overflow: hidden;
+}
+
+.interest-view-photo img {
+  object-fit: contain;
+}
+
+/* Grade boxes share one width that fits "10.0", and have the same padding on both sides as they have no close button */
+.grade-box {
+  margin-inline: auto;
+  padding: 1.5rem 1rem;
+  width: 9rem;
+}
+
+/* The grade number takes the box's text color, so it reads on every grade color */
+.grade-box .title {
+  color: inherit;
+}
+
+/* On wider screens the rating history is set apart from the description by a thin line */
+@media screen and (min-width: 769px) {
+  .interest-view-history {
+    border-left: 1px solid var(--bulma-border-weak);
+  }
+}
+
+/* The attributes start under a thin line, below the description and history */
+.interest-view-attributes {
+  border-top: 1px solid var(--bulma-border-weak);
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+}
+
+/* A rating's date, and its grade with its Mine tag, stay on one line in the rating history */
+.rating-history-nowrap {
+  white-space: nowrap;
+}
+
+/* The grade input of a rating being edited only needs room for a grade like "10.0" */
+.rating-history-grade-input {
+  width: 5rem;
+}
+
+/* The category's color picker is a plain swatch the height of a normal input, without the browser's grey frame */
+.category-color-input {
+  background: none;
+  border: none;
+  cursor: pointer;
+  height: 2.5em;
+  padding: 0;
+  width: 3.5rem;
+}
