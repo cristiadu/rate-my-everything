@@ -5,6 +5,7 @@ import type { LoginInput, RegisterInput, UserResponse } from '@/models/User'
 import APIError, { NewApiError } from '@/models/APIError'
 import { InvalidCredentials } from '@/errors/InvalidCredentials'
 import ErrorCode from '@/errors/ErrorCode'
+import UserRole from '@/models/UserRole'
 import { RequestRejected } from '@/errors/RequestRejected'
 import {
   BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE, INVALID_CREDENTIALS_DESCRIPTION,
@@ -46,14 +47,14 @@ export class LoginController extends Controller {
   }
 
   /**
-   * Creates an account; 400 when a field is missing and 422 when the username is taken.
+   * Creates an account with the user role; 400 when a field is missing and 422 when the username is taken.
    * @summary Creates an account
    */
   @Post('register')
   @SuccessResponse(201, 'Account created')
   @Response<APIError>(422, UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE)
   public async register(@Body() input: RegisterInput): Promise<UserResponse> {
-    const { username, email, password, roles } = input
+    const { username, email, password } = input
     if (!username || !email || !password) {
       throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required fields'))
     }
@@ -63,7 +64,7 @@ export class LoginController extends Controller {
       throw new RequestRejected(NewApiError(ErrorCode.RESOURCE_ALREADY_EXISTS, 422, 'Username already exists'))
     }
 
-    const user = await this.userService.create({ username, email, password, roles: roles || [], ratedItems: [] } as Omit<User, 'id'>)
+    const user = await this.userService.create({ username, email, password, roles: [UserRole.USER], ratedItems: [] } as Omit<User, 'id'>)
 
     // Never return password - destructure to omit password from response
     this.setStatus(201)

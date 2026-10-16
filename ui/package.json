@@ -8,6 +8,7 @@
         "deploy": "pnpm run build && git add -f dist && git fetch origin main && COMMIT_HASH=$(git rev-parse origin/main) && REMOTE_URL=$(git config --get remote.origin.url) && COMMIT_LINK=\"$REMOTE_URL/commit/$COMMIT_HASH\" && git commit -m \"Publish $COMMIT_LINK to Github Pages\" && git push origin `git subtree split --prefix dist main`:refs/heads/live --force",
         "release": "echo \"Release UI\"",
         "test": "jest",
+        "test:coverage": "jest --coverage",
         "lint": "eslint --ext .js,.jsx,.ts,.tsx src/",
         "upgrade-dependencies": "pnpm up --latest",
         "openapi": "orval --config orval.config.ts",
@@ -48,6 +49,17 @@
     "jest": {
         "preset": "ts-jest",
         "testEnvironment": "jsdom",
+        "collectCoverageFrom": [
+            "src/**/*.{ts,tsx}",
+            "!src/api/generated/**",
+            "!src/**/tests/**",
+            "!src/setupTests.ts"
+        ],
+        "coverageReporters": [
+            "text",
+            "json-summary",
+            "html"
+        ],
         "setupFilesAfterEnv": [
             "<rootDir>/src/setupTests.ts"
         ],
