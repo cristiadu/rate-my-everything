@@ -45,6 +45,7 @@ describe('UserManagement', () => {
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'carol' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'carol@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: 'Create User' }))
 
     // THEN the user is posted with the default role and a success message shows
@@ -123,6 +124,7 @@ describe('UserManagement', () => {
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bob' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'bob2@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: 'Create User' }))
 
     // THEN the API's message is shown and the form stays open
