@@ -94,4 +94,23 @@ describe('FilterMenu', () => {
     // THEN the message is shown in the panel and on the page
     await waitFor(() => expect(screen.getAllByText('Invalid token')).toHaveLength(2))
   })
+
+  test('hides the panel and its tab from visitors who are not logged in', () => {
+    // GIVEN a visitor who is not logged in
+    localStorage.clear()
+
+    // WHEN the panel renders
+    render(
+      <AuthProvider>
+        <FilterProvider>
+          <FilterMenu topOffset={0} />
+        </FilterProvider>
+      </AuthProvider>,
+    )
+
+    // THEN neither the panel nor its tab is shown, and no categories are asked for
+    expect(screen.queryByText('FILTERS')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Open filters' })).not.toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalled()
+  })
 })
