@@ -1,6 +1,7 @@
 import React from 'react'
 import { Box, Columns, Heading } from 'react-bulma-components'
 import { useAuth } from '@/components/users/AuthContext'
+import { SIGN_UP_PATH } from '@/components/users/UserHeaderMenu'
 import { GradeBox } from '@/components/interests/ItemGrades'
 import { MAX_RATING, MIN_RATING } from '@/components/interests/interestForm'
 import { AVERAGE_GRADE, GOOD_GRADE } from '@/components/rankings/rankingData'
@@ -34,7 +35,7 @@ const SAMPLE_GRADES = [
 
 /**
  * Home page: says what the app is and how grading works, so visitors don't land on an empty page.
- * Visitors are pointed to the header's login and New Account; signed-in users get links to their interests.
+ * Visitors are pointed to the sign-up page and the header's login; signed-in users get links to their interests.
  */
 const Index = () => {
   const { isAuthenticated } = useAuth()
@@ -54,13 +55,10 @@ const Index = () => {
           <a className="button is-light" href="/interests/new">Add an interest</a>
         </div>
       ) : (
-        <p className="has-text-grey-dark">
-          Log in at the top of the page to see your interests, or use
-          {' '}
-          <strong>New Account</strong>
-          {' '}
-          to make one.
-        </p>
+        <div className="buttons">
+          <a className="button is-primary" href={SIGN_UP_PATH}>Create an account</a>
+          <span className="has-text-grey-dark">Already have one? Log in at the top of the page.</span>
+        </div>
       )}
 
       <hr />

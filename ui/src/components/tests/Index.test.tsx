@@ -22,7 +22,7 @@ describe('Index', () => {
     // WHEN the home page renders
     renderIndex()
 
-    // THEN it explains the app, shows a sample of each grade color and points to the header's login and New Account
+    // THEN it explains the app, shows a sample of each grade color and links to the sign-up page and points to the header's login
     expect(screen.getByRole('heading', { name: 'Rate anything' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Change your mind' })).toBeInTheDocument()
     expect(screen.getByRole('heading', { name: 'Compare with everyone' })).toBeInTheDocument()
@@ -30,6 +30,7 @@ describe('Index', () => {
     expect(screen.getByText('5.5').parentElement).toHaveClass('is-warning')
     expect(screen.getByText('2.0').parentElement).toHaveClass('is-danger')
     expect(screen.getByText('7 and up')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Create an account' })).toHaveAttribute('href', '/register')
     expect(screen.getByText(/Log in at the top of the page/)).toBeInTheDocument()
     expect(screen.queryByRole('link', { name: 'My interests' })).not.toBeInTheDocument()
   })
@@ -45,5 +46,6 @@ describe('Index', () => {
     expect(screen.getByRole('link', { name: 'My interests' })).toHaveAttribute('href', '/rankings')
     expect(screen.getByRole('link', { name: 'Add an interest' })).toHaveAttribute('href', '/interests/new')
     expect(screen.queryByText(/Log in at the top of the page/)).not.toBeInTheDocument()
+    expect(screen.queryByRole('link', { name: 'Create an account' })).not.toBeInTheDocument()
   })
 })
