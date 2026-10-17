@@ -168,20 +168,22 @@ const RatingHistory: React.FC<RatingHistoryProps> = ({ itemRatings, userId, onRe
           </div>
         </div>
       )}
-      <table className="table is-fullwidth is-striped is-hoverable">
-        <caption className={isEmbedded ? 'is-sr-only' : 'has-text-left has-text-weight-semibold'}>{caption}</caption>
-        <thead>
-          <tr>
-            <th>Date</th>
-            <th>Rating</th>
-            <th>Notes</th>
-            {(onEdit || onRemove) && <th aria-label="Actions" />}
-          </tr>
-        </thead>
-        <tbody>
-          {shownRatings.map(renderRow)}
-        </tbody>
-      </table>
+      <div className="table-container">
+        <table className="table is-fullwidth is-striped is-hoverable">
+          <caption className={isEmbedded ? 'is-sr-only' : 'has-text-left has-text-weight-semibold'}>{caption}</caption>
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Rating</th>
+              <th>Notes</th>
+              {(onEdit || onRemove) && <th aria-label="Actions" />}
+            </tr>
+          </thead>
+          <tbody>
+            {shownRatings.map(renderRow)}
+          </tbody>
+        </table>
+      </div>
       {isEmbedded && listedRatings.length === 0 && (
         <p className="has-text-grey">{scope === 'all' ? 'Nobody rated it yet.' : 'You have not rated it yet.'}</p>
       )}

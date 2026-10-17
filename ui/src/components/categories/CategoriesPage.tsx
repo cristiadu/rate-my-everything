@@ -239,44 +239,46 @@ const CategoriesPage: React.FC = () => {
         </form>
       </div>
 
-      <table className="table is-fullwidth is-striped is-hoverable">
-        <thead>
-          <tr>
-            <th>Name</th>
-            <th>Description</th>
-            <th>Attributes</th>
-            <th aria-label="Actions" />
-          </tr>
-        </thead>
-        <tbody>
-          {categories.length === 0 && (
+      <div className="table-container">
+        <table className="table is-fullwidth is-striped is-hoverable">
+          <thead>
             <tr>
-              <td colSpan={4}>No categories yet.</td>
+              <th>Name</th>
+              <th>Description</th>
+              <th>Attributes</th>
+              <th aria-label="Actions" />
             </tr>
-          )}
-          {categories.map((category) => (
-            <tr key={category.id}>
-              <td><CategoryTag category={category} /></td>
-              <td>{category.description}</td>
-              <td>
-                <div className="tags">
-                  {category.attributes.map((attribute) => (
-                    <span key={attribute.id} className="tag is-info" title={attribute.valueType}>{attribute.name}</span>
-                  ))}
-                </div>
-              </td>
-              <td className="has-text-right">
-                <button className="button is-small mr-2" type="button" onClick={() => handleEdit(category)}>
-                  {isAdmin ? 'Edit' : 'Suggest edit'}
-                </button>
-                <button className="button is-small is-danger" type="button" onClick={() => handleDelete(category)}>
-                  {isAdmin ? 'Delete' : 'Suggest removal'}
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {categories.length === 0 && (
+              <tr>
+                <td colSpan={4}>No categories yet.</td>
+              </tr>
+            )}
+            {categories.map((category) => (
+              <tr key={category.id}>
+                <td><CategoryTag category={category} /></td>
+                <td>{category.description}</td>
+                <td>
+                  <div className="tags">
+                    {category.attributes.map((attribute) => (
+                      <span key={attribute.id} className="tag is-info" title={attribute.valueType}>{attribute.name}</span>
+                    ))}
+                  </div>
+                </td>
+                <td className="has-text-right">
+                  <button className="button is-small mr-2" type="button" onClick={() => handleEdit(category)}>
+                    {isAdmin ? 'Edit' : 'Suggest edit'}
+                  </button>
+                  <button className="button is-small is-danger" type="button" onClick={() => handleDelete(category)}>
+                    {isAdmin ? 'Delete' : 'Suggest removal'}
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </div>
   )
 }

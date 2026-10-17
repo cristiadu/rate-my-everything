@@ -103,36 +103,38 @@ const AttributeManagement: React.FC = () => {
       {isLoading ? (
         <p>Loading attributes...</p>
       ) : (
-        <table className="table is-fullwidth is-striped is-hoverable">
-          <thead>
-            <tr>
-              <th>Name</th>
-              <th>Value type</th>
-              <th aria-label="Actions" />
-            </tr>
-          </thead>
-          <tbody>
-            {attributes.length === 0 && (
+        <div className="table-container">
+          <table className="table is-fullwidth is-striped is-hoverable">
+            <thead>
               <tr>
-                <td colSpan={3}>No attributes yet.</td>
+                <th>Name</th>
+                <th>Value type</th>
+                <th aria-label="Actions" />
               </tr>
-            )}
-            {attributes.map((attribute) => (
-              <tr key={attribute.id}>
-                <td>{attribute.name}</td>
-                <td><span className="tag is-info">{attribute.valueType}</span></td>
-                <td className="has-text-right">
-                  <button className="button is-small mr-2" type="button" onClick={() => setEditor({ mode: 'edit', attribute })}>
-                    Edit
-                  </button>
-                  <button className="button is-small is-danger" type="button" onClick={() => handleDelete(attribute)}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {attributes.length === 0 && (
+                <tr>
+                  <td colSpan={3}>No attributes yet.</td>
+                </tr>
+              )}
+              {attributes.map((attribute) => (
+                <tr key={attribute.id}>
+                  <td>{attribute.name}</td>
+                  <td><span className="tag is-info">{attribute.valueType}</span></td>
+                  <td className="has-text-right">
+                    <button className="button is-small mr-2" type="button" onClick={() => setEditor({ mode: 'edit', attribute })}>
+                      Edit
+                    </button>
+                    <button className="button is-small is-danger" type="button" onClick={() => handleDelete(attribute)}>
+                      Delete
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

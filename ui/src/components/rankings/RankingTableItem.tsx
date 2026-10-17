@@ -15,14 +15,14 @@ interface RankingTableItemProps {
 
 const RankingTableItem: React.FC<RankingTableItemProps> = ({ ranking, canEdit }) => (
   <tr key={ranking.item.id}>
-    <td>
+    <td className="is-hidden-mobile">
       {ranking.item.imageUrl && <Image size={64} alt={ranking.item.name} src={ranking.item.imageUrl} />}
     </td>
     <td><Link to={`/interests/${ranking.item.id}`}><strong>{ranking.item.name}</strong></Link></td>
     <td><CategoryTag category={ranking.item.category} /></td>
     <td>{ranking.myRating === null ? NOT_RATED : ranking.myRating.toFixed(1)}</td>
     <td>{ranking.rating.toFixed(1)}</td>
-    <td>{ranking.ratingCount}</td>
+    <td className="is-hidden-mobile">{ranking.ratingCount}</td>
     {canEdit && (
       <td>
         <Link className="button is-small" to={`/interests/${ranking.item.id}/edit`}>Edit</Link>

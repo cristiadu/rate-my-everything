@@ -143,6 +143,13 @@
   color: var(--bulma-dark-invert);
 }
 
+/* On phones the footer keeps the same look with less padding, so it doesn't fill half the screen */
+@media screen and (max-width: 768px) {
+  .footer {
+    --bulma-footer-padding: 2.5rem 1.5rem;
+  }
+}
+
 /* Footer links use the header's light pink so they stay readable on the dark slate, and underline on hover */
 .footer a {
   color: var(--bulma-danger-light);
@@ -181,6 +188,23 @@
   flex-grow: 1;
 }
 
+/*
+ * On phones a long name and the category no longer fit side by side, so the category drops under the name and fills that row.
+ * The capitals are a size smaller so a long word still fits the screen.
+ */
+@media screen and (max-width: 768px) {
+  .interest-view-header {
+    flex-wrap: wrap;
+  }
+
+  .interest-view-header .interest-view-name,
+  .interest-view-header .interest-view-category {
+    flex-grow: 1;
+    font-size: 1.5rem;
+    overflow-wrap: anywhere;
+  }
+}
+
 /* A category without a color of its own fills its part of the bar with light grey */
 .interest-view-header .interest-view-category {
   background-color: var(--bulma-scheme-main-ter);
@@ -205,6 +229,18 @@
   margin-inline: auto;
   padding: 1.5rem 1rem;
   width: 9rem;
+}
+
+/* On phones both grade boxes are a size smaller so they fit side by side inside the interest view */
+@media screen and (max-width: 768px) {
+  .grade-box {
+    padding: 1rem 0.75rem;
+    width: 6.5rem;
+  }
+
+  .grade-box .title {
+    font-size: 2.25rem;
+  }
 }
 
 /* The grade number takes the box's text color, so it reads on every grade color */
