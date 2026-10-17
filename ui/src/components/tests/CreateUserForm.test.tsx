@@ -39,6 +39,7 @@ describe('CreateUserForm', () => {
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'carol' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'carol@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: 'Create User' }))
 
     // THEN the user is posted and the success message shows
@@ -60,10 +61,27 @@ describe('CreateUserForm', () => {
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bob' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'bob@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: 'Create User' }))
 
     // THEN the API's message is shown
     expect(await screen.findByText('Username already exists')).toBeInTheDocument()
+  })
+
+  test('does not save when the repeated password differs', () => {
+    // GIVEN the create form
+    render(<CreateUserForm />)
+
+    // WHEN the two passwords differ and the form is submitted
+    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'carol' } })
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'carol@example.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret124' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create User' }))
+
+    // THEN the mismatch is reported and nothing is sent
+    expect(screen.getByText('Passwords do not match')).toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   test('edits a user without sending a blank password', async () => {
@@ -141,6 +159,7 @@ describe('CreateUserForm', () => {
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'dave' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'dave@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: 'Create Account' }))
 
     // THEN the account is registered without roles, the visitor is logged in and lands on the home page
@@ -163,6 +182,7 @@ describe('CreateUserForm', () => {
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bob' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'bob@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: 'Create Account' }))
 
     // THEN the message is shown and the visitor stays logged out on the form

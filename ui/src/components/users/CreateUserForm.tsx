@@ -35,6 +35,7 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
     password: '',
     roles: user?.roles ?? [UserRole.USER],
   })
+  const [repeatedPassword, setRepeatedPassword] = useState('')
   const [submitStatus, setSubmitStatus] = useState<StatusMessage>(null)
   const [isSaving, setIsSaving] = useState(false)
 
@@ -59,6 +60,10 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
   /** Hands the values to the parent when it saves them, otherwise creates or updates the user and reports the outcome. */
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if ((formFields.password ?? '') !== repeatedPassword) {
+      setSubmitStatus({ message: 'Passwords do not match', isSuccess: false })
+      return
+    }
     if (onSubmit) {
       onSubmit(formFields)
       return
@@ -164,6 +169,24 @@ const CreateUserForm: React.FC<CreateUserFormProps> = ({
             required={!isEditing}
             minLength={MIN_PASSWORD_LENGTH}
             name="password"
+          />
+        </Form.Control>
+      </Form.Field>
+
+      <Form.Field>
+        <Form.Label renderAs="label" htmlFor="user-repeat-password">
+          {isEditing ? 'Repeat new password' : 'Repeat password'}
+        </Form.Label>
+        <Form.Control>
+          <Form.Input
+            renderAs="input"
+            id="user-repeat-password"
+            type="password"
+            placeholder="Enter the password again"
+            value={repeatedPassword}
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setRepeatedPassword(e.target.value)}
+            required={!isEditing || !!formFields.password}
+            name="repeatPassword"
           />
         </Form.Control>
       </Form.Field>
