@@ -28,14 +28,19 @@
   --bulma-info-on-scheme-l: 30%;
 }
 
-/* The page sits on a soft berry tint instead of plain white, so boxes and cards stand out from it */
+/* The page sits on Bulma's light grey background, so the white boxes and cards stand out from it */
 :root {
-  --bulma-body-background-color: hsl(var(--bulma-primary-h), 30%, 96%);
+  --bulma-body-background-color: var(--bulma-background);
 }
 
-/* Tables take the page's background instead of drawing a white block on the tint */
+/* Tables take the page's background instead of drawing a white block on the grey */
 .table {
   --bulma-table-background-color: transparent;
+}
+
+/* A box inside another box, like the Categories page's form, takes the page's background so it reads as its own panel */
+.box .box {
+  --bulma-box-background-color: var(--bulma-body-background-color);
 }
 
 /* Table headers get a berry underline instead of the default grey one */
@@ -278,19 +283,17 @@
     --bulma-light-l: 22%;
     --bulma-light-invert-l: 90%;
 
-    /* The dark greys of the page, inputs and borders take a hint of berry instead of Bulma's cold blue-grey, and the page uses the darkest of them */
-    --bulma-scheme-h: var(--bulma-primary-h);
-    --bulma-scheme-s: 10%;
+    /* The page uses Bulma's darkest grey */
     --bulma-body-background-color: var(--bulma-scheme-main);
   }
 
-  /* Boxes and cards are a step lighter than the page, so they lift off it instead of disappearing into it */
+  /* Boxes and cards use Bulma's lighter dark grey, so they lift off the page instead of disappearing into it */
   .box {
-    --bulma-box-background-color: var(--bulma-scheme-main-ter);
+    --bulma-box-background-color: var(--bulma-background);
   }
 
   .card {
-    --bulma-card-background-color: var(--bulma-scheme-main-ter);
+    --bulma-card-background-color: var(--bulma-background);
   }
 
   /* Bulma builds this background from the full-strength pink, which turns dark red, so it takes the muted pink instead */
