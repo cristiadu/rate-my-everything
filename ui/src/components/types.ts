@@ -8,6 +8,9 @@ export const MODERATION_ROLES = [UserRole.ADMIN, UserRole.MODERATOR]
 /** Minimum password length, in characters, accepted by the user forms. */
 export const MIN_PASSWORD_LENGTH = 6
 
+/** Length of an ISO 4217 currency code, such as USD. */
+export const CURRENCY_CODE_LENGTH = 3
+
 /** Longest comment body the comments API accepts, in characters. */
 export const MAX_COMMENT_LENGTH = 2000
 
@@ -40,6 +43,14 @@ export type StatusMessage = { message: string, isSuccess: boolean } | null
 
 /** Which attribute form the admin screen shows: none, a new attribute, or an existing attribute being edited. */
 export type AttributeEditorState = { mode: 'create' } | { mode: 'edit', attribute: AttributeResponse } | null
+
+/** How the input for one attribute value type looks: its HTML input type, number step and minimum, and the unit after it. */
+export type AttributeInputShape = {
+    type: string;
+    step?: string;
+    min?: string;
+    unit?: string;
+}
 
 /** One choice in a multiselect dropdown. */
 export type SelectOption = {
