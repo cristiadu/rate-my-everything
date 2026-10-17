@@ -81,3 +81,9 @@ export interface InterestFilters {
     minGrade: string;
     maxGrade: string;
 }
+
+/** One thing the app does, shown as a short titled paragraph on the home page. */
+export interface HomeFeature {
+    title: string;
+    description: string;
+}
