@@ -91,6 +91,11 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
     setFilters(NO_INTEREST_FILTERS)
   }
 
+  // Visitors have no interests to filter, so the panel and its tab only show once signed in
+  if (!isAuthenticated) {
+    return null
+  }
+
   return (
     <>
       <Arrow isOpen={isOpen} setIsOpen={setIsOpen} top={topOffset} />

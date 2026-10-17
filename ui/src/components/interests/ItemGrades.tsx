@@ -14,7 +14,7 @@ interface GradeBoxProps {
 }
 
 /** Shows one grade as a big number in a box colored by how good the grade is, with its label under it. */
-const GradeBox: React.FC<GradeBoxProps> = ({ label, grade, detail }) => (
+export const GradeBox: React.FC<GradeBoxProps> = ({ label, grade, detail }) => (
   <div className="has-text-centered">
     <div className={`notification is-${gradeColor(grade)} grade-box mb-2`}>
       <p className="title is-1">{grade === null ? NOT_RATED : grade.toFixed(1)}</p>
