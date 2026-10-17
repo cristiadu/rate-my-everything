@@ -18,8 +18,11 @@ import BootstrapService from '@/services/BootstrapService'
 /** Window the request rate limit counts over, in milliseconds (15 minutes). */
 const RATE_LIMIT_WINDOW_MS = 15 * 60 * 1000
 
-/** Requests one client may make per rate limit window. */
-const RATE_LIMIT_MAX_REQUESTS = 100
+/** Requests one client may make per rate limit window; a browsing session spends several on each page. */
+const RATE_LIMIT_MAX_REQUESTS = 1000
+
+/** Reverse proxies in front of the API, like alwaysdata's, whose X-Forwarded-For names the real client. */
+const TRUSTED_PROXY_HOPS = 1
 
 /** HTTP port used when PORT is not set. */
 const DEFAULT_PORT = 3000
@@ -28,6 +31,8 @@ const DEFAULT_PORT = 3000
 const UI_DIST_DIR = process.env.UI_DIST_DIR
 
 const app = express()
+// Without it every visitor shares the proxy's address, and so one rate limit budget.
+app.set('trust proxy', TRUSTED_PROXY_HOPS)
 let server: http.Server
 const limiter = rateLimit({
   windowMs: RATE_LIMIT_WINDOW_MS,

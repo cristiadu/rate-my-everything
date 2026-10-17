@@ -16,7 +16,7 @@ export interface RateLimitHeaders {
   /**
    * Requests one client may make in each 15 minute window.
    * @pattern ^[0-9]+$
-   * @example "100"
+   * @example "1000"
    */
   'X-RateLimit-Limit': string
   /**
