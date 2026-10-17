@@ -3,6 +3,7 @@ import { ValidateError } from 'tsoa'
 import { NewApiError } from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import { RequestRejected } from '@/errors/RequestRejected'
+import { InvalidAttributeValue } from '@/errors/InvalidAttributeValue'
 import { logger } from '@/helpers/Logger'
 
 /** Marks every response as JSON. */
@@ -22,8 +23,8 @@ export const notFoundHandler = (_req: Request, res: Response) => {
 }
 
 /**
- * Turns errors thrown by controllers and tsoa into API errors: 400 for request values that do not match the spec,
- * the carried status for rejected requests, and 500 for anything else.
+ * Turns errors thrown by controllers and tsoa into API errors: 400 for request values that do not match the spec or
+ * their attribute's value type, the carried status for rejected requests, and 500 for anything else.
  */
 export const errorHandler = (error: unknown, _req: Request, res: Response, next: NextFunction) => {
   if (res.headersSent) {
@@ -31,6 +32,9 @@ export const errorHandler = (error: unknown, _req: Request, res: Response, next:
   }
   if (error instanceof ValidateError) {
     return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, `Invalid request: ${describeValidationError(error)}`))
+  }
+  if (error instanceof InvalidAttributeValue) {
+    return res.status(400).json(NewApiError(ErrorCode.VALIDATION_ERROR, 400, error.message))
   }
   if (error instanceof RequestRejected) {
     return res.status(error.apiError.status).json(error.apiError)

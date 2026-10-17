@@ -3,6 +3,7 @@ import RatedItem, {
   AttributeFilter, MAX_GRADE, MIN_GRADE, RatingFilters, RatingUpdate,
 } from '@/models/RatedItem'
 import RankingScope from '@/models/RankingScope'
+import AttributeValueType from '@/models/AttributeValueType'
 import BaseService from '@/services/BaseService'
 import { SessionUser } from '@/models/User'
 import { RatingNotOwned } from '@/errors/RatingNotOwned'
@@ -35,12 +36,16 @@ const COLLECTIVE_GRADE_SQL = `item.id IN (
 const VISIBLE_RATING_SQL = `("ratedItem"."user_id" = :viewerId
   OR "ratedItem"."id" IN (SELECT latest.id FROM (${LATEST_RATINGS_SQL}) latest))`
 
+/** Value types whose values are free text, matched by the attribute filter when they contain the searched text. */
+const TEXT_VALUE_TYPES_SQL = [AttributeValueType.STRING, AttributeValueType.URL, AttributeValueType.EMAIL]
+  .map((valueType) => `'${valueType}'`).join(', ')
+
 /** SQL keeping the items holding the value for attribute filter number `index`: text contains it, other types equal it. */
 const attributeFilterSql = (index: number): string => `EXISTS (
   SELECT 1 FROM attribute_value value${index}
   JOIN attribute attribute${index} ON attribute${index}.id = value${index}.attribute_id
   WHERE value${index}.item_id = item.id AND value${index}.attribute_id = :attributeId${index}
-  AND CASE WHEN attribute${index}."valueType" = 'string'
+  AND CASE WHEN attribute${index}."valueType" IN (${TEXT_VALUE_TYPES_SQL})
     THEN strpos(lower(value${index}.value), lower(:attributeValue${index})) > 0
     ELSE value${index}.value = :attributeValue${index} END)`
 

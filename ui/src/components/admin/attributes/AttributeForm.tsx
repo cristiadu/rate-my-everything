@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { AttributeValueType, type AttributeInput, type AttributeResponse } from '@/api/generated/api'
+import { CURRENCY_CODE_LENGTH } from '@/components/types'
 
 /** Props for the admin attribute form; pass an attribute to edit it, or none to create one. */
 interface AttributeFormProps {
@@ -9,7 +10,7 @@ interface AttributeFormProps {
   onCancel: () => void;
 }
 
-/** Form for creating or editing an attribute's name and value type. */
+/** Form for creating or editing an attribute's name, value type and, for currency attributes, currency code. */
 const AttributeForm: React.FC<AttributeFormProps> = ({
   attribute, isSaving, onSubmit, onCancel,
 }) => {
@@ -17,12 +18,14 @@ const AttributeForm: React.FC<AttributeFormProps> = ({
   const [values, setValues] = useState<AttributeInput>({
     name: attribute?.name ?? '',
     valueType: attribute?.valueType ?? AttributeValueType.STRING,
+    currencyCode: attribute?.currencyCode ?? '',
   })
+  const isCurrency = values.valueType === AttributeValueType.CURRENCY
 
   /** Hands the form values to the parent instead of submitting the page. */
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    onSubmit(values)
+    onSubmit({ name: values.name, valueType: values.valueType, ...(isCurrency && { currencyCode: values.currencyCode }) })
   }
 
   return (
@@ -58,6 +61,25 @@ const AttributeForm: React.FC<AttributeFormProps> = ({
           </div>
         </div>
       </div>
+
+      {isCurrency && (
+        <div className="field">
+          <label className="label" htmlFor="attribute-currency-code">Currency code</label>
+          <div className="control">
+            <input
+              className="input currency-code-input"
+              id="attribute-currency-code"
+              name="currencyCode"
+              placeholder="USD"
+              maxLength={CURRENCY_CODE_LENGTH}
+              value={values.currencyCode ?? ''}
+              onChange={(e) => setValues({ ...values, currencyCode: e.target.value.toUpperCase() })}
+              required
+            />
+          </div>
+          <p className="help">The ISO 4217 code amounts are in, such as USD, EUR or BRL.</p>
+        </div>
+      )}
 
       <div className="field is-grouped">
         <div className="control">

@@ -1,9 +1,11 @@
 import Item, { AttributeValueInput, ItemInput } from '@/models/Item'
 import Category from '@/models/Category'
 import AttributeValue from '@/models/AttributeValue'
+import type Attribute from '@/models/Attribute'
 import BaseService from '@/services/BaseService'
 import CategoryService from '@/services/CategoryService'
 import { UnknownResource } from '@/errors/UnknownResource'
+import { checkAttributeValue } from '@/helpers/AttributeValueHelper'
 import { findSimilarIds, orderByIds } from '@/helpers/SimilarityHelper'
 import { In } from 'typeorm'
 
@@ -26,7 +28,10 @@ class ItemService extends BaseService<Item> {
     return category
   }
 
-  /** Build the item's attribute values, keeping the ids of values that already exist for the same attribute. */
+  /**
+   * Build the item's attribute values, keeping the ids of values that already exist for the same attribute; rejects
+   * values that do not fit their attribute's value type.
+   */
   private buildAttributeValues(category: Category, inputs: AttributeValueInput[], currentValues: AttributeValue[]): AttributeValue[] {
     const categoryAttributes = new Map(category.attributes.map((attribute) => [attribute.id, attribute]))
     const unknownIds = inputs.map((input) => input.attributeId).filter((attributeId) => !categoryAttributes.has(attributeId))
@@ -35,8 +40,10 @@ class ItemService extends BaseService<Item> {
     }
 
     return inputs.map((input) => {
+      const attribute = categoryAttributes.get(input.attributeId) as Attribute
+      checkAttributeValue(attribute, input.value)
       const currentValue = currentValues.find((value) => value.attribute.id === input.attributeId)
-      return { id: currentValue?.id, attribute: categoryAttributes.get(input.attributeId), value: input.value } as AttributeValue
+      return { id: currentValue?.id, attribute, value: input.value } as AttributeValue
     })
   }
 
