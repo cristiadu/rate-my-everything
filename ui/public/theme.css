@@ -285,6 +285,19 @@
 
     /* The page uses Bulma's darkest grey */
     --bulma-body-background-color: var(--bulma-scheme-main);
+
+    /* Dividers use the border grey, since Bulma's default matches the boxes' grey and would vanish inside them */
+    --bulma-hr-background-color: var(--bulma-border-weak);
+  }
+
+  /* Berry headings, like the home page's headline, use the light berry so they read on the dark grey */
+  .has-text-primary {
+    color: var(--bulma-primary-on-scheme) !important;
+  }
+
+  /* Dark grey text, like the home page's login hint, uses the page's normal text color instead of disappearing */
+  .has-text-grey-dark {
+    color: var(--bulma-text) !important;
   }
 
   /* Boxes and cards use Bulma's lighter dark grey, so they lift off the page instead of disappearing into it */
