@@ -1,12 +1,13 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
-import { Box, Content, Heading } from 'react-bulma-components'
+import { Content } from 'react-bulma-components'
 import Index from '@/components/index/Index'
 import OverallRankings from '@/components/rankings/OverallRankings'
 import RequireAdmin, { RequireLogin, RequireModerator } from '@/components/admin/RequireAdmin'
 import AdminDashboard from '@/components/admin/AdminDashboard'
 import UserManagement from '@/components/admin/users/UserManagement'
 import CreateUserForm from '@/components/users/CreateUserForm'
+import SignUpPage from '@/components/users/SignUpPage'
 import { SIGN_UP_PATH } from '@/components/users/UserHeaderMenu'
 import HealthCheck from '@/components/health/HealthCheck'
 import UserAccount from '@/components/account/UserAccount'
@@ -27,15 +28,7 @@ const MainContent = () => (
         <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
         <Route path="/admin/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
         <Route path="/admin/attributes" element={<RequireAdmin><AttributeManagement /></RequireAdmin>} />
-        <Route
-          path={SIGN_UP_PATH}
-          element={(
-            <Box>
-              <Heading size={4} renderAs="h2">Create your account</Heading>
-              <CreateUserForm isSignUp />
-            </Box>
-          )}
-        />
+        <Route path={SIGN_UP_PATH} element={<SignUpPage />} />
         <Route path="/user/create" element={<RequireAdmin><CreateUserForm /></RequireAdmin>} />
         <Route path="/rankings" element={<RequireLogin><OverallRankings scope={RankingScope.MINE} /></RequireLogin>} />
         <Route path="/all_rankings" element={<RequireLogin><OverallRankings scope={RankingScope.ALL} /></RequireLogin>} />
