@@ -55,6 +55,17 @@ describe('UserHeaderMenu', () => {
     expect(fetchMock).not.toHaveBeenCalled()
   })
 
+  test('links the New Account button to the sign-up page', () => {
+    // GIVEN a logged-out visitor
+    render(<AuthProvider><UserHeaderMenu /></AuthProvider>)
+
+    // WHEN they look at the New Account button
+    const newAccount = screen.getByRole('link', { name: 'New Account' })
+
+    // THEN it opens the sign-up page
+    expect(newAccount).toHaveAttribute('href', '/register')
+  })
+
   test('logs the user out and forgets the token', () => {
     // GIVEN a logged-in user
     loginAs([UserRole.USER])

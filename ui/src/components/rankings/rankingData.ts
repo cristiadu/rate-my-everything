@@ -51,10 +51,10 @@ export const toOverallRankings = (ratings: RatedItemResponse[], userId: number |
   .sort((a, b) => b.rating - a.rating)
 
 /** Lowest grade shown in green as a good grade. */
-const GOOD_GRADE = 7
+export const GOOD_GRADE = 7
 
 /** Lowest grade shown in yellow as an average grade; lower grades are shown in red. */
-const AVERAGE_GRADE = 4
+export const AVERAGE_GRADE = 4
 
 /** Picks the color a grade is shown in: green from 7, yellow from 4, red below that, and grey when there is no grade. */
 export const gradeColor = (grade: number | null): GradeColor => {

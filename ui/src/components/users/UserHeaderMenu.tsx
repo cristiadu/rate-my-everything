@@ -6,6 +6,9 @@ import { useAuth } from '@/components/users/AuthContext'
 import { getUsernameFromToken } from '@/components/admin/RequireAdmin'
 import { login as signIn } from '@/api/generated/api'
 
+/** Page where a visitor creates their own account. */
+export const SIGN_UP_PATH = '/register'
+
 const UserHeaderMenu = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -111,7 +114,7 @@ const UserHeaderMenu = () => {
             >
               Log In
             </Button>
-            <Button size="small" color="info">New Account</Button>
+            <a className="button is-small is-info" href={SIGN_UP_PATH}>New Account</a>
           </Level.Item>
           {error && (
             <Level.Item>
