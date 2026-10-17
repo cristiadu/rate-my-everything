@@ -1,8 +1,23 @@
 import React from 'react'
 import { fireEvent, render, screen } from '@testing-library/react'
+import { MemoryRouter, Route, Routes } from 'react-router-dom'
 import CreateUserForm from '@/components/users/CreateUserForm'
+import { AuthProvider } from '@/components/users/AuthContext'
 import { UserRole, type UserResponse } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
+import { loginAs, makeTestToken } from '@/components/tests/common/Auth'
+
+/** Renders the sign-up form on its own page, with a home page to land on afterwards. */
+const renderSignUp = () => render(
+  <AuthProvider>
+    <MemoryRouter initialEntries={['/register']}>
+      <Routes>
+        <Route path="/register" element={<CreateUserForm isSignUp />} />
+        <Route path="/" element={<p>Home page</p>} />
+      </Routes>
+    </MemoryRouter>
+  </AuthProvider>,
+)
 
 /** Existing user passed to the form in edit mode. */
 const bob: UserResponse = { id: 2, username: 'bob', email: 'bob@example.com', roles: [UserRole.USER] }
@@ -11,6 +26,7 @@ describe('CreateUserForm', () => {
   let fetchMock: jest.MockedFunction<typeof fetch>
 
   beforeEach(() => {
+    localStorage.clear()
     fetchMock = mockFetch()
   })
 
@@ -23,6 +39,7 @@ describe('CreateUserForm', () => {
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'carol' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'carol@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: 'Create User' }))
 
     // THEN the user is posted and the success message shows
@@ -44,10 +61,27 @@ describe('CreateUserForm', () => {
     fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bob' } })
     fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'bob@example.com' } })
     fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret123' } })
     fireEvent.click(screen.getByRole('button', { name: 'Create User' }))
 
     // THEN the API's message is shown
     expect(await screen.findByText('Username already exists')).toBeInTheDocument()
+  })
+
+  test('does not save when the repeated password differs', () => {
+    // GIVEN the create form
+    render(<CreateUserForm />)
+
+    // WHEN the two passwords differ and the form is submitted
+    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'carol' } })
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'carol@example.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret124' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create User' }))
+
+    // THEN the mismatch is reported and nothing is sent
+    expect(screen.getByText('Passwords do not match')).toBeInTheDocument()
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 
   test('edits a user without sending a blank password', async () => {
@@ -110,5 +144,60 @@ describe('CreateUserForm', () => {
 
     // THEN the parent is told to close it
     expect(onCancel).toHaveBeenCalledTimes(1)
+  })
+
+  test('signs a visitor up, logs them in and sends them home', async () => {
+    // GIVEN the API creates the account and then accepts its credentials
+    const token = makeTestToken([UserRole.USER])
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse({ id: 4, username: 'dave', email: 'dave@example.com', roles: [UserRole.USER] }, 201))
+      .mockResolvedValueOnce(jsonResponse({ token }))
+    renderSignUp()
+
+    // WHEN the visitor fills in the form, which has no roles to pick, and submits it
+    expect(screen.queryByText('Roles')).not.toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'dave' } })
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'dave@example.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret123' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create Account' }))
+
+    // THEN the account is registered without roles, the visitor is logged in and lands on the home page
+    expect(await screen.findByText('Home page')).toBeInTheDocument()
+    const [registerUrl, registerOptions] = fetchMock.mock.calls[0]
+    expect(registerUrl).toBe('http://localhost:3000/api/login/register')
+    expect(JSON.parse(String(registerOptions?.body))).toEqual({
+      username: 'dave', email: 'dave@example.com', password: 'secret123',
+    })
+    expect(fetchMock.mock.calls[1][0]).toBe('http://localhost:3000/api/login')
+    expect(localStorage.getItem('authToken')).toBe(token)
+  })
+
+  test('shows the API error when signing up fails', async () => {
+    // GIVEN the username is already taken
+    fetchMock.mockResolvedValueOnce(jsonResponse({ error: 'Username already exists' }, 422))
+    renderSignUp()
+
+    // WHEN the visitor submits the form
+    fireEvent.change(screen.getByLabelText('Username'), { target: { value: 'bob' } })
+    fireEvent.change(screen.getByLabelText('Email'), { target: { value: 'bob@example.com' } })
+    fireEvent.change(screen.getByLabelText('Password'), { target: { value: 'secret123' } })
+    fireEvent.change(screen.getByLabelText('Repeat password'), { target: { value: 'secret123' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create Account' }))
+
+    // THEN the message is shown and the visitor stays logged out on the form
+    expect(await screen.findByText('Username already exists')).toBeInTheDocument()
+    expect(localStorage.getItem('authToken')).toBeNull()
+  })
+
+  test('sends a logged-in user away from the sign-up form', () => {
+    // GIVEN a user who is already logged in
+    loginAs([UserRole.USER])
+
+    // WHEN they open the sign-up page
+    renderSignUp()
+
+    // THEN they land on the home page instead
+    expect(screen.getByText('Home page')).toBeInTheDocument()
   })
 })
