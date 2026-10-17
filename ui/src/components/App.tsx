@@ -16,18 +16,13 @@ const App = () => {
   const [navbarHeight, setNavbarHeight] = useState(0)
   const [isDesktop, setIsDesktop] = useState(() => window.matchMedia(DESKTOP_MEDIA_QUERY).matches)
 
-  /**
-   * Below the desktop breakpoint the header is too tall to stay pinned on screen, so it scrolls away with the page
-   * and the filter panel opens from the top of the window instead of under it.
-   */
+  /** Below the desktop breakpoint the header is too tall to stay pinned on screen, so it scrolls away with the page. */
   useEffect(() => {
     const desktopQuery = window.matchMedia(DESKTOP_MEDIA_QUERY)
     const updateIsDesktop = () => setIsDesktop(desktopQuery.matches)
     desktopQuery.addEventListener('change', updateIsDesktop)
     return () => desktopQuery.removeEventListener('change', updateIsDesktop)
   }, [])
-
-  const headerOffset = isDesktop ? navbarHeight : 0
 
   useEffect(() => {
     const resizeObserver = new ResizeObserver((entries) => {
@@ -53,11 +48,11 @@ const App = () => {
             <Header />
           </div>
         </Navbar>
-        <Hero size="fullheight" style={{ paddingTop: `${headerOffset}px` }}>
+        <Hero size="fullheight" style={{ paddingTop: isDesktop ? `${navbarHeight}px` : undefined }}>
           <Hero.Body className="is-flex is-align-items-flex-start">
-            <FilterMenu topOffset={headerOffset} />
+            <FilterMenu topOffset={navbarHeight} isHeaderPinned={isDesktop} />
             {/* Lines the page up with the header's title and keeps it from stretching across wide screens */}
-            <Container>
+            <Container breakpoint="fullhd">
               <MainContent />
             </Container>
           </Hero.Body>

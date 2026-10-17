@@ -244,7 +244,7 @@ const CategoriesPage: React.FC = () => {
           <thead>
             <tr>
               <th>Name</th>
-              <th>Description</th>
+              <th className="is-hidden-mobile">Description</th>
               <th>Attributes</th>
               <th aria-label="Actions" />
             </tr>
@@ -257,8 +257,12 @@ const CategoriesPage: React.FC = () => {
             )}
             {categories.map((category) => (
               <tr key={category.id}>
-                <td><CategoryTag category={category} /></td>
-                <td>{category.description}</td>
+                <td>
+                  <CategoryTag category={category} />
+                  {/* On phones the description sits under the name instead of in its own column */}
+                  <p className="is-hidden-tablet is-size-7 mt-1">{category.description}</p>
+                </td>
+                <td className="is-hidden-mobile">{category.description}</td>
                 <td>
                   <div className="tags">
                     {category.attributes.map((attribute) => (
@@ -266,13 +270,15 @@ const CategoriesPage: React.FC = () => {
                     ))}
                   </div>
                 </td>
-                <td className="has-text-right">
-                  <button className="button is-small mr-2" type="button" onClick={() => handleEdit(category)}>
-                    {isAdmin ? 'Edit' : 'Suggest edit'}
-                  </button>
-                  <button className="button is-small is-danger" type="button" onClick={() => handleDelete(category)}>
-                    {isAdmin ? 'Delete' : 'Suggest removal'}
-                  </button>
+                <td>
+                  <div className="buttons is-right">
+                    <button className="button is-small" type="button" onClick={() => handleEdit(category)}>
+                      {isAdmin ? 'Edit' : 'Suggest edit'}
+                    </button>
+                    <button className="button is-small is-danger" type="button" onClick={() => handleDelete(category)}>
+                      {isAdmin ? 'Delete' : 'Suggest removal'}
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

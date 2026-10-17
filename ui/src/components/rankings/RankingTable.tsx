@@ -9,7 +9,10 @@ interface RankingTableProps {
     canEdit: boolean;
 }
 
-/** Table of rated interests. On phones the image and ratings count columns are left out so the grades fit on screen. */
+/**
+ * Table of rated interests. On phones the image and ratings count columns are left out and the category sits under
+ * the name, so the grades fit on screen.
+ */
 const RankingTable: React.FC<RankingTableProps> = ({ rankings, canEdit }) => (
   <div className="table-container">
     <Table hoverable style={{ width: '100%' }}>
@@ -17,7 +20,7 @@ const RankingTable: React.FC<RankingTableProps> = ({ rankings, canEdit }) => (
         <tr>
           <th className="is-hidden-mobile">Image</th>
           <th>Name</th>
-          <th>Category</th>
+          <th className="is-hidden-mobile">Category</th>
           <th>My grade</th>
           <th>Everyone&apos;s grade</th>
           <th className="is-hidden-mobile">Ratings</th>

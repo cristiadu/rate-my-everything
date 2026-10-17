@@ -110,7 +110,7 @@ const UserManagement: React.FC = () => {
             <thead>
               <tr>
                 <th>Username</th>
-                <th>Email</th>
+                <th className="is-hidden-mobile">Email</th>
                 <th>Roles</th>
                 <th aria-label="Actions" />
               </tr>
@@ -123,20 +123,26 @@ const UserManagement: React.FC = () => {
               )}
               {users.map((user) => (
                 <tr key={user.id}>
-                  <td>{user.username}</td>
-                  <td>{user.email}</td>
+                  <td>
+                    {user.username}
+                    {/* On phones the email sits under the username instead of in its own column */}
+                    <p className="is-hidden-tablet is-size-7 has-text-grey">{user.email}</p>
+                  </td>
+                  <td className="is-hidden-mobile">{user.email}</td>
                   <td>
                     <div className="tags">
                       {user.roles.map((role) => <span key={role} className="tag is-info">{role}</span>)}
                     </div>
                   </td>
-                  <td className="has-text-right">
-                    <button className="button is-small mr-2" type="button" onClick={() => setEditor({ mode: 'edit', user })}>
-                      Edit
-                    </button>
-                    <button className="button is-small is-danger" type="button" onClick={() => handleDelete(user)}>
-                      Delete
-                    </button>
+                  <td>
+                    <div className="buttons is-right">
+                      <button className="button is-small" type="button" onClick={() => setEditor({ mode: 'edit', user })}>
+                        Edit
+                      </button>
+                      <button className="button is-small is-danger" type="button" onClick={() => handleDelete(user)}>
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

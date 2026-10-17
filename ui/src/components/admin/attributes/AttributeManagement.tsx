@@ -122,13 +122,15 @@ const AttributeManagement: React.FC = () => {
                 <tr key={attribute.id}>
                   <td>{attribute.name}</td>
                   <td><span className="tag is-info">{attribute.valueType}</span></td>
-                  <td className="has-text-right">
-                    <button className="button is-small mr-2" type="button" onClick={() => setEditor({ mode: 'edit', attribute })}>
-                      Edit
-                    </button>
-                    <button className="button is-small is-danger" type="button" onClick={() => handleDelete(attribute)}>
-                      Delete
-                    </button>
+                  <td>
+                    <div className="buttons is-right">
+                      <button className="button is-small" type="button" onClick={() => setEditor({ mode: 'edit', attribute })}>
+                        Edit
+                      </button>
+                      <button className="button is-small is-danger" type="button" onClick={() => handleDelete(attribute)}>
+                        Delete
+                      </button>
+                    </div>
                   </td>
                 </tr>
               ))}

@@ -116,7 +116,7 @@ const RatingHistory: React.FC<RatingHistoryProps> = ({ itemRatings, userId, onRe
         {(onEdit || onRemove) && (
           <td className="has-text-right">
             {isMine && (
-              <div className="buttons is-right are-small is-flex-wrap-nowrap">
+              <div className="buttons is-right are-small rating-history-actions">
                 {onEdit && (
                   <button
                     type="button"

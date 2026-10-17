@@ -28,10 +28,64 @@
   --bulma-info-on-scheme-l: 30%;
 }
 
+/* On phones the header and page sides get a narrower margin so the content has more of the screen */
+@media screen and (max-width: 768px) {
+  .hero .hero-body,
+  .hero.is-small .hero-body {
+    padding-inline: 1rem;
+  }
+}
+
+/* On phones table cells keep less padding on their sides so more columns fit on screen */
+@media screen and (max-width: 768px) {
+  .table {
+    --bulma-table-cell-padding: 0.5em 0.4em;
+  }
+
+  .content {
+    --bulma-content-table-cell-padding: 0.5em 0.4em;
+  }
+}
+
 /* Table headers get a berry underline instead of the default grey one */
 .table thead th,
 .content table thead th {
   border-bottom-color: var(--bulma-primary);
+}
+
+/*
+ * On phones the logged-out user bar shrinks to the username and password side by side over the two buttons.
+ * The inputs' placeholders already name them, so their labels are hidden; !important beats Bulma's is-flex helper on them.
+ */
+@media screen and (max-width: 768px) {
+  .user-bar-login .level-right {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .user-bar-login .level-right > .level-item {
+    flex: 1 1 0;
+    margin: 0;
+    min-width: 0;
+  }
+
+  /* The buttons and any login error each take a full row under the inputs */
+  .user-bar-login .level-right > .level-item:nth-child(n + 3) {
+    flex-basis: 100%;
+  }
+
+  .user-bar-login .level-item .field {
+    flex-grow: 1;
+    margin-bottom: 0;
+  }
+
+  .user-bar-login .field-label {
+    display: none !important;
+  }
 }
 
 /* Top menu dropdowns hang from the menu bar with a thin berry outline instead of floating borderless */
@@ -67,6 +121,33 @@
   .navbar-item.has-dropdown.is-hoverable:hover .navbar-dropdown,
   .navbar-item.has-dropdown.is-hoverable:focus-within .navbar-dropdown {
     visibility: visible;
+  }
+
+  /* Below Bulma's full HD width the menu has no side margins, so its logo keeps a small gap from the window's edge */
+  @media screen and (max-width: 1407px) {
+    .navbar > .container .navbar-brand {
+      margin-inline-start: 0;
+    }
+
+    .navbar > .container .navbar-menu {
+      margin-inline-end: 0;
+    }
+  }
+
+  /* On narrow desktops the menu items sit a little closer and smaller, so the whole menu, Admin included, fits the bar */
+  @media screen and (max-width: 1215px) {
+    .navbar-start {
+      font-size: 0.9rem;
+    }
+
+    .navbar-start > a.navbar-item,
+    .navbar-start > .navbar-item.has-dropdown > .navbar-link {
+      padding-inline: 0.4rem;
+    }
+
+    .navbar-start > .navbar-item.has-dropdown > .navbar-link:not(.is-arrowless) {
+      padding-inline-end: 1.75rem;
+    }
   }
 
   /* The soft, see-through berry of the lines that split the top menu items */
@@ -119,6 +200,21 @@
   }
 }
 
+/*
+ * In the phone and tablet menu the Admin dropdown opens in place under its label, so its items read as part of the menu:
+ * no outline, the menu's own background and a small indent.
+ */
+@media screen and (max-width: 1023px) {
+  .navbar .navbar-dropdown {
+    border: none;
+    padding-left: 0.75rem;
+  }
+
+  .navbar .navbar-dropdown .navbar-item:not(:hover, .is-active) {
+    background-color: transparent;
+  }
+}
+
 /* Dropdown items use Bulma's plain strong text color instead of the menu's dark red, so the open menu reads as one calm panel */
 .navbar .navbar-dropdown {
   --bulma-navbar-dropdown-item-h: var(--bulma-text-h);
@@ -150,9 +246,10 @@
   }
 }
 
-/* Footer links use the header's light pink so they stay readable on the dark slate, and underline on hover */
+/* Footer links use the header's light pink so they stay readable on the dark slate, never break mid-link, and underline on hover */
 .footer a {
   color: var(--bulma-danger-light);
+  white-space: nowrap;
 }
 
 .footer a:hover {
@@ -219,6 +316,14 @@
   overflow: hidden;
 }
 
+/* On phones the photo stays a comfortable size instead of filling the whole width with a tall frame */
+@media screen and (max-width: 768px) {
+  .interest-view-photo {
+    margin-inline: auto;
+    max-width: 20rem;
+  }
+}
+
 /* The whole photo shows, letterboxed, instead of being cropped to the frame */
 .interest-view-photo img {
   object-fit: contain;
@@ -262,9 +367,18 @@
   padding-top: 0.75rem;
 }
 
-/* A rating's date, and its grade with its Mine tag, stay on one line in the rating history */
-.rating-history-nowrap {
-  white-space: nowrap;
+/* A rating's date, and its grade with its Mine tag, stay on one line in the rating history where there is room */
+@media screen and (min-width: 769px) {
+  .rating-history-nowrap {
+    white-space: nowrap;
+  }
+}
+
+/* A rating's Edit and Remove buttons stay side by side where there is room, and stack on phones */
+@media screen and (min-width: 769px) {
+  .rating-history-actions {
+    flex-wrap: nowrap;
+  }
 }
 
 /* The grade input of a rating being edited only needs room for a grade like "10.0" */

@@ -51,7 +51,7 @@ describe('App', () => {
     expect(container.querySelector('.navbar')).toHaveClass('is-fixed-top')
   })
 
-  test('lets the header scroll away and opens the filters from the window top on narrower screens', () => {
+  test('lets the header and the filter tab scroll away with the page on narrower screens', () => {
     // GIVEN a phone or tablet window and a top menu laid out 52px high
     mockDesktopWidth(false)
     jest.spyOn(HTMLElement.prototype, 'offsetHeight', 'get').mockReturnValue(NAVBAR_HEIGHT)
@@ -59,8 +59,10 @@ describe('App', () => {
     // WHEN the app renders
     const { container } = render(<App />)
 
-    // THEN the header scrolls with the page and the filter tab sits at the top of the window
+    // THEN the header scrolls with the page and the filter tab sits on the page just under it
     expect(container.querySelector('.navbar')).not.toHaveClass('is-fixed-top')
-    expect(screen.getByRole('button', { name: 'Open filters' }).style.top).toBe('calc(0px + 1.25rem)')
+    const tab = screen.getByRole('button', { name: 'Open filters' })
+    expect(tab.style.position).toBe('absolute')
+    expect(tab.style.top).toBe('calc(52px + 0.5rem)')
   })
 })
