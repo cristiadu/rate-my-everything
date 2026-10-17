@@ -7,6 +7,8 @@ import RequireAdmin, { RequireLogin, RequireModerator } from '@/components/admin
 import AdminDashboard from '@/components/admin/AdminDashboard'
 import UserManagement from '@/components/admin/users/UserManagement'
 import CreateUserForm from '@/components/users/CreateUserForm'
+import SignUpPage from '@/components/users/SignUpPage'
+import { SIGN_UP_PATH } from '@/components/users/UserHeaderMenu'
 import HealthCheck from '@/components/health/HealthCheck'
 import UserAccount from '@/components/account/UserAccount'
 import CategoriesPage from '@/components/categories/CategoriesPage'
@@ -26,6 +28,7 @@ const MainContent = () => (
         <Route path="/admin" element={<RequireAdmin><AdminDashboard /></RequireAdmin>} />
         <Route path="/admin/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
         <Route path="/admin/attributes" element={<RequireAdmin><AttributeManagement /></RequireAdmin>} />
+        <Route path={SIGN_UP_PATH} element={<SignUpPage />} />
         <Route path="/user/create" element={<RequireAdmin><CreateUserForm /></RequireAdmin>} />
         <Route path="/rankings" element={<RequireLogin><OverallRankings scope={RankingScope.MINE} /></RequireLogin>} />
         <Route path="/all_rankings" element={<RequireLogin><OverallRankings scope={RankingScope.ALL} /></RequireLogin>} />
