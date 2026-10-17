@@ -13,15 +13,17 @@ import { useAuth } from '@/components/users/AuthContext'
 
 /** Props for the filter panel. */
 interface FilterMenuProps {
-  /** Height of the fixed header above the panel, in pixels, so the panel starts right under the top menu. */
+  /** Height of the header above the panel, in pixels, so the panel and its tab start right under the top menu. */
   topOffset: number;
+  /** Whether the header stays pinned on screen; when it scrolls away instead, the panel opens from the window's top. */
+  isHeaderPinned: boolean;
 }
 
 /**
  * Collapsible panel with the filters for the interests and rankings pages: name, categories, the chosen categories'
  * attributes and a grade range. Applying them hands them to the pages, which ask the API for the matching ratings.
  */
-const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
+const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset, isHeaderPinned }) => {
   const [isOpen, setIsOpen] = useState(false)
   const { isAuthenticated } = useAuth()
   const { filters, setFilters } = useFilters()
@@ -30,6 +32,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
   const [error, setError] = useState('')
 
   const attributes = filterAttributes(categories, draft.categoryIds)
+  const panelTop = isHeaderPinned ? topOffset : 0
 
   const styles = {
     bmBurgerButton: {
@@ -43,8 +46,8 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
     bmMenuWrap: {
       left: '0',
       width: `${FILTER_PANEL_WIDTH}px`,
-      top: `${topOffset}px`,
-      height: `calc(100% - ${topOffset}px)`,
+      top: `${panelTop}px`,
+      height: `calc(100% - ${panelTop}px)`,
     },
     // Lifts the panel off the page and lets the top menu cast a soft shadow on it, so the two read as separate layers
     bmMenu: {
@@ -53,7 +56,7 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
     },
     // Dims only the page below the top menu while the panel is open
     bmOverlay: {
-      top: `${topOffset}px`,
+      top: `${panelTop}px`,
     },
   }
 
@@ -98,10 +101,10 @@ const FilterMenu: React.FC<FilterMenuProps> = ({ topOffset }) => {
 
   return (
     <>
-      <Arrow isOpen={isOpen} setIsOpen={setIsOpen} top={topOffset} />
+      <Arrow isOpen={isOpen} setIsOpen={setIsOpen} top={topOffset} isHeaderPinned={isHeaderPinned} />
       <SlideMenu
         // react-burger-menu only applies new styles when it opens or closes, so it is remounted when the header height changes
-        key={topOffset}
+        key={panelTop}
         isOpen={isOpen}
         onStateChange={(state: { isOpen: boolean }) => setIsOpen(state.isOpen)}
         // The header band's light pink keeps the panel in the palette while setting it apart from the top menu

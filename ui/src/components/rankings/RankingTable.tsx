@@ -9,25 +9,31 @@ interface RankingTableProps {
     canEdit: boolean;
 }
 
+/**
+ * Table of rated interests. On phones the image and ratings count columns are left out and the category sits under
+ * the name, so the grades fit on screen.
+ */
 const RankingTable: React.FC<RankingTableProps> = ({ rankings, canEdit }) => (
-  <Table hoverable style={{ width: '100%' }}>
-    <thead>
-      <tr>
-        <th>Image</th>
-        <th>Name</th>
-        <th>Category</th>
-        <th>My grade</th>
-        <th>Everyone&apos;s grade</th>
-        <th>Ratings</th>
-        {canEdit && <th aria-label="Actions" />}
-      </tr>
-    </thead>
-    <tbody>
-      {rankings.map((ranking) => (
-        <RankingTableItem key={ranking.item.id} ranking={ranking} canEdit={canEdit} />
-      ))}
-    </tbody>
-  </Table>
+  <div className="table-container">
+    <Table hoverable style={{ width: '100%' }}>
+      <thead>
+        <tr>
+          <th className="is-hidden-mobile">Image</th>
+          <th>Name</th>
+          <th className="is-hidden-mobile">Category</th>
+          <th>My grade</th>
+          <th>Everyone&apos;s grade</th>
+          <th className="is-hidden-mobile">Ratings</th>
+          {canEdit && <th aria-label="Actions" />}
+        </tr>
+      </thead>
+      <tbody>
+        {rankings.map((ranking) => (
+          <RankingTableItem key={ranking.item.id} ranking={ranking} canEdit={canEdit} />
+        ))}
+      </tbody>
+    </Table>
+  </div>
 )
 
 export default RankingTable

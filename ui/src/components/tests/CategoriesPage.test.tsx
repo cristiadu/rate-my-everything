@@ -34,7 +34,7 @@ describe('CategoriesPage', () => {
 
     // THEN each category shows its description and attributes
     expect(await screen.findByText('Books')).toBeInTheDocument()
-    expect(screen.getByText('Things to read')).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: 'Things to read' })).toBeInTheDocument()
     expect(screen.getByText('Author')).toBeInTheDocument()
   })
 

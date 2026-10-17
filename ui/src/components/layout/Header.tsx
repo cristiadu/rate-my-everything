@@ -17,7 +17,7 @@ const Header = () => (
       <UserHeaderMenu />
     </Hero.Header>
     <Hero.Body className="has-background-danger-light">
-      <Container>
+      <Container breakpoint="fullhd">
         <Heading textColor="danger">
           {APP_NAME}
         </Heading>

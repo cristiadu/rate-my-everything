@@ -40,96 +40,103 @@ const UserHeaderMenu = () => {
   }
 
   return (
-    <Level p={2} backgroundColor="grey-dark" textColor="primary">
-      <Level.Side pr={2} align="left">
-        <Level.Item>
-          <Heading
-            size={6}
-            subtitle
-            textColor="white"
-          >
-            {isAuthenticated ? (
-              <>
-                Welcome,
-                {' '}
-                <strong className="has-text-danger">{getUsernameFromToken(token)}</strong>
-              </>
-            ) : 'User Section'}
-          </Heading>
-        </Level.Item>
-      </Level.Side>
-
-      {!isAuthenticated ? (
-        <Level.Side align="right">
-          <Level.Item>
-            <Form.Field horizontal>
-              <Form.Field.Label className="is-align-items-center is-flex">
-                <Form.Label size="small" textColor="danger">
-                  Username
-                </Form.Label>
-              </Form.Field.Label>
-              <Form.Field.Body>
-                <Form.Field>
-                  <Form.Control>
-                    <input
-                      className="input is-small"
-                      placeholder="Username"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
-                    />
-                  </Form.Control>
-                </Form.Field>
-              </Form.Field.Body>
-            </Form.Field>
-          </Level.Item>
-          <Level.Item>
-            <Form.Field horizontal>
-              <Form.Field.Label className="is-align-items-center is-flex">
-                <Form.Label size="small" textColor="danger">
-                  Password
-                </Form.Label>
-              </Form.Field.Label>
-              <Form.Field.Body>
-                <Form.Field>
-                  <Form.Control>
-                    <input
-                      className="input is-small"
-                      placeholder="Password"
-                      type="password"
-                      value={password}
-                      onChange={(e) => setPassword(e.target.value)}
-                    />
-                  </Form.Control>
-                </Form.Field>
-              </Form.Field.Body>
-            </Form.Field>
-          </Level.Item>
-          <Level.Item>
-            <Button
-              size="small"
-              color="danger"
-              mr={2}
-              onClick={handleLogin}
-              loading={isLoading}
-            >
-              Log In
-            </Button>
-            <a className="button is-small is-info" href={SIGN_UP_PATH}>New Account</a>
-          </Level.Item>
-          {error && (
+    // The bar spans the window while its content lines up with the header's title on wide screens
+    <div className="has-background-grey-dark">
+      <div className="container is-fullhd">
+        <Level p={2} textColor="primary" className={isAuthenticated ? 'is-mobile' : 'user-bar-login'}>
+          <Level.Side pr={2} align="left" className={isAuthenticated ? undefined : 'is-hidden-mobile'}>
             <Level.Item>
-              <div className="has-text-danger is-size-7">{error}</div>
+              <Heading
+                size={6}
+                subtitle
+                textColor="white"
+              >
+                {isAuthenticated ? (
+                  <>
+                    Welcome,
+                    {' '}
+                    <strong className="has-text-danger">{getUsernameFromToken(token)}</strong>
+                  </>
+                ) : 'User Section'}
+              </Heading>
             </Level.Item>
+          </Level.Side>
+
+          {!isAuthenticated ? (
+            <Level.Side align="right">
+              <Level.Item>
+                <Form.Field horizontal>
+                  <Form.Field.Label className="is-align-items-center is-flex">
+                    <Form.Label size="small" textColor="danger">
+                      Username
+                    </Form.Label>
+                  </Form.Field.Label>
+                  <Form.Field.Body>
+                    <Form.Field>
+                      <Form.Control>
+                        <input
+                          className="input is-small"
+                          aria-label="Username"
+                          placeholder="Username"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                        />
+                      </Form.Control>
+                    </Form.Field>
+                  </Form.Field.Body>
+                </Form.Field>
+              </Level.Item>
+              <Level.Item>
+                <Form.Field horizontal>
+                  <Form.Field.Label className="is-align-items-center is-flex">
+                    <Form.Label size="small" textColor="danger">
+                      Password
+                    </Form.Label>
+                  </Form.Field.Label>
+                  <Form.Field.Body>
+                    <Form.Field>
+                      <Form.Control>
+                        <input
+                          className="input is-small"
+                          aria-label="Password"
+                          placeholder="Password"
+                          type="password"
+                          value={password}
+                          onChange={(e) => setPassword(e.target.value)}
+                        />
+                      </Form.Control>
+                    </Form.Field>
+                  </Form.Field.Body>
+                </Form.Field>
+              </Level.Item>
+              <Level.Item>
+                <Button
+                  size="small"
+                  color="danger"
+                  mr={2}
+                  onClick={handleLogin}
+                  loading={isLoading}
+                >
+                  Log In
+                </Button>
+                <a className="button is-small is-info" href={SIGN_UP_PATH}>New Account</a>
+              </Level.Item>
+              {error && (
+                <Level.Item>
+                  <div className="has-text-danger is-size-7">{error}</div>
+                </Level.Item>
+              )}
+            </Level.Side>
+          ) : (
+            <Level.Side align="right">
+              <Level.Item>
+                <Button size="small" color="danger" onClick={logout}>Log Out</Button>
+              </Level.Item>
+            </Level.Side>
           )}
-        </Level.Side>
-      ) : (
-        <Level.Side align="right">
-          <Level.Item>
-            <Button size="small" color="danger" onClick={logout}>Log Out</Button>
-          </Level.Item>
-        </Level.Side>
-      )}
-    </Level>
+        </Level>
+      </div>
+    </div>
   )
 }
 
