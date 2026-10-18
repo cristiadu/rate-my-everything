@@ -26,7 +26,7 @@ export const BOOTSTRAP_CATEGORIES: BootstrapCategory[] = [
     attributes: [
       { name: 'Director', valueType: AttributeValueType.STRING },
       RELEASE_YEAR,
-      { name: 'Runtime (minutes)', valueType: AttributeValueType.NUMBER },
+      { name: 'Runtime', valueType: AttributeValueType.DURATION },
     ],
   },
   {
@@ -68,6 +68,8 @@ export const BOOTSTRAP_CATEGORIES: BootstrapCategory[] = [
       { name: 'Cuisine', valueType: AttributeValueType.STRING },
       { name: 'City', valueType: AttributeValueType.STRING },
       { name: 'Last visited', valueType: AttributeValueType.DATE },
+      { name: 'Price per person', valueType: AttributeValueType.CURRENCY, currencyCode: 'USD' },
+      { name: 'Website', valueType: AttributeValueType.URL },
     ],
   },
 ]

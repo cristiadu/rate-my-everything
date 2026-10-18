@@ -607,12 +607,22 @@ components:
         - number
         - boolean
         - date
+        - currency
+        - percentage
+        - url
+        - email
+        - duration
       type: string
       x-enum-varnames:
         - STRING
         - NUMBER
         - BOOLEAN
         - DATE
+        - CURRENCY
+        - PERCENTAGE
+        - URL
+        - EMAIL
+        - DURATION
     AttributeResponse:
       description: An attribute as the API returns it, without its categories and values.
       properties:
@@ -625,6 +635,12 @@ components:
           example: Year published
         valueType:
           $ref: "#/components/schemas/AttributeValueType"
+        currencyCode:
+          type: string
+          nullable: true
+          description: ISO 4217 code of the currency the amounts are in; required for
+            currency attributes, empty for other value types.
+          example: USD
       required:
         - id
         - name
@@ -884,6 +900,12 @@ components:
           example: Year published
         valueType:
           $ref: "#/components/schemas/AttributeValueType"
+        currencyCode:
+          type: string
+          nullable: true
+          description: ISO 4217 code of the currency the amounts are in; required for
+            currency attributes, empty for other value types.
+          example: USD
       required:
         - name
         - valueType
@@ -926,6 +948,12 @@ components:
           example: Year published
         valueType:
           $ref: "#/components/schemas/AttributeValueType"
+        currencyCode:
+          type: string
+          nullable: true
+          description: ISO 4217 code of the currency the amounts are in; required for
+            currency attributes, empty for other value types.
+          example: USD
       type: object
       additionalProperties: true
   securitySchemes:

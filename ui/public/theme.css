@@ -261,6 +261,11 @@
   width: 3.5rem;
 }
 
+/* A currency code input only needs room for a three-letter code like "USD" */
+.currency-code-input {
+  width: 6rem;
+}
+
 /*
  * Dark mode follows the system's color scheme, like Bulma's own dark scheme does.
  * Bulma switches its "on scheme" colors to light ones on a dark page, but the overrides at the top of this file would keep the berry and mint text dark,
