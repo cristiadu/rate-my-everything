@@ -70,9 +70,9 @@ const UserManagement: React.FC = () => {
 
   return (
     <div className="box">
-      <div className="level">
+      <div className="level is-mobile">
         <div className="level-left">
-          <h2 className="title is-4">Users</h2>
+          <h2 className="title is-4 mb-0">Users</h2>
         </div>
         <div className="level-right">
           <button className="button is-primary" type="button" onClick={() => setEditor({ mode: 'create' })} disabled={!!editor}>
@@ -88,7 +88,7 @@ const UserManagement: React.FC = () => {
       )}
 
       {editor && (
-        <div className="box">
+        <div className="box form-box">
           <h3 className="title is-5">
             {editor.mode === 'create' ? 'New user' : `Edit ${editor.user.username}`}
           </h3>

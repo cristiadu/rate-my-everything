@@ -27,7 +27,8 @@ const InterestDetails: React.FC<InterestDetailsProps> = ({ item, grades, history
     </header>
     <div className="columns">
       <div className="column is-half">
-        <figure className="image is-4by3 interest-view-photo">
+        {/* Without a photo the placeholder is a short strip instead of a tall empty frame */}
+        <figure className={`image ${item.imageUrl ? 'is-4by3' : 'is-3by1'} interest-view-photo`}>
           {item.imageUrl ? (
             <img alt={item.name} src={item.imageUrl} />
           ) : (

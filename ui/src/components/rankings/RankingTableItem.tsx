@@ -11,13 +11,17 @@ export const NOT_RATED = '-'
 interface RankingTableItemProps {
     ranking: RankingItem;
     canEdit: boolean;
+    /** Whether the row has an image cell; false when no interest in the table has an image. */
+    showImage: boolean;
 }
 
-const RankingTableItem: React.FC<RankingTableItemProps> = ({ ranking, canEdit }) => (
+const RankingTableItem: React.FC<RankingTableItemProps> = ({ ranking, canEdit, showImage }) => (
   <tr key={ranking.item.id}>
-    <td className="is-hidden-mobile">
-      {ranking.item.imageUrl && <Image size={64} alt={ranking.item.name} src={ranking.item.imageUrl} />}
-    </td>
+    {showImage && (
+      <td className="is-hidden-mobile">
+        {ranking.item.imageUrl && <Image size={64} alt={ranking.item.name} src={ranking.item.imageUrl} />}
+      </td>
+    )}
     <td>
       <Link to={`/interests/${ranking.item.id}`}><strong>{ranking.item.name}</strong></Link>
       {/* On phones the category sits under the name instead of in its own column */}

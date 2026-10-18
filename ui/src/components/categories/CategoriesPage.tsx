@@ -151,7 +151,7 @@ const CategoriesPage: React.FC = () => {
         </div>
       )}
 
-      <div className="box">
+      <div className="box form-box">
         <form onSubmit={handleSubmit} aria-label={editingName === null ? 'Create category' : 'Edit category'}>
           <h3 className="title is-5">{formTitle}</h3>
           <div className="field">

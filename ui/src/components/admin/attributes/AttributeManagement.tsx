@@ -68,9 +68,9 @@ const AttributeManagement: React.FC = () => {
 
   return (
     <div className="box">
-      <div className="level">
+      <div className="level is-mobile">
         <div className="level-left">
-          <h2 className="title is-4">Attributes</h2>
+          <h2 className="title is-4 mb-0">Attributes</h2>
         </div>
         <div className="level-right">
           <button className="button is-primary" type="button" onClick={() => setEditor({ mode: 'create' })} disabled={!!editor}>
@@ -86,7 +86,7 @@ const AttributeManagement: React.FC = () => {
       )}
 
       {editor && (
-        <div className="box">
+        <div className="box form-box">
           <h3 className="title is-5">
             {editor.mode === 'create' ? 'New attribute' : `Edit ${editor.attribute.name}`}
           </h3>

@@ -111,7 +111,7 @@ const ImportPage: React.FC = () => {
           </Message.Body>
         </Message>
       )}
-      <Box>
+      <Box className="form-box">
         <form onSubmit={handleSearch}>
           <div className="field is-grouped is-grouped-multiline is-align-items-flex-end">
             <div className="control">

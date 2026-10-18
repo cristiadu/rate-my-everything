@@ -8,7 +8,7 @@ const UserAccount: React.FC = () => {
   const { token } = useAuth()
 
   return (
-    <Box>
+    <Box className="form-box">
       <Heading size={4} renderAs="h2">My Account</Heading>
       <p>Username: {getUsernameFromToken(token)}</p>
       <div>

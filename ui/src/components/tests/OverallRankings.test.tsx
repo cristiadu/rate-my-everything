@@ -63,6 +63,19 @@ describe('OverallRankings', () => {
     expect(screen.queryByRole('link', { name: 'Edit' })).not.toBeInTheDocument()
   })
 
+  test('leaves out the image column when no item has an image', async () => {
+    // GIVEN the API returns only Alien, which has no image
+    fetchMock.mockResolvedValue(jsonResponse([alienRating]))
+
+    // WHEN the overall rankings load
+    renderRankings(RankingScope.ALL)
+
+    // THEN the table has no empty image column
+    await screen.findAllByRole('row')
+    expect(screen.getAllByRole('columnheader').map((header) => header.textContent))
+      .toEqual(['Name', 'Category', 'My grade', 'Everyone\'s grade', 'Ratings'])
+  })
+
   test('tells users when they have not rated anything', async () => {
     // GIVEN the API returns no ratings
     fetchMock.mockResolvedValue(jsonResponse([]))

@@ -12,11 +12,11 @@ const COPYRIGHT_HOLDER = 'Cristiano Faustino'
 const AppFooter = () => (
   <Footer>
     <Container className="has-text-centered">
-      <p className="is-size-4 is-size-5-mobile">
+      <p className="is-size-4 is-size-6-mobile">
         <strong className="has-text-white">{APP_NAME}</strong>
         {` · ${APP_TAGLINE}`}
       </p>
-      <p className="is-size-5 is-size-6-mobile mt-3">
+      <p className="is-size-5 is-size-7-mobile mt-3">
         {`© ${new Date().getFullYear()} ${COPYRIGHT_HOLDER} · `}
         <a href={REPOSITORY_URL} target="_blank" rel="noopener noreferrer">Source on GitHub</a>
       </p>

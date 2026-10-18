@@ -47,6 +47,13 @@
   }
 }
 
+/* On phones a table row's action buttons stack, so they share one width to line up */
+@media screen and (max-width: 768px) {
+  .table td .buttons .button {
+    min-width: 4.5rem;
+  }
+}
+
 /* Table headers get a berry underline instead of the default grey one */
 .table thead th,
 .content table thead th {
@@ -246,6 +253,11 @@
   }
 }
 
+/* Footer lines wrap into even lengths, so a narrow screen never leaves one word alone on the last line */
+.footer p {
+  text-wrap: balance;
+}
+
 /* Footer links use the header's light pink so they stay readable on the dark slate, never break mid-link, and underline on hover */
 .footer a {
   color: var(--bulma-danger-light);
@@ -374,12 +386,14 @@
   }
 }
 
-/* A rating's Edit and Remove buttons stay side by side where there is room, and stack on phones */
+/* A rating's Edit and Remove buttons stay side by side where there is room */
 @media screen and (min-width: 769px) {
   .rating-history-actions {
     flex-wrap: nowrap;
   }
 }
+
+
 
 /* The grade input of a rating being edited only needs room for a grade like "10.0" */
 .rating-history-grade-input {
@@ -394,4 +408,20 @@
   height: 2.5em;
   padding: 0;
   width: 3.5rem;
+}
+
+/* Form pages and form cards stop at a comfortable reading width instead of stretching their inputs across wide screens */
+.form-box {
+  max-width: 48rem;
+}
+
+/* On phones the three sample grades on the home page are a size smaller and closer together so they fit on one row */
+@media screen and (max-width: 768px) {
+  .grade-samples > .column {
+    padding-inline: 0.25rem;
+  }
+
+  .grade-samples .grade-box {
+    width: 5.5rem;
+  }
 }
