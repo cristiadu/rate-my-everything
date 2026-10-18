@@ -10,13 +10,16 @@ interface ChangeRequestListProps {
   onReview?: (changeRequest: ChangeRequestResponse, decision: ChangeRequestStatus) => void;
 }
 
-/** Table of change requests with what each proposes, who sent it and where it is in moderation. */
+/**
+ * Table of change requests with what each proposes, who sent it and where it is in moderation.
+ * On phones the submitted column is left out and who sent it and when sits under the change, so the status fits on screen.
+ */
 const ChangeRequestList: React.FC<ChangeRequestListProps> = ({ changeRequests, lookups, onReview }) => (
   <div className="table-container">
     <table className="table is-fullwidth is-striped">
       <thead>
         <tr>
-          <th>Submitted</th>
+          <th className="is-hidden-mobile">Submitted</th>
           <th>Change</th>
           <th>Proposed values</th>
           <th>Status</th>
@@ -31,12 +34,17 @@ const ChangeRequestList: React.FC<ChangeRequestListProps> = ({ changeRequests, l
         )}
         {changeRequests.map((changeRequest) => (
           <tr key={changeRequest.id}>
-            <td>
+            <td className="is-hidden-mobile">
               {new Date(changeRequest.createdAt).toLocaleString()}
               <br />
               <span className="is-size-7">by {changeRequest.requestedBy.username}</span>
             </td>
-            <td>{describeChangeRequest(changeRequest)}</td>
+            <td>
+              {describeChangeRequest(changeRequest)}
+              <div className="is-hidden-tablet is-size-7">
+                {`${new Date(changeRequest.createdAt).toLocaleString()} by ${changeRequest.requestedBy.username}`}
+              </div>
+            </td>
             <td>
               {listChanges(changeRequest.changes, lookups).map(([label, value]) => (
                 <div key={label}>
