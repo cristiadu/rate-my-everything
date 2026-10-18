@@ -28,6 +28,21 @@
   --bulma-info-on-scheme-l: 30%;
 }
 
+/* The page sits on Bulma's light grey background, so the white boxes and cards stand out from it */
+:root {
+  --bulma-body-background-color: var(--bulma-background);
+}
+
+/* Tables take the page's background instead of drawing a white block on the grey */
+.table {
+  --bulma-table-background-color: transparent;
+}
+
+/* A box inside another box, like the Categories page's form, takes the page's background so it reads as its own panel */
+.box .box {
+  --bulma-box-background-color: var(--bulma-body-background-color);
+}
+
 /* Table headers get a berry underline instead of the default grey one */
 .table thead th,
 .content table thead th {
@@ -249,4 +264,85 @@
 /* A currency code input only needs room for a three-letter code like "USD" */
 .currency-code-input {
   width: 6rem;
+}
+
+/*
+ * Dark mode follows the system's color scheme, like Bulma's own dark scheme does.
+ * Bulma switches its "on scheme" colors to light ones on a dark page, but the overrides at the top of this file would keep the berry and mint text dark,
+ * so they are set again here, and the light pink and mint surfaces turn into deep tints of the same colors.
+ */
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Berry links and outlined berry buttons use a light berry so they read on the dark page */
+    --bulma-primary-on-scheme-l: 72%;
+
+    /* Mint tags are a deep mint with light text instead of a bright pastel */
+    --bulma-info-l: 30%;
+    --bulma-info-invert-l: 90%;
+    --bulma-info-on-scheme-l: 70%;
+
+    /* The header's and filter panel's light pink, and the dropdown's hovered items, become a deep muted pink */
+    --bulma-danger-light: hsl(var(--bulma-danger-h), 25%, 15%);
+
+    /* Light buttons and tags, like Cancel and Clear, become a soft dark grey instead of a bright white */
+    --bulma-light-l: 22%;
+    --bulma-light-invert-l: 90%;
+
+    /* The page uses Bulma's darkest grey */
+    --bulma-body-background-color: var(--bulma-scheme-main);
+
+    /* Dividers use the border grey, since Bulma's default matches the boxes' grey and would vanish inside them */
+    --bulma-hr-background-color: var(--bulma-border-weak);
+  }
+
+  /* Berry headings, like the home page's headline, use the light berry so they read on the dark grey */
+  .has-text-primary {
+    color: var(--bulma-primary-on-scheme) !important;
+  }
+
+  /* Dark grey text, like the home page's login hint, uses the page's normal text color instead of disappearing */
+  .has-text-grey-dark {
+    color: var(--bulma-text) !important;
+  }
+
+  /* Boxes and cards use Bulma's lighter dark grey, so they lift off the page instead of disappearing into it */
+  .box {
+    --bulma-box-background-color: var(--bulma-background);
+  }
+
+  .card {
+    --bulma-card-background-color: var(--bulma-background);
+  }
+
+  /* Bulma builds this background from the full-strength pink, which turns dark red, so it takes the muted pink instead */
+  .has-background-danger-light {
+    background-color: var(--bulma-danger-light) !important;
+  }
+
+  /* Outlined berry buttons draw their text and outline in the light berry until they fill on hover */
+  .button.is-primary.is-outlined:not(:hover, :focus-visible) {
+    border-color: var(--bulma-primary-on-scheme);
+    color: var(--bulma-primary-on-scheme);
+  }
+
+  /* The header's tagline uses the page's strong text color instead of dark text */
+  .hero .subtitle.has-text-dark {
+    color: var(--bulma-text-strong) !important;
+  }
+
+  /* Top menu dropdowns use the page's dark background, as Bulma would otherwise tint the menu's pink into a dark red */
+  .navbar .navbar-dropdown {
+    --bulma-navbar-dropdown-background-color: var(--bulma-scheme-main);
+  }
+
+  /* Hovered and current dropdown items keep a readable light berry text on the deep pink */
+  .navbar .navbar-dropdown .navbar-item:hover,
+  .navbar .navbar-dropdown .navbar-item.is-active {
+    color: var(--bulma-primary-on-scheme);
+  }
+
+  /* Footer links keep a light pink, since the header's light pink is now dark */
+  .footer a {
+    color: var(--bulma-danger-on-scheme);
+  }
 }
