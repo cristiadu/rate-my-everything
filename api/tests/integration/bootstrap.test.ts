@@ -42,18 +42,18 @@ describe('BootstrapService', async () => {
       name, color, attributes: attributes.map((attribute) => attribute.name).sort(),
     }))
     expect(categories).toEqual([
-      { name: 'Movies', color: '#E4572E', attributes: ['Director', 'Release year', 'Runtime (minutes)'] },
+      { name: 'Movies', color: '#E4572E', attributes: ['Director', 'Release year', 'Runtime'] },
       { name: 'Music', color: '#8E44AD', attributes: ['Artist', 'Genre', 'Release year'] },
       { name: 'Books', color: '#3E8ED0', attributes: ['Author', 'Finished', 'Pages', 'Release year'] },
       { name: 'Games', color: '#2E8B57', attributes: ['Finished', 'Platform', 'Release year'] },
-      { name: 'Restaurants', color: '#F4A259', attributes: ['City', 'Cuisine', 'Last visited'] },
+      { name: 'Restaurants', color: '#F4A259', attributes: ['City', 'Cuisine', 'Last visited', 'Price per person', 'Website'] },
     ])
   })
 
   it('shares attributes with the same name and value type between categories', async () => {
-    // THEN Release year and Finished exist once, so there are 12 attributes in total
+    // THEN Release year and Finished exist once, so there are 14 attributes in total
     const res = await request(app).get(Endpoints.ATTRIBUTES_BASE_PATH).set('Authorization', `Bearer ${testAuthToken}`).expect(200)
-    expect((res.body as Attribute[]).length).toBe(12)
+    expect((res.body as Attribute[]).length).toBe(14)
   })
 
   it('creates an admin who can sign in with the configured password', async () => {

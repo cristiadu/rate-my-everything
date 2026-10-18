@@ -4,6 +4,7 @@ import AttributeValue from '@/models/AttributeValue'
 import AttributeValueType from '@/models/AttributeValueType'
 import BaseService from '@/services/BaseService'
 import { UnknownResource } from '@/errors/UnknownResource'
+import { checkAttributeValue, currencyCodeFor } from '@/helpers/AttributeValueHelper'
 import { In, Repository } from 'typeorm'
 
 class AttributeService extends BaseService<Attribute> {
@@ -21,14 +22,24 @@ class AttributeService extends BaseService<Attribute> {
     return this.privateAttValueRepository
   }
 
-  // Create a new Attribute
+  /** Create a new Attribute; a currency attribute must name a known currency code. */
   public async createAttribute(attribute: Attribute): Promise<Attribute> {
     const newAttribute = this.repository.create(attribute)
+    newAttribute.currencyCode = currencyCodeFor(newAttribute.valueType, newAttribute.currencyCode)
     return this.repository.save(newAttribute)
   }
 
-  // Create a new AttributeValue
+  /** Rejects a value that does not fit the value type of the attribute with the given id, when that attribute exists. */
+  private async checkValueOfAttribute(attributeId: number, value: string): Promise<void> {
+    const attribute = await this.getAttribute(attributeId)
+    if (attribute) {
+      checkAttributeValue(attribute, value)
+    }
+  }
+
+  /** Create a new AttributeValue, rejecting a value that does not fit its attribute's value type. */
   public async createAttributeValue(attributeValue: AttributeValue): Promise<AttributeValue> {
+    await this.checkValueOfAttribute(attributeValue.attribute.id, attributeValue.value)
     const newAttributeValue = this.attributeValueRepository.create(attributeValue)
     return this.attributeValueRepository.save(newAttributeValue)
   }
@@ -65,20 +76,22 @@ class AttributeService extends BaseService<Attribute> {
     return attributeValue
   }
 
-  // Update an Attribute
+  /** Update an Attribute; when it is or becomes a currency attribute it must keep a known currency code. */
   public async updateAttribute(id: number, attribute: Omit<Attribute, 'id'>): Promise<Attribute | null> {
     const updatedAttribute = await this.getAttribute(id)
     if (updatedAttribute) {
       this.repository.merge(updatedAttribute, attribute)
+      updatedAttribute.currencyCode = currencyCodeFor(updatedAttribute.valueType, updatedAttribute.currencyCode)
       return this.repository.save(updatedAttribute)
     }
     return null
   }
 
-  // Update an AttributeValue
+  /** Update an AttributeValue, rejecting a value that does not fit its attribute's value type. */
   public async updateAttributeValue(id: number, attributeValue: AttributeValue): Promise<AttributeValue | null> {
     const updatedAttributeValue = await this.getAttributeValue(id)
     if (updatedAttributeValue) {
+      await this.checkValueOfAttribute(attributeValue.attribute.id, attributeValue.value)
       this.attributeValueRepository.merge(updatedAttributeValue, attributeValue)
       return this.attributeValueRepository.save(updatedAttributeValue)
     }

@@ -5,14 +5,14 @@ import type { AttributeValueResponse } from '@/models/AttributeValue'
 import AttributeValueType from '@/models/AttributeValueType'
 import { Endpoints } from '@@/testutils/common/constants'
 
-/** Creates an attribute with the given name and value type as the given user, and returns it. */
+/** Creates an attribute with the given name, value type and, for currency attributes, currency code as the given user, and returns it. */
 export const createTestAttribute = async (
-  app: Express, authToken: string, name: string, valueType: AttributeValueType,
+  app: Express, authToken: string, name: string, valueType: AttributeValueType, currencyCode?: string,
 ): Promise<Attribute> => {
   const attributeRes = await request(app)
     .post(Endpoints.ATTRIBUTES_BASE_PATH)
     .set('Authorization', `Bearer ${authToken}`)
-    .send({ name, valueType })
+    .send({ name, valueType, currencyCode })
     .expect(201)
   return attributeRes.body as Attribute
 }

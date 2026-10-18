@@ -5,7 +5,7 @@ import {
 import AttributeManagement from '@/components/admin/attributes/AttributeManagement'
 import { AttributeValueType } from '@/api/generated/api'
 import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
-import { testAttributes } from '@/components/tests/common/Categories'
+import { formattedAttributes, testAttributes } from '@/components/tests/common/Categories'
 
 describe('AttributeManagement', () => {
   let fetchMock: jest.MockedFunction<typeof fetch>
@@ -49,6 +49,29 @@ describe('AttributeManagement', () => {
     expect(url).toBe('http://localhost:3000/api/attributes')
     expect(requestOptions?.method).toBe('POST')
     expect(JSON.parse(String(requestOptions?.body))).toEqual({ name: 'Released', valueType: AttributeValueType.DATE })
+  })
+
+  test('asks for a currency code only for currency attributes and sends it upper-cased', async () => {
+    // GIVEN the list loads and the create call succeeds
+    fetchMock
+      .mockResolvedValueOnce(jsonResponse(testAttributes))
+      .mockResolvedValueOnce(jsonResponse(formattedAttributes.price, 201))
+      .mockResolvedValueOnce(jsonResponse([...testAttributes, formattedAttributes.price]))
+    render(<AttributeManagement />)
+    fireEvent.click(await screen.findByRole('button', { name: 'New attribute' }))
+    expect(screen.queryByLabelText('Currency code')).not.toBeInTheDocument()
+
+    // WHEN a currency attribute is filled in with the code eur and submitted
+    fireEvent.change(screen.getByLabelText('Name'), { target: { value: 'Price' } })
+    fireEvent.change(screen.getByLabelText('Value type'), { target: { value: AttributeValueType.CURRENCY } })
+    fireEvent.change(screen.getByLabelText('Currency code'), { target: { value: 'eur' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Create attribute' }))
+
+    // THEN the attribute is posted with EUR and listed with its currency
+    expect(await screen.findByText('Attribute Price created.')).toBeInTheDocument()
+    const [, requestOptions] = fetchMock.mock.calls[1]
+    expect(JSON.parse(String(requestOptions?.body))).toEqual({ name: 'Price', valueType: AttributeValueType.CURRENCY, currencyCode: 'EUR' })
+    expect(await screen.findByText('currency (EUR)')).toBeInTheDocument()
   })
 
   test('edits an attribute by id', async () => {

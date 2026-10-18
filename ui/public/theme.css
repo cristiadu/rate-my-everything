@@ -439,6 +439,10 @@
   .grade-samples .grade-box {
     width: 5.5rem;
   }
+/* A currency code input only needs room for a three-letter code like "USD" */
+.currency-code-input {
+  width: 6rem;
+  }
 }
 
 /*
