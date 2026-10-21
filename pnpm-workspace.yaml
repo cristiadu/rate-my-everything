@@ -9,5 +9,8 @@ allowBuilds:
 
 minimumReleaseAge: 4320
 
+# Lets `pnpm deploy` reuse this lockfile instead of resolving the deployed package's dependencies again
+injectWorkspacePackages: true
+
 # Save new and upgraded dependencies with exact versions instead of ^ ranges
 savePrefix: ""
