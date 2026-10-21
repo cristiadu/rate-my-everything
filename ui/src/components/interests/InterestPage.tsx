@@ -88,15 +88,10 @@ const InterestPage: React.FC = () => {
           <>
             <ItemGrades itemRatings={itemRatings} userId={userId} />
             <div className="has-text-centered">
-              <Link
-                className="button is-primary is-rounded"
-                to={`/interests/${item.id}/edit`}
-                aria-label="Add a rating"
-                title="Add a rating"
-              >
-                <span className="is-size-4" aria-hidden="true">+</span>
+              <Link className="button is-primary is-rounded is-small" to={`/interests/${item.id}/edit`}>
+                <span aria-hidden="true" className="mr-1">+</span>
+                Add a rating
               </Link>
-              <p className="is-size-6 has-text-weight-semibold mt-1" aria-hidden="true">Add a rating</p>
             </div>
           </>
         )}

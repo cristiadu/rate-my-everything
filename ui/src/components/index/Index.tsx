@@ -42,10 +42,10 @@ const Index = () => {
 
   return (
     <Box>
-      <Heading size={3} renderAs="h2" textColor="primary" className="is-size-4-mobile">
+      <Heading size={4} renderAs="h2" textColor="primary" className="is-size-5-mobile">
         Keep track of everything you love, and how your taste changes.
       </Heading>
-      <p className="is-size-5 is-size-6-mobile">
+      <p className="is-size-6">
         {`Give anything a grade from ${MIN_RATING} to ${MAX_RATING}, rate it again when you change your mind, `
           + 'and see how your opinion compares with everyone else\'s.'}
       </p>

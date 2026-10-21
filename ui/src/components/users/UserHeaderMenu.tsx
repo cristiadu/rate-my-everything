@@ -57,7 +57,7 @@ const UserHeaderMenu = () => {
                     {' '}
                     <strong className="has-text-danger">{getUsernameFromToken(token)}</strong>
                   </>
-                ) : 'User Section'}
+                ) : 'Welcome, visitor'}
               </Heading>
             </Level.Item>
           </Level.Side>

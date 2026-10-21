@@ -22,7 +22,7 @@ const Header = () => (
           {APP_NAME}
         </Heading>
         <Heading
-          size={5}
+          size={6}
           subtitle
           textColor="dark"
           className="is-size-6-mobile"

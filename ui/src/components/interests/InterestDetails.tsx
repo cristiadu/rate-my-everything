@@ -36,8 +36,8 @@ const InterestDetails: React.FC<InterestDetailsProps> = ({ item, grades, history
           )}
         </figure>
       </div>
-      {/* The grades sit at the bottom of their column, so the + button stays close to the rating history under it */}
-      <div className="column is-half is-flex is-flex-direction-column is-justify-content-flex-end">{grades}</div>
+      {/* The grades sit in the middle of their column, level with the photo next to them */}
+      <div className="column is-half is-flex is-flex-direction-column is-justify-content-center">{grades}</div>
     </div>
     <div className="columns">
       <div className="column is-half">
