@@ -9,6 +9,7 @@ import AttributeValue from '@/models/AttributeValue'
 import Category from '@/models/Category'
 import ChangeRequest from '@/models/ChangeRequest'
 import Comment from '@/models/Comment'
+import PasswordReset from '@/models/PasswordReset'
 
 /*
  * The database connection lives apart from index.ts so services can use it without importing the app and its generated
@@ -41,7 +42,7 @@ export const DBConnection: DataSource = new DataSource({
   username: process.env.PGUSER || process.env.DATABASE_USERNAME,
   password: process.env.PGPASSWORD || process.env.DATABASE_PASSWORD,
   database: process.env.PGDATABASE || process.env.DATABASE_NAME,
-  entities: [RatedItem, Item, User, Attribute, AttributeValue, Category, ChangeRequest, Comment],
+  entities: [RatedItem, Item, User, Attribute, AttributeValue, Category, ChangeRequest, Comment, PasswordReset],
   synchronize: true,
   connectTimeoutMS: DATABASE_CONNECT_TIMEOUT_MS,
   extra: {

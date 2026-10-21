@@ -7,13 +7,17 @@ import { UserTokenResponse, type UserResponse } from '@/models/User'
 import UserRole from '@/models/UserRole'
 import { TEST_USER } from '@@/testutils/setup'
 import { Endpoints } from '@@/testutils/common/constants'
-import { registerAndLogin } from '@@/testutils/common/Auth'
+import { registerAndLogin, requestPasswordResetToken } from '@@/testutils/common/Auth'
+import { DBConnection } from '@/Database'
+import PasswordReset from '@/models/PasswordReset'
+import { mailService } from '@/services/MailService'
 
 describe('Login API Integration Tests', async () => {
   const testApp = await appReady
 
   afterEach(() => {
     vi.unstubAllEnvs()
+    vi.restoreAllMocks()
   })
 
   describe(`POST ${Endpoints.LOGIN_BASE_PATH}`, () => {
@@ -165,6 +169,126 @@ describe('Login API Integration Tests', async () => {
           expect(apiError.message).toBe('Username already exists')
           expect(apiError.code).toBe(ErrorCode.RESOURCE_ALREADY_EXISTS)
           expect(apiError.status).toBe(422)
+        })
+    })
+  })
+
+  describe(`POST ${Endpoints.LOGIN_BASE_PATH}/password-reset`, () => {
+    it('should email a reset link to the account using the address, whatever its case', async () => {
+      // GIVEN a freshly registered account
+      const { registerRes } = await registerAndLogin(testApp, 'reset-mail')
+      const { username, email } = registerRes.body as UserResponse
+      const sendPasswordReset = vi.spyOn(mailService, 'sendPasswordReset').mockResolvedValue()
+
+      // WHEN a reset is asked for with its email in capitals
+      // THEN the request is accepted and the account gets an email with a token valid for 60 minutes
+      await request(testApp)
+        .post(`${Endpoints.LOGIN_BASE_PATH}/password-reset`)
+        .set('X-Forwarded-For', '198.51.100.10')
+        .send({ email: email.toUpperCase() })
+        .expect(204)
+      expect(sendPasswordReset).toHaveBeenCalledTimes(1)
+      expect(sendPasswordReset).toHaveBeenCalledWith(email, username, expect.stringMatching(/^[A-Za-z0-9_-]{43}$/), 60)
+    })
+
+    it('should answer the same for an address no account uses, without sending an email', async () => {
+      // GIVEN an address no account uses
+      const sendPasswordReset = vi.spyOn(mailService, 'sendPasswordReset').mockResolvedValue()
+
+      // WHEN a reset is asked for with it
+      // THEN the request is accepted and no email is sent
+      await request(testApp)
+        .post(`${Endpoints.LOGIN_BASE_PATH}/password-reset`)
+        .set('X-Forwarded-For', '198.51.100.11')
+        .send({ email: 'nobody-here@example.com' })
+        .expect(204)
+        .expect(res => expect(res.text).toBe(''))
+      expect(sendPasswordReset).not.toHaveBeenCalled()
+    })
+
+    it('should reject an empty email', async () => {
+      // GIVEN an empty email
+      // WHEN a reset is asked for with it
+      // THEN the email is reported missing
+      await request(testApp)
+        .post(`${Endpoints.LOGIN_BASE_PATH}/password-reset`)
+        .set('X-Forwarded-For', '198.51.100.12')
+        .send({ email: '' })
+        .expect(400)
+        .expect(res => {
+          expect(res.body).toEqual({ code: ErrorCode.VALIDATION_ERROR, status: 400, message: 'Email is required' })
+        })
+    })
+  })
+
+  describe(`POST ${Endpoints.LOGIN_BASE_PATH}/password-reset/confirm`, () => {
+    it('should set the new password once, and stop accepting the old one', async () => {
+      // GIVEN an account with a reset token
+      const { registerRes } = await registerAndLogin(testApp, 'reset-confirm')
+      const { username, email } = registerRes.body as UserResponse
+      const token = await requestPasswordResetToken(testApp, email, '198.51.100.20')
+
+      // WHEN the new password is set with the token
+      await request(testApp)
+        .post(`${Endpoints.LOGIN_BASE_PATH}/password-reset/confirm`)
+        .send({ token, password: 'new-Password456!' })
+        .expect(204)
+
+      // THEN the new password logs in, the old one does not, and the token no longer works
+      await request(testApp).post(Endpoints.LOGIN_BASE_PATH).send({ username, password: 'new-Password456!' }).expect(200)
+      await request(testApp).post(Endpoints.LOGIN_BASE_PATH).send({ username, password: 'Password123!' }).expect(401)
+      await request(testApp)
+        .post(`${Endpoints.LOGIN_BASE_PATH}/password-reset/confirm`)
+        .send({ token, password: 'another-Password789!' })
+        .expect(400)
+        .expect(res => {
+          expect(res.body).toEqual({ code: ErrorCode.VALIDATION_ERROR, status: 400, message: 'This reset link is invalid or has expired' })
+        })
+    })
+
+    it('should reject a token that has expired', async () => {
+      // GIVEN an account whose reset token expired
+      const { registerRes } = await registerAndLogin(testApp, 'reset-expired')
+      const { id, email } = registerRes.body as UserResponse
+      const token = await requestPasswordResetToken(testApp, email, '198.51.100.21')
+      await DBConnection.getRepository(PasswordReset).update({ user: { id } }, { expiresAt: new Date(Date.now() - 1000) })
+
+      // WHEN the new password is set with it
+      // THEN the token is rejected
+      await request(testApp)
+        .post(`${Endpoints.LOGIN_BASE_PATH}/password-reset/confirm`)
+        .send({ token, password: 'new-Password456!' })
+        .expect(400)
+        .expect(res => {
+          expect(res.body).toEqual({ code: ErrorCode.VALIDATION_ERROR, status: 400, message: 'This reset link is invalid or has expired' })
+        })
+    })
+
+    it('should reject the earlier token once a newer one is sent', async () => {
+      // GIVEN an account that asked for two reset links
+      const { registerRes } = await registerAndLogin(testApp, 'reset-replaced')
+      const { email } = registerRes.body as UserResponse
+      const firstToken = await requestPasswordResetToken(testApp, email, '198.51.100.22')
+      await requestPasswordResetToken(testApp, email, '198.51.100.22')
+
+      // WHEN the new password is set with the first token
+      // THEN the token is rejected
+      await request(testApp)
+        .post(`${Endpoints.LOGIN_BASE_PATH}/password-reset/confirm`)
+        .send({ token: firstToken, password: 'new-Password456!' })
+        .expect(400)
+    })
+
+    it('should reject an empty token', async () => {
+      // GIVEN an empty token
+      // WHEN a new password is set with it
+      // THEN the token is reported missing
+      await request(testApp)
+        .post(`${Endpoints.LOGIN_BASE_PATH}/password-reset/confirm`)
+        .send({ token: '', password: 'new-Password456!' })
+        .expect(400)
+        .expect(res => {
+          expect(res.body).toEqual({ code: ErrorCode.VALIDATION_ERROR, status: 400, message: 'Token and password are required' })
         })
     })
   })
