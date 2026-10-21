@@ -115,7 +115,7 @@ const AttributeManagement: React.FC = () => {
             <tbody>
               {attributes.length === 0 && (
                 <tr>
-                  <td colSpan={3}>No attributes yet.</td>
+                  <td colSpan={3} className="has-text-grey">No attributes yet.</td>
                 </tr>
               )}
               {attributes.map((attribute) => (
@@ -128,10 +128,14 @@ const AttributeManagement: React.FC = () => {
                   </td>
                   <td>
                     <div className="buttons is-right">
-                      <button className="button is-small" type="button" onClick={() => setEditor({ mode: 'edit', attribute })}>
+                      <button
+                        className="button is-small is-primary is-outlined"
+                        type="button"
+                        onClick={() => setEditor({ mode: 'edit', attribute })}
+                      >
                         Edit
                       </button>
-                      <button className="button is-small is-danger" type="button" onClick={() => handleDelete(attribute)}>
+                      <button className="button is-small is-danger is-outlined" type="button" onClick={() => handleDelete(attribute)}>
                         Delete
                       </button>
                     </div>

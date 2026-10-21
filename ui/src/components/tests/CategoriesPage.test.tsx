@@ -32,10 +32,10 @@ describe('CategoriesPage', () => {
     // WHEN the page loads
     renderPage()
 
-    // THEN each category shows its description and attributes
+    // THEN each category shows its description and attributes, the attributes once under the name for phones and once in their own column
     expect(await screen.findByText('Books')).toBeInTheDocument()
     expect(screen.getByRole('cell', { name: 'Things to read' })).toBeInTheDocument()
-    expect(screen.getByText('Author')).toBeInTheDocument()
+    expect(screen.getAllByText('Author')).toHaveLength(2)
   })
 
   test('lets non-admins suggest a new category for approval', async () => {

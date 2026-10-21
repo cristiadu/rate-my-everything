@@ -9,7 +9,7 @@ const AdminDashboard: React.FC = () => {
 
   return (
     <Box>
-      <Heading size={4} renderAs="h2">Admin Area</Heading>
+      <Heading size={4} renderAs="h2">Admin area</Heading>
       <p>Signed in as {getUsernameFromToken(token)}.</p>
       <p>
         This area is only visible to administrators. Manage accounts from the <a href="/admin/users">Users</a> page.

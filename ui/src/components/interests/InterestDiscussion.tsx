@@ -65,14 +65,14 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
   }
 
   return (
-    <section aria-labelledby="discussion-title">
+    <section className="box" aria-labelledby="discussion-title">
       <h3 className="title is-5" id="discussion-title">Discussion</h3>
       {error && (
         <Message color="danger">
           <Message.Body>{error}</Message.Body>
         </Message>
       )}
-      {comments?.length === 0 && <p>No comments yet. Start the discussion.</p>}
+      {comments?.length === 0 && <p className="has-text-grey">No comments yet. Start the discussion.</p>}
       {comments?.map((comment) => (
         <article className="media" key={comment.id}>
           <div className="media-content">

@@ -33,7 +33,7 @@ const HeaderMenu = () => {
           <Navbar.Container align="left">
             {isAuthenticated && (
               <Navbar.Item renderAs="a" href="/account" active={isCurrentPath('/account')}>
-                My Account
+                My account
               </Navbar.Item>
             )}
             {isAuthenticated && (

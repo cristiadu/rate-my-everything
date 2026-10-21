@@ -64,9 +64,17 @@
   --bulma-table-background-color: transparent;
 }
 
-/* A box inside another box, like the Categories page's form, takes the page's background so it reads as its own panel */
+/* A box inside another box, like the Categories page's form, takes the page's background so it reads as its own panel, and drops the shadow only the page box keeps */
 .box .box {
   --bulma-box-background-color: var(--bulma-body-background-color);
+  --bulma-box-shadow: none;
+}
+
+/* A page title sits in a row as tall as the action button some pages put beside it, so titles start at the same height on every page */
+.box > .title.is-4:first-child {
+  align-items: center;
+  display: flex;
+  min-height: 2.5rem;
 }
 
 /* Table cells center their content vertically, so text lines up with the tags and buttons in the same row */
@@ -274,6 +282,11 @@
   }
 }
 
+/* The header's tagline keeps a small gap under the app name instead of touching it */
+.hero .title + .subtitle {
+  margin-top: 0.375rem;
+}
+
 /* Footer lines wrap into even lengths, so a narrow screen never leaves one word alone on the last line */
 .footer p {
   text-wrap: balance;
@@ -416,14 +429,23 @@
   }
 }
 
-/* A rating's Edit and Remove buttons stay side by side where there is room */
+/* A table row's action buttons stay side by side where there is room, and their cell shrinks to them so the other columns get the rest */
 @media screen and (min-width: 769px) {
-  .rating-history-actions {
+  .table td .buttons {
     flex-wrap: nowrap;
+  }
+
+  .table td:has(> .buttons) {
+    white-space: nowrap;
+    width: 1%;
   }
 }
 
-
+/* Outlined danger buttons, like Remove and Delete on table rows, draw their text and outline in Bulma's readable red until they fill on hover, as the full pink is too light on white */
+.button.is-danger.is-outlined:not(:hover, :focus-visible) {
+  border-color: var(--bulma-danger-on-scheme);
+  color: var(--bulma-danger-on-scheme);
+}
 
 /* The grade input of a rating being edited only needs room for a grade like "10.0" */
 .rating-history-grade-input {
