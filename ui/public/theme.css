@@ -69,6 +69,12 @@
   --bulma-box-background-color: var(--bulma-body-background-color);
 }
 
+/* Table cells center their content vertically, so text lines up with the tags and buttons in the same row */
+.table td,
+.content table td {
+  vertical-align: middle;
+}
+
 /* Table headers get a berry underline instead of the default grey one */
 .table thead th,
 .content table thead th {
@@ -77,7 +83,6 @@
 
 /*
  * On phones the logged-out user bar shrinks to the username and password side by side over the two buttons.
- * The inputs' placeholders already name them, so their labels are hidden; !important beats Bulma's is-flex helper on them.
  */
 @media screen and (max-width: 768px) {
   .user-bar-login .level-right {
@@ -104,10 +109,11 @@
     flex-grow: 1;
     margin-bottom: 0;
   }
+}
 
-  .user-bar-login .field-label {
-    display: none !important;
-  }
+/* The login inputs' placeholders already name them, so their labels are hidden; !important beats Bulma's is-flex helper on them */
+.user-bar-login .field-label {
+  display: none !important;
 }
 
 /* Top menu dropdowns hang from the menu bar with a thin berry outline instead of floating borderless */
@@ -145,8 +151,8 @@
     visibility: visible;
   }
 
-  /* Below Bulma's full HD width the menu has no side margins, so its logo keeps a small gap from the window's edge */
-  @media screen and (max-width: 1407px) {
+  /* Below the widescreen width the menu fills the window, so it drops its negative side margins and its logo keeps a small gap from the window's edge */
+  @media screen and (max-width: 1215px) {
     .navbar > .container .navbar-brand {
       margin-inline-start: 0;
     }
@@ -253,18 +259,18 @@
 
 /*
  * The footer uses the user bar's dark slate so the page is framed top and bottom.
- * Bulma's 3rem top and 6rem bottom padding is split evenly so the text sits in the middle at the same height.
+ * Bulma's 3rem top and 6rem bottom padding becomes a slim, even 2rem so the footer frames the page without taking much of the screen.
  */
 .footer {
   --bulma-footer-background-color: var(--bulma-dark);
-  --bulma-footer-padding: 4.5rem 1.5rem;
+  --bulma-footer-padding: 2rem 1.5rem;
   color: var(--bulma-dark-invert);
 }
 
 /* On phones the footer keeps the same look with less padding, so it doesn't fill half the screen */
 @media screen and (max-width: 768px) {
   .footer {
-    --bulma-footer-padding: 2.5rem 1.5rem;
+    --bulma-footer-padding: 1.5rem 1rem;
   }
 }
 
@@ -296,12 +302,12 @@
 /* Scoped under the header so the page's .content heading styles don't shrink or recolor the name */
 .interest-view-header .interest-view-name,
 .interest-view-header .interest-view-category {
-  font-size: 2.25rem;
+  font-size: 1.5rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   line-height: 1.2;
   margin-bottom: 0;
-  padding: 1.25rem var(--bulma-box-padding);
+  padding: 0.75rem var(--bulma-box-padding);
   text-transform: uppercase;
 }
 
@@ -324,7 +330,7 @@
   .interest-view-header .interest-view-name,
   .interest-view-header .interest-view-category {
     flex-grow: 1;
-    font-size: 1.5rem;
+    font-size: 1.25rem;
     overflow-wrap: anywhere;
   }
 }
@@ -359,19 +365,24 @@
 /* Grade boxes share one width that fits "10.0", and have the same padding on both sides as they have no close button */
 .grade-box {
   margin-inline: auto;
-  padding: 1.5rem 1rem;
-  width: 9rem;
+  padding: 1rem 0.75rem;
+  width: 7.5rem;
+}
+
+/* The grade number is big enough to read at a glance without towering over the rest of the view */
+.grade-box .title {
+  font-size: 2.5rem;
 }
 
 /* On phones both grade boxes are a size smaller so they fit side by side inside the interest view */
 @media screen and (max-width: 768px) {
   .grade-box {
-    padding: 1rem 0.75rem;
-    width: 6.5rem;
+    padding: 0.75rem 0.5rem;
+    width: 6rem;
   }
 
   .grade-box .title {
-    font-size: 2.25rem;
+    font-size: 2rem;
   }
 }
 
@@ -394,10 +405,14 @@
   padding-top: 0.75rem;
 }
 
-/* A rating's date, and its grade with its Mine tag, stay on one line in the rating history where there is room */
+/*
+ * A rating's date, and its grade with its Mine tag, stay on one line in the rating history where there is room.
+ * Those columns also shrink to their content, so the notes get the rest of the row instead of the columns spreading apart.
+ */
 @media screen and (min-width: 769px) {
   .rating-history-nowrap {
     white-space: nowrap;
+    width: 1%;
   }
 }
 
@@ -425,6 +440,17 @@
   width: 3.5rem;
 }
 
+/*
+ * On wide screens the header and the page stop at Bulma's widescreen width instead of its full HD one,
+ * so text, tables and cards stay a comfortable size instead of spreading across the whole screen.
+ */
+@media screen and (min-width: 1216px) {
+  /* !important beats Bulma's full HD max-width, which uses a much more specific selector */
+  .container.is-fullhd {
+    max-width: 1152px !important;
+  }
+}
+
 /* Form pages and form cards stop at a comfortable reading width instead of stretching their inputs across wide screens */
 .form-box {
   max-width: 48rem;
@@ -439,10 +465,11 @@
   .grade-samples .grade-box {
     width: 5.5rem;
   }
+}
+
 /* A currency code input only needs room for a three-letter code like "USD" */
 .currency-code-input {
   width: 6rem;
-  }
 }
 
 /*

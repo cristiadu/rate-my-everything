@@ -144,7 +144,7 @@ const RatingHistory: React.FC<RatingHistoryProps> = ({ itemRatings, userId, onRe
       {isEmbedded && (
         <div className="level is-mobile mb-3">
           <div className="level-left">
-            <h3 className="title is-5">History</h3>
+            <h3 className="title is-5 mb-0">History</h3>
           </div>
           <div className="level-right">
             <div className="buttons has-addons are-small">
