@@ -44,7 +44,7 @@ jobs:
         run: pnpm build
       - name: Bundle the API with its production dependencies and the UI
         run: |
-          pnpm --filter @cristiadu/rate-my-everything-api deploy --prod --legacy --ignore-scripts release/api
+          pnpm --filter @cristiadu/rate-my-everything-api deploy --prod --ignore-scripts release/api
           cp -r ui/dist release/ui
       - name: Copy the release to alwaysdata
         run: |
