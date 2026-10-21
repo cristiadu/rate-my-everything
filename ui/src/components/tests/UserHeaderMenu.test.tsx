@@ -38,7 +38,7 @@ describe('UserHeaderMenu', () => {
 
     // THEN the API's message is shown and the visitor stays logged out
     expect(await screen.findByText('Invalid username or password')).toBeInTheDocument()
-    expect(screen.getByText('User Section')).toBeInTheDocument()
+    expect(screen.getByText('Welcome, visitor')).toBeInTheDocument()
     expect(localStorage.getItem('authToken')).toBeNull()
   })
 
@@ -76,7 +76,7 @@ describe('UserHeaderMenu', () => {
     fireEvent.click(screen.getByText('Log Out'))
 
     // THEN the header shows the login form again and the token is removed
-    expect(screen.getByText('User Section')).toBeInTheDocument()
+    expect(screen.getByText('Welcome, visitor')).toBeInTheDocument()
     expect(screen.getByText('Log In')).toBeInTheDocument()
     expect(localStorage.getItem('authToken')).toBeNull()
   })
