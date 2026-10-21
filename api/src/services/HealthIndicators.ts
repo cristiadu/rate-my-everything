@@ -1,12 +1,12 @@
 import { ComponentHealth, Health, HealthMessage, HealthStatus } from "@/models/Health"
 import { DBConnection } from '@/Database'
 
-export interface HealthIndicator {
+interface HealthIndicator {
     name: string;
     checkHealth(): Promise<{ [key: string]: ComponentHealth }>;
 }
 
-export class AppHealthIndicator implements HealthIndicator {
+class AppHealthIndicator implements HealthIndicator {
     name = 'app'
 
     async checkHealth(): Promise<{ [key: string]: ComponentHealth }> {

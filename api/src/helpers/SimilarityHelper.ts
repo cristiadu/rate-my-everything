@@ -7,10 +7,10 @@ import type { DataSource, ObjectLiteral, SelectQueryBuilder } from 'typeorm'
  * For example "lord of the ring" and "The Lord of the Rings" score 0.81, "Interstellar" and "Intersteller" 0.63,
  * "Books" and "Book" 0.57, while "Star Wars" and "Star Trek" score 0.29 and are not suggested.
  */
-export const SIMILAR_NAME_THRESHOLD = 0.5
+const SIMILAR_NAME_THRESHOLD = 0.5
 
 /** Most similar records returned for one name. */
-export const MAX_SIMILAR_RESULTS = 5
+const MAX_SIMILAR_RESULTS = 5
 
 /**
  * Postgres extensions the similarity query needs:

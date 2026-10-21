@@ -67,5 +67,3 @@ export const withAuth = <P extends object>(
   WithAuthComponent.displayName = `WithAuth(${Component.displayName || Component.name || 'Component'})`
   return WithAuthComponent
 }
-
-export default AuthContext

@@ -1,11 +1,18 @@
 import React, { useState } from 'react'
+import { Navigate } from 'react-router-dom'
 import LoginForm from '@/components/users/LoginForm'
 import RegisterForm from '@/components/users/RegisterForm'
 import { useAuth } from '@/components/users/AuthContext'
+import type { AuthTab } from '@/components/types'
 
-const AuthPage: React.FC = () => {
-  const [activeTab, setActiveTab] = useState<'login' | 'register'>('login')
-  const { login } = useAuth()
+/** Props for the account page; initialTab picks the tab it opens on. */
+interface AuthPageProps {
+  initialTab?: AuthTab;
+}
+
+const AuthPage: React.FC<AuthPageProps> = ({ initialTab = 'login' }) => {
+  const [activeTab, setActiveTab] = useState<AuthTab>(initialTab)
+  const { isAuthenticated, login } = useAuth()
   
   const handleLoginSuccess = (token: string) => {
     login(token)
@@ -13,6 +20,10 @@ const AuthPage: React.FC = () => {
   
   const handleRegisterSuccess = () => {
     setActiveTab('login')
+  }
+
+  if (isAuthenticated) {
+    return <Navigate to="/" replace />
   }
 
   return (

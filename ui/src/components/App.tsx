@@ -33,11 +33,7 @@ const App = () => {
       resizeObserver.observe(navbarRef.current)
     }
 
-    return () => {
-      if (navbarRef.current) {
-        resizeObserver.unobserve(navbarRef.current)
-      }
-    }
+    return () => resizeObserver.disconnect()
   }, [])
 
   return (

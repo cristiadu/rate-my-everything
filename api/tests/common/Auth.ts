@@ -25,7 +25,7 @@ export const getAuthTokenFromFile = (): Promise<string> => {
   })
 }
 /** Password given to every user the tests create. */
-export const TEST_PASSWORD = 'Password123!'
+const TEST_PASSWORD = 'Password123!'
 
 /** Signs up a fresh account through the public register endpoint, optionally asking for roles, and logs it in. */
 export const registerAndLogin = async (

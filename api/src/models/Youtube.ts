@@ -1,10 +1,10 @@
 /** One video thumbnail returned by the YouTube Data API. */
-export type YouTubeThumbnail = {
+type YouTubeThumbnail = {
     url: string
 }
 
 /** One entry of a YouTube playlist; deleted and private videos have no owner channel. */
-export type YouTubePlaylistItem = {
+type YouTubePlaylistItem = {
     snippet: {
         title: string
         videoOwnerChannelTitle?: string
@@ -20,7 +20,7 @@ export type YouTubePlaylistItemsResponse = {
 }
 
 /** One video returned by YouTube's videos.list endpoint. */
-export type YouTubeVideo = {
+type YouTubeVideo = {
     snippet: {
         title: string
         channelTitle: string

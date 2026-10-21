@@ -1,13 +1,11 @@
 export const enum HealthMessage {
     ALL_SYSTEMS_OPERATIONAL = 'All systems operational',
-    SOME_SYSTEMS_ISSUES = 'Some systems are experiencing issues',
-    OFFLINE = 'Service is offline'
+    SOME_SYSTEMS_ISSUES = 'Some systems are experiencing issues'
 }
 
 export const enum HealthStatus {
     HEALTHY = 'healthy',
-    UNHEALTHY = 'unhealthy',
-    OFFLLINE = 'offline'
+    UNHEALTHY = 'unhealthy'
 }
 
 export class ComponentHealth {

@@ -738,12 +738,10 @@ components:
       enum:
         - healthy
         - unhealthy
-        - offline
       type: string
       x-enum-varnames:
         - HEALTHY
         - UNHEALTHY
-        - OFFLLINE
     ComponentHealth:
       properties:
         status:

@@ -1,6 +1,6 @@
 import React from 'react'
 import { render, screen } from '@testing-library/react'
-import { ImmediateResizeObserver } from '@/components/tests/common/ResizeObserver'
+import { ImmediateResizeObserver, disconnectResizeObserver } from '@/components/tests/common/ResizeObserver'
 import { mockDesktopWidth } from '@/components/tests/common/MatchMedia'
 import { loginAs } from '@/components/tests/common/Auth'
 import App from '@/components/App'
@@ -15,6 +15,7 @@ describe('App', () => {
   beforeEach(() => {
     mockDesktopWidth(true)
     loginAs([UserRole.USER])
+    disconnectResizeObserver.mockClear()
   })
 
   afterEach(() => {
@@ -40,6 +41,17 @@ describe('App', () => {
 
     // THEN the filter tab sits under the menu instead of at the top of the window
     expect(screen.getByRole('button', { name: 'Open filters' }).style.top).toBe('calc(52px + 1.25rem)')
+  })
+
+  test('stops watching the top menu size when the app is closed', () => {
+    // GIVEN the rendered app
+    const { unmount } = render(<App />)
+
+    // WHEN it unmounts
+    unmount()
+
+    // THEN its resize observer is disconnected
+    expect(disconnectResizeObserver).toHaveBeenCalledTimes(1)
   })
 
   test('pins the header on desktop widths', () => {

@@ -10,7 +10,6 @@ import UserRole from '@/models/UserRole'
 import { isEmpty } from 'class-validator'
 import { ResourceAlreadyExists } from '@/errors/ResourceAlreadyExists'
 import { UnknownResource } from '@/errors/UnknownResource'
-import { isValidAttributeIds } from '@/helpers/CategoryHelper'
 import { isValidSimilarName } from '@/helpers/SimilarityHelper'
 import { BEARER_AUTH } from '@/helpers/Authentication'
 import {
@@ -19,9 +18,6 @@ import {
   UNAUTHORIZED_DESCRIPTION, UNAUTHORIZED_EXAMPLE, UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE,
 } from '@/api/ApiDocumentation'
 import type { RateLimitHeaders } from '@/api/ApiDocumentation'
-
-/** Message returned when attributeIds is not a list of integers. */
-const INVALID_ATTRIBUTE_IDS_MESSAGE = 'attributeIds must be an array of integers'
 
 /** Categories group items and list the attributes that describe them; users read them and admins change them. */
 @Route('categories')
@@ -82,9 +78,6 @@ export class CategoryController extends Controller {
     if (!input.name) {
       throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Missing required field: name'))
     }
-    if (!isValidAttributeIds(input.attributeIds)) {
-      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, INVALID_ATTRIBUTE_IDS_MESSAGE))
-    }
 
     try {
       const data = await this.categoryService.create(input)
@@ -111,9 +104,6 @@ export class CategoryController extends Controller {
   public async updateCategory(@Path() name: string, @Body() input: CategoryInput): Promise<CategoryResponse> {
     // Prevent updating to an empty name
     const changes = isEmpty(input.name?.trim()) ? { ...input, name } : input
-    if (!isValidAttributeIds(changes.attributeIds)) {
-      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, INVALID_ATTRIBUTE_IDS_MESSAGE))
-    }
 
     try {
       const data = await this.categoryService.update(name, changes)

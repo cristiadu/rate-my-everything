@@ -13,7 +13,7 @@ export const addDefaultHeaders = (_req: Request, res: Response, next: NextFuncti
 }
 
 /** Describes the fields tsoa rejected, such as `requestBody.name: 'name' is required`. */
-export const describeValidationError = (error: ValidateError): string => Object.entries(error.fields)
+const describeValidationError = (error: ValidateError): string => Object.entries(error.fields)
   .map(([field, { message }]) => `${field}: ${message}`)
   .join('; ')
 

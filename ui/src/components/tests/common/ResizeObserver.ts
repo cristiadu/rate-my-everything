@@ -1,3 +1,6 @@
+/** Records every disconnect of an ImmediateResizeObserver, so tests can check the observer is stopped. */
+export const disconnectResizeObserver = jest.fn()
+
 /** Receives the elements a resize observer reports. */
 type ResizeCallback = (entries: Pick<ResizeObserverEntry, 'target'>[]) => void
 
@@ -18,6 +21,6 @@ export class ImmediateResizeObserver {
     this.callback([{ target }])
   }
 
-  /** Stops reporting the element. */
-  unobserve = jest.fn()
+  /** Stops reporting every observed element. */
+  disconnect = disconnectResizeObserver
 }
