@@ -42,7 +42,7 @@ export default class PasswordResetService extends BaseService<PasswordReset> {
         expiresAt: new Date(Date.now() + RESET_TOKEN_VALID_MINUTES * MS_PER_MINUTE),
       }))
       mailService.sendPasswordReset(user.email, user.username, token, RESET_TOKEN_VALID_MINUTES)
-        .catch((error) => logger.error(error, `Could not send the password reset email to user ${user.id}`))
+        .catch((error) => logger.error(error, 'Could not send a password reset email'))
     }
   }
 
