@@ -121,15 +121,17 @@ const AttributeManagement: React.FC = () => {
               {attributes.map((attribute) => (
                 <tr key={attribute.id}>
                   <td>{attribute.name}</td>
-                  <td><span className="tag is-info">
-                    {attribute.currencyCode ? `${attribute.valueType} (${attribute.currencyCode})` : attribute.valueType}
-                    </span></td>
                   <td>
-                  <td className="has-text-right">
-                    <button className="button is-small mr-2" type="button" onClick={() => setEditor({ mode: 'edit', attribute })}>
+                    <span className="tag is-info">
+                      {attribute.currencyCode ? `${attribute.valueType} (${attribute.currencyCode})` : attribute.valueType}
+                    </span>
+                  </td>
+                  <td>
+                    <div className="buttons is-right">
+                      <button className="button is-small" type="button" onClick={() => setEditor({ mode: 'edit', attribute })}>
                         Edit
                       </button>
-                    <button className="button is-small is-danger" type="button" onClick={() => handleDelete(attribute)}>
+                      <button className="button is-small is-danger" type="button" onClick={() => handleDelete(attribute)}>
                         Delete
                       </button>
                     </div>
