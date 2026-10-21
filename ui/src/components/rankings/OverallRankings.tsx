@@ -42,8 +42,8 @@ const OverallRankings: React.FC<OverallRankingsProps> = ({ scope }) => {
 
   return (
     <Block>
-      <div className="level">
-        <h2 className="title is-4 level-left">{isMine ? 'My interests' : 'All rankings'}</h2>
+      <div className="level is-mobile">
+        <h2 className="title is-4 level-left mb-0">{isMine ? 'My interests' : 'All rankings'}</h2>
         {isMine && (
           <Link className="button is-primary level-right" to="/interests/new">Add interest</Link>
         )}

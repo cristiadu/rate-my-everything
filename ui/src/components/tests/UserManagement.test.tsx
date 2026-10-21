@@ -28,7 +28,7 @@ describe('UserManagement', () => {
 
     // THEN both users are listed and no password appears
     expect(await screen.findByText('alice')).toBeInTheDocument()
-    expect(screen.getByText('bob@example.com')).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: 'bob@example.com' })).toBeInTheDocument()
     expect(screen.queryByText(/password/i)).not.toBeInTheDocument()
   })
 
@@ -157,7 +157,7 @@ describe('UserManagement', () => {
 
     // THEN nothing is sent and bob stays listed
     expect(fetchMock).toHaveBeenCalledTimes(1)
-    expect(screen.getByText('bob@example.com')).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: 'bob@example.com' })).toBeInTheDocument()
   })
 
   test('shows the API error when deleting fails', async () => {
@@ -173,6 +173,6 @@ describe('UserManagement', () => {
 
     // THEN the API's message is shown and alice stays listed
     expect(await screen.findByText('You cannot delete yourself')).toBeInTheDocument()
-    expect(screen.getByText('alice@example.com')).toBeInTheDocument()
+    expect(screen.getByRole('cell', { name: 'alice@example.com' })).toBeInTheDocument()
   })
 })

@@ -70,9 +70,9 @@ const UserManagement: React.FC = () => {
 
   return (
     <div className="box">
-      <div className="level">
+      <div className="level is-mobile">
         <div className="level-left">
-          <h2 className="title is-4">Users</h2>
+          <h2 className="title is-4 mb-0">Users</h2>
         </div>
         <div className="level-right">
           <button className="button is-primary" type="button" onClick={() => setEditor({ mode: 'create' })} disabled={!!editor}>
@@ -88,7 +88,7 @@ const UserManagement: React.FC = () => {
       )}
 
       {editor && (
-        <div className="box">
+        <div className="box form-box">
           <h3 className="title is-5">
             {editor.mode === 'create' ? 'New user' : `Edit ${editor.user.username}`}
           </h3>
@@ -105,42 +105,50 @@ const UserManagement: React.FC = () => {
       {isLoading ? (
         <p>Loading users...</p>
       ) : (
-        <table className="table is-fullwidth is-striped is-hoverable">
-          <thead>
-            <tr>
-              <th>Username</th>
-              <th>Email</th>
-              <th>Roles</th>
-              <th aria-label="Actions" />
-            </tr>
-          </thead>
-          <tbody>
-            {users.length === 0 && (
+        <div className="table-container">
+          <table className="table is-fullwidth is-striped is-hoverable">
+            <thead>
               <tr>
-                <td colSpan={4}>No users yet.</td>
+                <th>Username</th>
+                <th className="is-hidden-mobile">Email</th>
+                <th>Roles</th>
+                <th aria-label="Actions" />
               </tr>
-            )}
-            {users.map((user) => (
-              <tr key={user.id}>
-                <td>{user.username}</td>
-                <td>{user.email}</td>
-                <td>
-                  <div className="tags">
-                    {user.roles.map((role) => <span key={role} className="tag is-info">{role}</span>)}
-                  </div>
-                </td>
-                <td className="has-text-right">
-                  <button className="button is-small mr-2" type="button" onClick={() => setEditor({ mode: 'edit', user })}>
-                    Edit
-                  </button>
-                  <button className="button is-small is-danger" type="button" onClick={() => handleDelete(user)}>
-                    Delete
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+            </thead>
+            <tbody>
+              {users.length === 0 && (
+                <tr>
+                  <td colSpan={4}>No users yet.</td>
+                </tr>
+              )}
+              {users.map((user) => (
+                <tr key={user.id}>
+                  <td>
+                    {user.username}
+                    {/* On phones the email sits under the username instead of in its own column */}
+                    <p className="is-hidden-tablet is-size-7 has-text-grey">{user.email}</p>
+                  </td>
+                  <td className="is-hidden-mobile">{user.email}</td>
+                  <td>
+                    <div className="tags">
+                      {user.roles.map((role) => <span key={role} className="tag is-info">{role}</span>)}
+                    </div>
+                  </td>
+                  <td>
+                    <div className="buttons is-right">
+                      <button className="button is-small" type="button" onClick={() => setEditor({ mode: 'edit', user })}>
+                        Edit
+                      </button>
+                      <button className="button is-small is-danger" type="button" onClick={() => handleDelete(user)}>
+                        Delete
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
     </div>
   )

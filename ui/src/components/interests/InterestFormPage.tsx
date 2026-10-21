@@ -149,7 +149,7 @@ const InterestFormPage: React.FC = () => {
         </Message>
       )}
       {hasRated && <RatingHistory itemRatings={itemRatings} userId={userId} onRemove={handleRemoveRating} />}
-      <Box>
+      <Box className="form-box">
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label className="label" htmlFor="interest-category">Category</label>

@@ -9,15 +9,19 @@ const FILTER_TAB_Z_INDEX = 1101
 interface ArrowProps {
   setIsOpen: React.Dispatch<React.SetStateAction<boolean>>;
   isOpen: boolean;
-  /** Height of the fixed header above the panel, in pixels. */
+  /** Height of the header above the panel, in pixels. */
   top: number;
+  /** Whether the header stays pinned on screen; when it scrolls away, the tab scrolls away with it. */
+  isHeaderPinned: boolean;
 }
 
 /**
- * Tab that opens or closes the filter panel. It stays on screen while the panel is closed and rides along the panel's
- * right edge while it is open, level with the panel's FILTERS label.
+ * Tab that opens or closes the filter panel. It sits right under the header and rides along the panel's right edge
+ * while the panel is open, level with the panel's FILTERS label.
  */
-const Arrow: React.FC<ArrowProps> = ({ setIsOpen, isOpen, top }) => (
+const Arrow: React.FC<ArrowProps> = ({
+  setIsOpen, isOpen, top, isHeaderPinned,
+}) => (
   <div
     onClick={() => setIsOpen(!isOpen)}
     onKeyDown={(event) => (event.key === 'Enter' ? setIsOpen(!isOpen) : null)}
@@ -26,8 +30,9 @@ const Arrow: React.FC<ArrowProps> = ({ setIsOpen, isOpen, top }) => (
     aria-label={isOpen ? 'Close filters' : 'Open filters'}
     className="has-background-danger has-text-white has-text-weight-bold is-flex is-align-items-center is-justify-content-center"
     style={{
-      position: 'fixed',
-      top: `calc(${top}px + 1.25rem)`,
+      position: isHeaderPinned ? 'fixed' : 'absolute',
+      // Level with the panel's FILTERS label when the panel opens under the header, and closer to the header otherwise
+      top: `calc(${top}px + ${isHeaderPinned ? '1.25rem' : '0.5rem'})`,
       left: isOpen ? `${FILTER_PANEL_WIDTH}px` : '0',
       // Matches react-burger-menu's slide so the tab moves with the panel
       transition: 'left 0.5s',

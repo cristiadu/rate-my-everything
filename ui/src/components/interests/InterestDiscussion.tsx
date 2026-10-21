@@ -95,7 +95,7 @@ const InterestDiscussion: React.FC<InterestDiscussionProps> = ({ itemId }) => {
           )}
         </article>
       ))}
-      <div className="box mt-4">
+      <div className="box form-box mt-4">
         <form onSubmit={handleSubmit}>
           <div className="field">
             <label className="label" htmlFor="comment-body">Add a comment</label>

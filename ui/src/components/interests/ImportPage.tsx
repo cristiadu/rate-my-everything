@@ -111,9 +111,9 @@ const ImportPage: React.FC = () => {
           </Message.Body>
         </Message>
       )}
-      <Box>
+      <Box className="form-box">
         <form onSubmit={handleSearch}>
-          <div className="field is-grouped is-align-items-flex-end">
+          <div className="field is-grouped is-grouped-multiline is-align-items-flex-end">
             <div className="control">
               <label className="label" htmlFor="import-source">Import from</label>
               <div className="select">
@@ -139,38 +139,40 @@ const ImportPage: React.FC = () => {
       {foundItems.length > 0 && (
         <Box>
           <form onSubmit={handleImport}>
-            <table className="table is-fullwidth is-hoverable">
-              <thead>
-                <tr>
-                  <th aria-label="Picture" />
-                  <th>Type</th>
-                  <th>Name</th>
-                  <th>Description</th>
-                  <th>Import</th>
-                </tr>
-              </thead>
-              <tbody>
-                {foundItems.map((item, index) => (
-                  <tr key={`${index}-${item.name}`}>
-                    <td>
-                      {item.imageUrl && <img src={item.imageUrl} alt="" width={IMPORTED_IMAGE_SIZE} height={IMPORTED_IMAGE_SIZE} />}
-                    </td>
-                    <td>{item.type}</td>
-                    <td>{item.name}</td>
-                    <td>{item.description}</td>
-                    <td>
-                      <input
-                        type="checkbox"
-                        aria-label={`Select ${item.name}`}
-                        checked={selectedIndexes.includes(index)}
-                        onChange={() => toggleSelected(index)}
-                      />
-                    </td>
+            <div className="table-container">
+              <table className="table is-fullwidth is-hoverable">
+                <thead>
+                  <tr>
+                    <th aria-label="Picture" />
+                    <th>Type</th>
+                    <th>Name</th>
+                    <th>Description</th>
+                    <th>Import</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-            <div className="field is-grouped is-align-items-flex-end">
+                </thead>
+                <tbody>
+                  {foundItems.map((item, index) => (
+                    <tr key={`${index}-${item.name}`}>
+                      <td>
+                        {item.imageUrl && <img src={item.imageUrl} alt="" width={IMPORTED_IMAGE_SIZE} height={IMPORTED_IMAGE_SIZE} />}
+                      </td>
+                      <td>{item.type}</td>
+                      <td>{item.name}</td>
+                      <td>{item.description}</td>
+                      <td>
+                        <input
+                          type="checkbox"
+                          aria-label={`Select ${item.name}`}
+                          checked={selectedIndexes.includes(index)}
+                          onChange={() => toggleSelected(index)}
+                        />
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+            <div className="field is-grouped is-grouped-multiline is-align-items-flex-end">
               <div className="control">
                 <label className="label" htmlFor="import-category">Add to category</label>
                 <div className="select">

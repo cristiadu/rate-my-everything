@@ -42,10 +42,10 @@ const Index = () => {
 
   return (
     <Box>
-      <Heading size={3} renderAs="h2" textColor="primary">
+      <Heading size={3} renderAs="h2" textColor="primary" className="is-size-4-mobile">
         Keep track of everything you love, and how your taste changes.
       </Heading>
-      <p className="is-size-5">
+      <p className="is-size-5 is-size-6-mobile">
         {`Give anything a grade from ${MIN_RATING} to ${MAX_RATING}, rate it again when you change your mind, `
           + 'and see how your opinion compares with everyone else\'s.'}
       </p>
@@ -75,7 +75,7 @@ const Index = () => {
       <hr />
 
       <Heading size={5} renderAs="h3" className="has-text-centered">Grades at a glance</Heading>
-      <div className="columns is-mobile is-multiline is-centered">
+      <div className="columns is-mobile is-multiline is-centered grade-samples">
         {SAMPLE_GRADES.map((sample) => (
           <div key={sample.label} className="column is-narrow">
             <GradeBox label={sample.label} grade={sample.grade} detail={sample.detail} />

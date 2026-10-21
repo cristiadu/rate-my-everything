@@ -17,14 +17,15 @@ const Header = () => (
       <UserHeaderMenu />
     </Hero.Header>
     <Hero.Body className="has-background-danger-light">
-      <Container>
-        <Heading textColor="danger">
+      <Container breakpoint="fullhd">
+        <Heading textColor="danger" className="is-size-4-mobile">
           {APP_NAME}
         </Heading>
         <Heading
           size={5}
           subtitle
           textColor="dark"
+          className="is-size-6-mobile"
         >
           {APP_TAGLINE}
         </Heading>

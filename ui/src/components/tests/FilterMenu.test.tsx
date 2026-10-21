@@ -17,7 +17,7 @@ const renderFilteredRankings = () => render(
   <AuthProvider>
     <FilterProvider>
       <MemoryRouter>
-        <FilterMenu topOffset={0} />
+        <FilterMenu topOffset={0} isHeaderPinned />
         <OverallRankings scope={RankingScope.ALL} />
       </MemoryRouter>
     </FilterProvider>
@@ -103,7 +103,7 @@ describe('FilterMenu', () => {
     render(
       <AuthProvider>
         <FilterProvider>
-          <FilterMenu topOffset={0} />
+          <FilterMenu topOffset={0} isHeaderPinned />
         </FilterProvider>
       </AuthProvider>,
     )
