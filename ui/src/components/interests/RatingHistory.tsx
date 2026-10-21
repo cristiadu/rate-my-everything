@@ -97,7 +97,7 @@ const RatingHistory: React.FC<RatingHistoryProps> = ({ itemRatings, userId, onRe
                 </button>
               </div>
               <div className="control">
-                <button type="button" className="button is-small" onClick={() => setEditing(null)}>Cancel</button>
+                <button type="button" className="button is-small is-light" onClick={() => setEditing(null)}>Cancel</button>
               </div>
             </form>
           </td>
@@ -116,7 +116,7 @@ const RatingHistory: React.FC<RatingHistoryProps> = ({ itemRatings, userId, onRe
         {(onEdit || onRemove) && (
           <td className="has-text-right">
             {isMine && (
-              <div className="buttons is-right are-small rating-history-actions">
+              <div className="buttons is-right are-small">
                 {onEdit && (
                   <button
                     type="button"

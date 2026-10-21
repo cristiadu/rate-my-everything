@@ -89,7 +89,7 @@ const ImportPage: React.FC = () => {
   }
 
   return (
-    <>
+    <Box>
       <h2 className="title is-4">Import interests</h2>
       {error && (
         <Message color="danger">
@@ -111,93 +111,89 @@ const ImportPage: React.FC = () => {
           </Message.Body>
         </Message>
       )}
-      <Box className="form-box">
-        <form onSubmit={handleSearch}>
+      <form className="form-box" onSubmit={handleSearch}>
+        <div className="field is-grouped is-grouped-multiline is-align-items-flex-end">
+          <div className="control">
+            <label className="label" htmlFor="import-source">Import from</label>
+            <div className="select">
+              <select id="import-source" value={source} onChange={(e) => setSource(e.target.value as ImportSource)}>
+                {Object.values(ImportSource).map((importSource) => (
+                  <option key={importSource} value={importSource}>{IMPORT_SOURCE_LABELS[importSource].label}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+          <div className="control is-expanded">
+            <label className="label" htmlFor="import-query">{IMPORT_SOURCE_LABELS[source].queryLabel}</label>
+            <input className="input" id="import-query" value={query} onChange={(e) => setQuery(e.target.value)} required />
+          </div>
+          <div className="control">
+            <button type="submit" className={`button is-primary${isSearching ? ' is-loading' : ''}`} disabled={isSearching}>
+              Find
+            </button>
+          </div>
+        </div>
+      </form>
+      {foundItems.length > 0 && (
+        <form className="mt-5" onSubmit={handleImport}>
+          <div className="table-container">
+            <table className="table is-fullwidth is-hoverable">
+              <thead>
+                <tr>
+                  <th aria-label="Picture" />
+                  <th>Type</th>
+                  <th>Name</th>
+                  <th>Description</th>
+                  <th>Import</th>
+                </tr>
+              </thead>
+              <tbody>
+                {foundItems.map((item, index) => (
+                  <tr key={`${index}-${item.name}`}>
+                    <td>
+                      {item.imageUrl && <img src={item.imageUrl} alt="" width={IMPORTED_IMAGE_SIZE} height={IMPORTED_IMAGE_SIZE} />}
+                    </td>
+                    <td>{item.type}</td>
+                    <td>{item.name}</td>
+                    <td>{item.description}</td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        aria-label={`Select ${item.name}`}
+                        checked={selectedIndexes.includes(index)}
+                        onChange={() => toggleSelected(index)}
+                      />
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
           <div className="field is-grouped is-grouped-multiline is-align-items-flex-end">
             <div className="control">
-              <label className="label" htmlFor="import-source">Import from</label>
+              <label className="label" htmlFor="import-category">Add to category</label>
               <div className="select">
-                <select id="import-source" value={source} onChange={(e) => setSource(e.target.value as ImportSource)}>
-                  {Object.values(ImportSource).map((importSource) => (
-                    <option key={importSource} value={importSource}>{IMPORT_SOURCE_LABELS[importSource].label}</option>
+                <select id="import-category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required>
+                  <option value="" disabled>Choose a category</option>
+                  {categories.map((category) => (
+                    <option key={category.id} value={category.id}>{category.name}</option>
                   ))}
                 </select>
               </div>
             </div>
-            <div className="control is-expanded">
-              <label className="label" htmlFor="import-query">{IMPORT_SOURCE_LABELS[source].queryLabel}</label>
-              <input className="input" id="import-query" value={query} onChange={(e) => setQuery(e.target.value)} required />
-            </div>
             <div className="control">
-              <button type="submit" className={`button is-link${isSearching ? ' is-loading' : ''}`} disabled={isSearching}>
-                Find
+              <button
+                type="submit"
+                className={`button is-primary${isImporting ? ' is-loading' : ''}`}
+                disabled={isImporting || selectedIndexes.length === 0}
+              >
+                {`Import ${selectedIndexes.length} selected`}
               </button>
             </div>
           </div>
         </form>
-      </Box>
-      {foundItems.length > 0 && (
-        <Box>
-          <form onSubmit={handleImport}>
-            <div className="table-container">
-              <table className="table is-fullwidth is-hoverable">
-                <thead>
-                  <tr>
-                    <th aria-label="Picture" />
-                    <th>Type</th>
-                    <th>Name</th>
-                    <th>Description</th>
-                    <th>Import</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {foundItems.map((item, index) => (
-                    <tr key={`${index}-${item.name}`}>
-                      <td>
-                        {item.imageUrl && <img src={item.imageUrl} alt="" width={IMPORTED_IMAGE_SIZE} height={IMPORTED_IMAGE_SIZE} />}
-                      </td>
-                      <td>{item.type}</td>
-                      <td>{item.name}</td>
-                      <td>{item.description}</td>
-                      <td>
-                        <input
-                          type="checkbox"
-                          aria-label={`Select ${item.name}`}
-                          checked={selectedIndexes.includes(index)}
-                          onChange={() => toggleSelected(index)}
-                        />
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-            <div className="field is-grouped is-grouped-multiline is-align-items-flex-end">
-              <div className="control">
-                <label className="label" htmlFor="import-category">Add to category</label>
-                <div className="select">
-                  <select id="import-category" value={categoryId} onChange={(e) => setCategoryId(e.target.value)} required>
-                    <option value="" disabled>Choose a category</option>
-                    {categories.map((category) => (
-                      <option key={category.id} value={category.id}>{category.name}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-              <div className="control">
-                <button
-                  type="submit"
-                  className={`button is-primary${isImporting ? ' is-loading' : ''}`}
-                  disabled={isImporting || selectedIndexes.length === 0}
-                >
-                  {`Import ${selectedIndexes.length} selected`}
-                </button>
-              </div>
-            </div>
-          </form>
-        </Box>
       )}
-    </>
+    </Box>
   )
 }
 

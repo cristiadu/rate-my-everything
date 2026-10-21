@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { Block, Message } from 'react-bulma-components'
+import { Box, Message } from 'react-bulma-components'
 import { getRatings, RankingScope } from '@/api/generated/api'
 import type { RankingItem } from '@/components/types'
 import RankingTable from '@/components/rankings/RankingTable'
@@ -41,7 +41,7 @@ const OverallRankings: React.FC<OverallRankingsProps> = ({ scope }) => {
   }, [loadRankings])
 
   return (
-    <Block>
+    <Box>
       <div className="level is-mobile">
         <h2 className="title is-4 level-left mb-0">{isMine ? 'My interests' : 'All rankings'}</h2>
         {isMine && (
@@ -53,12 +53,12 @@ const OverallRankings: React.FC<OverallRankingsProps> = ({ scope }) => {
           <Message.Body>{error}</Message.Body>
         </Message>
       )}
-      {rankings?.length === 0 && hasFilters(filters) && <p>No interests match the filters.</p>}
+      {rankings?.length === 0 && hasFilters(filters) && <p className="has-text-grey">No interests match the filters.</p>}
       {rankings?.length === 0 && !hasFilters(filters) && (
-        <p>{isMine ? 'You have not rated anything yet.' : 'Nobody has rated anything yet.'}</p>
+        <p className="has-text-grey">{isMine ? 'You have not rated anything yet.' : 'Nobody has rated anything yet.'}</p>
       )}
       {rankings && rankings.length > 0 && <RankingTable rankings={rankings} canEdit={isMine} />}
-    </Block>
+    </Box>
   )
 }
 

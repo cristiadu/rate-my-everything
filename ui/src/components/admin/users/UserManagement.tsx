@@ -118,7 +118,7 @@ const UserManagement: React.FC = () => {
             <tbody>
               {users.length === 0 && (
                 <tr>
-                  <td colSpan={4}>No users yet.</td>
+                  <td colSpan={4} className="has-text-grey">No users yet.</td>
                 </tr>
               )}
               {users.map((user) => (
@@ -136,10 +136,14 @@ const UserManagement: React.FC = () => {
                   </td>
                   <td>
                     <div className="buttons is-right">
-                      <button className="button is-small" type="button" onClick={() => setEditor({ mode: 'edit', user })}>
+                      <button
+                        className="button is-small is-primary is-outlined"
+                        type="button"
+                        onClick={() => setEditor({ mode: 'edit', user })}
+                      >
                         Edit
                       </button>
-                      <button className="button is-small is-danger" type="button" onClick={() => handleDelete(user)}>
+                      <button className="button is-small is-danger is-outlined" type="button" onClick={() => handleDelete(user)}>
                         Delete
                       </button>
                     </div>

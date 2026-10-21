@@ -21,6 +21,11 @@ const emptyForm: CategoryFormValues = { name: '', description: '', color: DEFAUL
 /** Message shown after a user's proposed change to a category is saved for moderators. */
 const SENT_FOR_APPROVAL_MESSAGE = 'Your change was sent to the moderators for approval.'
 
+/** A category's attributes as mint tags, each showing its value type on hover. */
+const attributeTags = (category: CategoryResponse) => category.attributes.map((attribute) => (
+  <span key={attribute.id} className="tag is-info" title={attribute.valueType}>{attribute.name}</span>
+))
+
 /**
  * Lists categories for every user. Admins create, edit and delete them and link attributes directly;
  * other users propose the same changes as change requests for moderators to approve.
@@ -224,7 +229,7 @@ const CategoriesPage: React.FC = () => {
                 label="Similar categories"
                 message="Similar categories already exist. Edit one of them instead of adding a duplicate:"
                 renderRecord={(category) => (
-                  <button className="button is-small" type="button" onClick={() => handleEdit(category)}>
+                  <button className="button is-small is-primary is-outlined" type="button" onClick={() => handleEdit(category)}>
                     {`Edit ${category.name}`}
                   </button>
                 )}
@@ -245,14 +250,14 @@ const CategoriesPage: React.FC = () => {
             <tr>
               <th>Name</th>
               <th className="is-hidden-mobile">Description</th>
-              <th>Attributes</th>
+              <th className="is-hidden-mobile">Attributes</th>
               <th aria-label="Actions" />
             </tr>
           </thead>
           <tbody>
             {categories.length === 0 && (
               <tr>
-                <td colSpan={4}>No categories yet.</td>
+                <td colSpan={4} className="has-text-grey">No categories yet.</td>
               </tr>
             )}
             {categories.map((category) => (
@@ -261,21 +266,18 @@ const CategoriesPage: React.FC = () => {
                   <CategoryTag category={category} />
                   {/* On phones the description sits under the name instead of in its own column */}
                   <p className="is-hidden-tablet is-size-7 mt-1">{category.description}</p>
+                  <div className="tags is-hidden-tablet mt-2">{attributeTags(category)}</div>
                 </td>
                 <td className="is-hidden-mobile">{category.description}</td>
-                <td>
-                  <div className="tags">
-                    {category.attributes.map((attribute) => (
-                      <span key={attribute.id} className="tag is-info" title={attribute.valueType}>{attribute.name}</span>
-                    ))}
-                  </div>
+                <td className="is-hidden-mobile">
+                  <div className="tags">{attributeTags(category)}</div>
                 </td>
                 <td>
                   <div className="buttons is-right">
-                    <button className="button is-small" type="button" onClick={() => handleEdit(category)}>
+                    <button className="button is-small is-primary is-outlined" type="button" onClick={() => handleEdit(category)}>
                       {isAdmin ? 'Edit' : 'Suggest edit'}
                     </button>
-                    <button className="button is-small is-danger" type="button" onClick={() => handleDelete(category)}>
+                    <button className="button is-small is-danger is-outlined" type="button" onClick={() => handleDelete(category)}>
                       {isAdmin ? 'Delete' : 'Suggest removal'}
                     </button>
                   </div>

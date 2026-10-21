@@ -18,7 +18,7 @@ describe('AdminDashboard', () => {
     render(<AuthProvider><AdminDashboard /></AuthProvider>)
 
     // THEN it names the admin and links to user management
-    expect(screen.getByRole('heading', { name: 'Admin Area' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Admin area' })).toBeInTheDocument()
     expect(screen.getByText('Signed in as admin.')).toBeInTheDocument()
     expect(screen.getByRole('link', { name: 'Users' })).toHaveAttribute('href', '/admin/users')
   })

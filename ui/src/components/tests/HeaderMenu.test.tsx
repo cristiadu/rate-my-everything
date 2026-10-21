@@ -25,7 +25,7 @@ describe('HeaderMenu', () => {
     renderMenu()
 
     // THEN both areas are linked
-    expect(screen.getByText('My Account').closest('a')).toHaveAttribute('href', '/account')
+    expect(screen.getByText('My account').closest('a')).toHaveAttribute('href', '/account')
     expect(screen.getByText('Dashboard').closest('a')).toHaveAttribute('href', '/admin')
     expect(screen.getByText('Users').closest('a')).toHaveAttribute('href', '/admin/users')
   })
@@ -38,7 +38,7 @@ describe('HeaderMenu', () => {
     renderMenu()
 
     // THEN the admin and moderation links are hidden and the import screen is linked
-    expect(screen.getByText('My Account')).toBeInTheDocument()
+    expect(screen.getByText('My account')).toBeInTheDocument()
     expect(screen.getByText('Import interests').closest('a')).toHaveAttribute('href', '/interests/import')
     expect(screen.queryByText('Admin')).not.toBeInTheDocument()
     expect(screen.queryByText('Moderation')).not.toBeInTheDocument()
@@ -63,7 +63,7 @@ describe('HeaderMenu', () => {
     renderMenu()
 
     // THEN no area links are shown
-    expect(screen.queryByText('My Account')).not.toBeInTheDocument()
+    expect(screen.queryByText('My account')).not.toBeInTheDocument()
     expect(screen.queryByText('Admin')).not.toBeInTheDocument()
   })
 
@@ -78,7 +78,7 @@ describe('HeaderMenu', () => {
     // THEN the users item and the admin menu are marked, and other items are not
     expect(screen.getByText('Users').closest('a')).toHaveClass('is-active')
     expect(screen.getByText('Admin').closest('a')).toHaveClass('is-active')
-    expect(screen.getByText('My Account').closest('a')).not.toHaveClass('is-active')
+    expect(screen.getByText('My account').closest('a')).not.toHaveClass('is-active')
   })
 
   test('links the logo home and shows no placeholder items', () => {
@@ -107,6 +107,6 @@ describe('HeaderMenu', () => {
 
     // THEN the burger and the menu are shown as open
     expect(burger).toHaveClass('is-active')
-    expect(screen.getByText('My Account').closest('.navbar-menu')).toHaveClass('is-active')
+    expect(screen.getByText('My account').closest('.navbar-menu')).toHaveClass('is-active')
   })
 })

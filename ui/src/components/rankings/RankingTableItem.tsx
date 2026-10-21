@@ -33,7 +33,7 @@ const RankingTableItem: React.FC<RankingTableItemProps> = ({ ranking, canEdit, s
     <td className="is-hidden-mobile">{ranking.ratingCount}</td>
     {canEdit && (
       <td>
-        <Link className="button is-small" to={`/interests/${ranking.item.id}/edit`}>Edit</Link>
+        <Link className="button is-small is-primary is-outlined" to={`/interests/${ranking.item.id}/edit`}>Edit</Link>
       </td>
     )}
   </tr>

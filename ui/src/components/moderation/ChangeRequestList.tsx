@@ -29,7 +29,7 @@ const ChangeRequestList: React.FC<ChangeRequestListProps> = ({ changeRequests, l
       <tbody>
         {changeRequests.length === 0 && (
           <tr>
-            <td colSpan={onReview ? 5 : 4}>No change requests.</td>
+            <td colSpan={onReview ? 5 : 4} className="has-text-grey">No change requests.</td>
           </tr>
         )}
         {changeRequests.map((changeRequest) => (
@@ -62,14 +62,14 @@ const ChangeRequestList: React.FC<ChangeRequestListProps> = ({ changeRequests, l
                 {changeRequest.status === ChangeRequestStatus.PENDING && (
                   <div className="buttons is-right">
                     <button
-                      className="button is-small is-success"
+                      className="button is-small is-success is-outlined"
                       type="button"
                       onClick={() => onReview(changeRequest, ChangeRequestStatus.APPROVED)}
                     >
                       Approve
                     </button>
                     <button
-                      className="button is-small is-danger"
+                      className="button is-small is-danger is-outlined"
                       type="button"
                       onClick={() => onReview(changeRequest, ChangeRequestStatus.REJECTED)}
                     >

@@ -9,10 +9,10 @@ const UserAccount: React.FC = () => {
 
   return (
     <Box className="form-box">
-      <Heading size={4} renderAs="h2">My Account</Heading>
+      <Heading size={4} renderAs="h2">My account</Heading>
       <p>Username: {getUsernameFromToken(token)}</p>
       <div>
-        Roles: {getRolesFromToken(token).map((role) => <Tag key={role} mr={1}>{role}</Tag>)}
+        Roles: {getRolesFromToken(token).map((role) => <Tag key={role} color="info" mr={1}>{role}</Tag>)}
       </div>
     </Box>
   )

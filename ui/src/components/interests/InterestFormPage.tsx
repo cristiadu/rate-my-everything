@@ -141,7 +141,7 @@ const InterestFormPage: React.FC = () => {
   }
 
   return (
-    <>
+    <Box className="form-box">
       <h2 className="title is-4">{editingItemId === null ? 'Add interest' : `Edit ${formFields.name}`}</h2>
       {error && (
         <Message color="danger">
@@ -149,133 +149,131 @@ const InterestFormPage: React.FC = () => {
         </Message>
       )}
       {hasRated && <RatingHistory itemRatings={itemRatings} userId={userId} onRemove={handleRemoveRating} />}
-      <Box className="form-box">
-        <form onSubmit={handleSubmit}>
-          <div className="field">
-            <label className="label" htmlFor="interest-category">Category</label>
-            <div className="control">
-              <div className="select">
-                <select
-                  id="interest-category"
-                  value={formFields.categoryId}
-                  onChange={(e) => setFormFields({ ...formFields, categoryId: e.target.value })}
-                  required
-                >
-                  <option value="" disabled>Choose a category</option>
-                  {categories.map((category) => (
-                    <option key={category.id} value={category.id}>{category.name}</option>
-                  ))}
-                </select>
-              </div>
+      <form onSubmit={handleSubmit}>
+        <div className="field">
+          <label className="label" htmlFor="interest-category">Category</label>
+          <div className="control">
+            <div className="select">
+              <select
+                id="interest-category"
+                value={formFields.categoryId}
+                onChange={(e) => setFormFields({ ...formFields, categoryId: e.target.value })}
+                required
+              >
+                <option value="" disabled>Choose a category</option>
+                {categories.map((category) => (
+                  <option key={category.id} value={category.id}>{category.name}</option>
+                ))}
+              </select>
             </div>
           </div>
-          <div className="field">
-            <label className="label" htmlFor="interest-name">Name</label>
-            <div className="control">
-              <input
-                className="input"
-                id="interest-name"
-                value={formFields.name}
-                onChange={(e) => setFormFields({ ...formFields, name: e.target.value })}
-                required
-              />
-            </div>
-            <SimilarRecordsWarning
-              findSimilar={getSimilarItems}
-              name={formFields.name}
-              isEnabled={editingItemId === null}
-              filters={formFields.categoryId ? { categoryId: Number(formFields.categoryId) } : {}}
-              label="Similar interests"
-              message="Similar interests already exist. Rate one of them instead of adding a duplicate:"
-              renderRecord={(item) => (
-                <>
-                  <Link to={`/interests/${item.id}/edit`}>{item.name}</Link>
-                  {item.category && ` (${item.category.name})`}
-                </>
-              )}
+        </div>
+        <div className="field">
+          <label className="label" htmlFor="interest-name">Name</label>
+          <div className="control">
+            <input
+              className="input"
+              id="interest-name"
+              value={formFields.name}
+              onChange={(e) => setFormFields({ ...formFields, name: e.target.value })}
+              required
             />
-
           </div>
-          <div className="field">
-            <label className="label" htmlFor="interest-description">Description</label>
-            <div className="control">
-              <textarea
-                className="textarea"
-                id="interest-description"
-                value={formFields.description}
-                onChange={(e) => setFormFields({ ...formFields, description: e.target.value })}
-                required
-              />
-            </div>
-          </div>
-          <div className="field">
-            <label className="label" htmlFor="interest-image">Image URL</label>
-            <div className="control">
-              <input
-                className="input"
-                id="interest-image"
-                type="url"
-                value={formFields.imageUrl}
-                onChange={(e) => setFormFields({ ...formFields, imageUrl: e.target.value })}
-              />
-            </div>
-          </div>
-          {selectedCategory && selectedCategory.attributes.length > 0 && (
-            <fieldset className="field">
-              <legend className="label">{`${selectedCategory.name} details`}</legend>
-              {selectedCategory.attributes.map((attribute) => (
-                <AttributeField
-                  key={attribute.id}
-                  attribute={attribute}
-                  value={formFields.attributeValues[attribute.id] ?? ''}
-                  onChange={(value) => setAttributeValue(attribute.id, value)}
-                />
-              ))}
-            </fieldset>
-          )}
-          <div className="field">
-            <label className="label" htmlFor="interest-rating">
-              {`${hasRated ? 'Rate it again' : 'My rating'} (${MIN_RATING} to ${MAX_RATING})`}
-            </label>
-            <div className="control">
-              <input
-                className="input"
-                id="interest-rating"
-                type="number"
-                min={MIN_RATING}
-                max={MAX_RATING}
-                step="0.1"
-                value={formFields.rating}
-                onChange={(e) => setFormFields({ ...formFields, rating: e.target.value })}
-                required={!hasRated || formFields.notes !== ''}
-              />
-            </div>
-          </div>
-          <div className="field">
-            <label className="label" htmlFor="interest-notes">My notes</label>
-            <div className="control">
-              <textarea
-                className="textarea"
-                id="interest-notes"
-                value={formFields.notes}
-                onChange={(e) => setFormFields({ ...formFields, notes: e.target.value })}
-              />
-            </div>
-          </div>
-          <div className="buttons">
-            <button type="submit" className={`button is-primary${isSaving ? ' is-loading' : ''}`} disabled={isSaving}>
-              {editingItemId === null ? 'Add interest' : 'Save interest'}
-            </button>
-            <Link className="button" to={MY_RANKINGS_PATH}>Cancel</Link>
-            {hasRated && (
-              <button type="button" className="button is-danger is-outlined" onClick={handleRemoveInterest}>
-                Remove from my interests
-              </button>
+          <SimilarRecordsWarning
+            findSimilar={getSimilarItems}
+            name={formFields.name}
+            isEnabled={editingItemId === null}
+            filters={formFields.categoryId ? { categoryId: Number(formFields.categoryId) } : {}}
+            label="Similar interests"
+            message="Similar interests already exist. Rate one of them instead of adding a duplicate:"
+            renderRecord={(item) => (
+              <>
+                <Link to={`/interests/${item.id}/edit`}>{item.name}</Link>
+                {item.category && ` (${item.category.name})`}
+              </>
             )}
+          />
+
+        </div>
+        <div className="field">
+          <label className="label" htmlFor="interest-description">Description</label>
+          <div className="control">
+            <textarea
+              className="textarea"
+              id="interest-description"
+              value={formFields.description}
+              onChange={(e) => setFormFields({ ...formFields, description: e.target.value })}
+              required
+            />
           </div>
-        </form>
-      </Box>
-    </>
+        </div>
+        <div className="field">
+          <label className="label" htmlFor="interest-image">Image URL</label>
+          <div className="control">
+            <input
+              className="input"
+              id="interest-image"
+              type="url"
+              value={formFields.imageUrl}
+              onChange={(e) => setFormFields({ ...formFields, imageUrl: e.target.value })}
+            />
+          </div>
+        </div>
+        {selectedCategory && selectedCategory.attributes.length > 0 && (
+          <fieldset className="field">
+            <legend className="label">{`${selectedCategory.name} details`}</legend>
+            {selectedCategory.attributes.map((attribute) => (
+              <AttributeField
+                key={attribute.id}
+                attribute={attribute}
+                value={formFields.attributeValues[attribute.id] ?? ''}
+                onChange={(value) => setAttributeValue(attribute.id, value)}
+              />
+            ))}
+          </fieldset>
+        )}
+        <div className="field">
+          <label className="label" htmlFor="interest-rating">
+            {`${hasRated ? 'Rate it again' : 'My rating'} (${MIN_RATING} to ${MAX_RATING})`}
+          </label>
+          <div className="control">
+            <input
+              className="input"
+              id="interest-rating"
+              type="number"
+              min={MIN_RATING}
+              max={MAX_RATING}
+              step="0.1"
+              value={formFields.rating}
+              onChange={(e) => setFormFields({ ...formFields, rating: e.target.value })}
+              required={!hasRated || formFields.notes !== ''}
+            />
+          </div>
+        </div>
+        <div className="field">
+          <label className="label" htmlFor="interest-notes">My notes</label>
+          <div className="control">
+            <textarea
+              className="textarea"
+              id="interest-notes"
+              value={formFields.notes}
+              onChange={(e) => setFormFields({ ...formFields, notes: e.target.value })}
+            />
+          </div>
+        </div>
+        <div className="buttons">
+          <button type="submit" className={`button is-primary${isSaving ? ' is-loading' : ''}`} disabled={isSaving}>
+            {editingItemId === null ? 'Add interest' : 'Save interest'}
+          </button>
+          <Link className="button is-light" to={MY_RANKINGS_PATH}>Cancel</Link>
+          {hasRated && (
+            <button type="button" className="button is-danger is-outlined" onClick={handleRemoveInterest}>
+              Remove from my interests
+            </button>
+          )}
+        </div>
+      </form>
+    </Box>
   )
 }
 

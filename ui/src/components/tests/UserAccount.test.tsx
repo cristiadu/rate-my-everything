@@ -18,7 +18,7 @@ describe('UserAccount', () => {
     render(<AuthProvider><UserAccount /></AuthProvider>)
 
     // THEN their username and both roles are shown
-    expect(screen.getByRole('heading', { name: 'My Account' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'My account' })).toBeInTheDocument()
     expect(screen.getByText('Username: admin')).toBeInTheDocument()
     expect(screen.getByText('user')).toBeInTheDocument()
     expect(screen.getByText('moderator')).toBeInTheDocument()
