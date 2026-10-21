@@ -54,6 +54,16 @@
   }
 }
 
+/* Secondary grey text is a little darker than Bulma's so it reaches 4.5:1 contrast on the grey page as well as on white */
+:root {
+  --bulma-text-weak-l: 45%;
+}
+
+/* Grey text, like empty states, uses the secondary text color so it follows the contrast fix and the dark scheme */
+.has-text-grey {
+  color: var(--bulma-text-weak) !important;
+}
+
 /* The page sits on Bulma's light grey background, so the white boxes and cards stand out from it */
 :root {
   --bulma-body-background-color: var(--bulma-background);
@@ -515,6 +525,9 @@
     /* Light buttons and tags, like Cancel and Clear, become a soft dark grey instead of a bright white */
     --bulma-light-l: 22%;
     --bulma-light-invert-l: 90%;
+
+    /* Secondary grey text is a little lighter than Bulma's so it reaches 4.5:1 contrast on the boxes */
+    --bulma-text-weak-l: 57%;
 
     /* The page uses Bulma's darkest grey */
     --bulma-body-background-color: var(--bulma-scheme-main);
