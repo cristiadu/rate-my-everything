@@ -5,7 +5,7 @@ export type LastFmImage = {
 }
 
 /** One album of a user's Last.fm top albums. */
-export type LastFmAlbum = {
+type LastFmAlbum = {
     name: string
     playcount: string
     artist: { name: string }
@@ -13,7 +13,7 @@ export type LastFmAlbum = {
 }
 
 /** One artist in a user's Last.fm top artists. */
-export type LastFmArtist = {
+type LastFmArtist = {
     name: string
     playcount: string
     image: LastFmImage[]

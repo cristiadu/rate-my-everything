@@ -1,31 +1,20 @@
 import type { KnipConfig } from 'knip'
 
-// Knip configuration for monorepo with Next.js, React Router v7, and shared packages
+/** Knip configuration for the api and ui workspaces. */
 const config = {
-  tags: ['knipignore'],
   workspaces: {
     'api': {
+      // tsoa generates the routes that use the controllers into the gitignored src/routes/generated/
+      entry: ['src/routes/generated/routes.ts'],
       project: ['**/*.{ts,js}'],
-      ignoreBinaries: ["sleep"],
-      // Imported by the routes tsoa generates into the gitignored src/routes/generated/
-      ignoreDependencies: ['@tsoa/runtime'],
     },
     'ui': {
       project: ['**/*.{ts,js,tsx,jsx}'],
-      ignoreFiles: ['**/users/AuthPage.tsx', '**/users/LoginForm.tsx', '**/users/RegisterForm.tsx'],
     },
     '.': {
       project: ['./*.{ts,js}'],
-      ignoreDependencies: [],
     },
   },
-  ignore: [
-    '**/public/**',
-    '**/dist/**',
-    '**/.next/**',
-    '**/node_modules/**',
-    '**/.turbo/**',
-  ],
 } as const satisfies KnipConfig
 
 export default config

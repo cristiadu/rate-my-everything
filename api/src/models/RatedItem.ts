@@ -73,7 +73,7 @@ export interface RatedItemResponse extends Pick<RatedItem, 'id' | 'rating' | 'us
 }
 
 /** Fields accepted when changing a rating. */
-export interface RatingInput extends Pick<RatedItem, 'rating'>, Partial<Pick<RatedItem, 'notes'>> {}
+interface RatingInput extends Pick<RatedItem, 'rating'>, Partial<Pick<RatedItem, 'notes'>> {}
 
 /** Fields accepted when rating an item. */
 export interface NewRatingInput extends RatingInput {
