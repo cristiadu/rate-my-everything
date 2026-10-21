@@ -35,8 +35,11 @@ export type GradeColor = 'success' | 'warning' | 'danger' | 'light'
 /** Whose ratings an interest's rating history lists: the signed-in user's own, or everyone's. */
 export type RatingHistoryScope = 'personal' | 'all'
 
-/** Tab shown on the account page: log in to an existing account, or register a new one. */
-export type AuthTab = 'login' | 'register'
+/**
+ * Form shown on the account page: log in to an existing account, register a new one, ask for a password reset link, or
+ * choose a new password from that link. The last two belong to the Login tab.
+ */
+export type AuthTab = 'login' | 'register' | 'forgotPassword' | 'resetPassword'
 
 /** Which user form the admin screen shows: none, a new user, or an existing user being edited. */
 export type UserEditorState = { mode: 'create' } | { mode: 'edit', user: UserResponse } | null

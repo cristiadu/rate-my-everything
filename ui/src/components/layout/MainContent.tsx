@@ -8,7 +8,7 @@ import AdminDashboard from '@/components/admin/AdminDashboard'
 import UserManagement from '@/components/admin/users/UserManagement'
 import CreateUserForm from '@/components/users/CreateUserForm'
 import AuthPage from '@/components/users/AuthPage'
-import { SIGN_UP_PATH } from '@/components/users/UserHeaderMenu'
+import { FORGOT_PASSWORD_PATH, RESET_PASSWORD_PATH, SIGN_UP_PATH } from '@/components/users/UserHeaderMenu'
 import HealthCheck from '@/components/health/HealthCheck'
 import UserAccount from '@/components/account/UserAccount'
 import CategoriesPage from '@/components/categories/CategoriesPage'
@@ -29,6 +29,8 @@ const MainContent = () => (
         <Route path="/admin/users" element={<RequireAdmin><UserManagement /></RequireAdmin>} />
         <Route path="/admin/attributes" element={<RequireAdmin><AttributeManagement /></RequireAdmin>} />
         <Route path={SIGN_UP_PATH} element={<AuthPage initialTab="register" />} />
+        <Route path={FORGOT_PASSWORD_PATH} element={<AuthPage initialTab="forgotPassword" />} />
+        <Route path={RESET_PASSWORD_PATH} element={<AuthPage initialTab="resetPassword" />} />
         <Route path="/user/create" element={<RequireAdmin><CreateUserForm /></RequireAdmin>} />
         <Route path="/rankings" element={<RequireLogin><OverallRankings scope={RankingScope.MINE} /></RequireLogin>} />
         <Route path="/all_rankings" element={<RequireLogin><OverallRankings scope={RankingScope.ALL} /></RequireLogin>} />
