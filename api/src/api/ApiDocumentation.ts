@@ -60,6 +60,13 @@ export const INVALID_CREDENTIALS_EXAMPLE: APIError = {
   message: 'Invalid username or password',
 }
 
+export const INVALID_RESET_TOKEN_DESCRIPTION = 'The body is invalid, or the reset token is unknown, already used or expired'
+export const INVALID_RESET_TOKEN_EXAMPLE: APIError = {
+  code: ErrorCode.VALIDATION_ERROR,
+  status: 400,
+  message: 'This reset link is invalid or has expired',
+}
+
 export const FORBIDDEN_DESCRIPTION = 'The signed-in user may not call this operation or change this resource'
 export const FORBIDDEN_EXAMPLE: APIError = {
   code: ErrorCode.FORBIDDEN,

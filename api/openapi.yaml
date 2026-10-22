@@ -600,6 +600,34 @@ components:
         - password
       type: object
       additionalProperties: true
+    PasswordResetRequest:
+      description: Email address to send a password reset link to.
+      properties:
+        email:
+          type: string
+          example: ada@example.com
+      required:
+        - email
+      type: object
+      additionalProperties: true
+    PasswordResetInput:
+      description: A new password and the reset token from the emailed link that
+        allows setting it.
+      properties:
+        password:
+          type: string
+          description: Plain-text password when sent to the API; stored only as a hash and
+            never returned.
+          example: correct-horse-battery-staple
+        token:
+          type: string
+          description: Token from the reset link's `token` query parameter.
+          example: q8GmK1dWQ0nR3yVb7cX2tZ5hJ9pL4sA6eF0uN1oI8wE
+      required:
+        - password
+        - token
+      type: object
+      additionalProperties: true
     AttributeValueType:
       description: Kinds of value an attribute holds.
       enum:
@@ -3116,6 +3144,167 @@ paths:
           application/json:
             schema:
               $ref: "#/components/schemas/RegisterInput"
+  /login/password-reset:
+    post:
+      operationId: requestPasswordReset
+      responses:
+        "204":
+          description: Reset link sent if an account uses the address
+        "400":
+          description: The path, query or body is invalid; the message names each invalid
+            field
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: VALIDATION_ERROR
+                    status: 400
+                    message: "Invalid request: input.name: 'name' is required"
+        "429":
+          description: The client sent too many requests in the current rate limit window
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: TOO_MANY_REQUESTS
+                    status: 429
+                    message: Too many requests, try again later
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: string
+              description: Requests one client may make in each 15 minute window.
+              required: true
+            X-RateLimit-Remaining:
+              schema:
+                type: string
+              description: Requests left in the current window.
+              required: true
+            X-RateLimit-Reset:
+              schema:
+                type: string
+              description: When the current window ends, in seconds since the Unix epoch.
+              required: true
+            Retry-After:
+              schema:
+                type: string
+              description: Seconds to wait before sending another request.
+              required: true
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: INTERNAL_ERROR
+                    status: 500
+                    message: An internal server error occurred
+      description: >-
+        Emails a link to choose a new password to every account using the
+        address. Always answers 204, whether or not an
+
+        account uses it, so the answer does not tell who has an account; the
+        link works once, for one hour.
+      summary: Emails a password reset link
+      tags:
+        - Login
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetRequest"
+  /login/password-reset/confirm:
+    post:
+      operationId: resetPassword
+      responses:
+        "204":
+          description: Password changed
+        "400":
+          description: The body is invalid, or the reset token is unknown, already used or
+            expired
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: VALIDATION_ERROR
+                    status: 400
+                    message: This reset link is invalid or has expired
+        "429":
+          description: The client sent too many requests in the current rate limit window
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: TOO_MANY_REQUESTS
+                    status: 429
+                    message: Too many requests, try again later
+          headers:
+            X-RateLimit-Limit:
+              schema:
+                type: string
+              description: Requests one client may make in each 15 minute window.
+              required: true
+            X-RateLimit-Remaining:
+              schema:
+                type: string
+              description: Requests left in the current window.
+              required: true
+            X-RateLimit-Reset:
+              schema:
+                type: string
+              description: When the current window ends, in seconds since the Unix epoch.
+              required: true
+            Retry-After:
+              schema:
+                type: string
+              description: Seconds to wait before sending another request.
+              required: true
+        "500":
+          description: Something unexpected failed
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/APIError"
+              examples:
+                Example 1:
+                  value:
+                    code: INTERNAL_ERROR
+                    status: 500
+                    message: An internal server error occurred
+      description: >-
+        Sets a new password with the token from a reset link, which then stops
+        working; 400 when the token is unknown,
+
+        already used or expired.
+      summary: Sets a new password from a reset link
+      tags:
+        - Login
+      security: []
+      parameters: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PasswordResetInput"
   /items:
     get:
       operationId: getItems

@@ -4,6 +4,7 @@ import { appReady } from '@/index'
 import APIError from '@/models/APIError'
 import ErrorCode from '@/errors/ErrorCode'
 import { TOO_MANY_REQUESTS_EXAMPLE } from '@/api/ApiDocumentation'
+import { PASSWORD_RESET_MAX_REQUESTS } from '@/helpers/RateLimitHelper'
 
 /** Requests one client may make per window, as configured in index.ts. */
 const RATE_LIMIT_MAX_REQUESTS = 1000
@@ -49,5 +50,25 @@ describe('Rate Limit Integration Tests', async () => {
       .expect(res => {
         expect(res.headers['x-ratelimit-remaining']).toBe('999')
       })
+  })
+
+  it('should limit how many password reset emails one client asks for', async () => {
+    // GIVEN a client that asked for the most password reset emails allowed in the window
+    for (let sent = 0; sent < PASSWORD_RESET_MAX_REQUESTS; sent += 1) {
+      await request(app)
+        .post('/api/login/password-reset')
+        .set('X-Forwarded-For', '198.51.100.3')
+        .send({ email: 'nobody-here@example.com' })
+        .expect(204)
+    }
+
+    // WHEN it asks for one more
+    // THEN a too-many-requests API error comes back
+    await request(app)
+      .post('/api/login/password-reset')
+      .set('X-Forwarded-For', '198.51.100.3')
+      .send({ email: 'nobody-here@example.com' })
+      .expect(429)
+      .expect(res => expect(res.body).toStrictEqual(TOO_MANY_REQUESTS_EXAMPLE))
   })
 })

@@ -26,7 +26,7 @@ describe('LoginForm', () => {
     const token = makeTestToken([UserRole.USER])
     fetchMock.mockResolvedValueOnce(jsonResponse({ token }))
     const onSuccess = jest.fn()
-    render(<LoginForm onSuccess={onSuccess} />)
+    render(<LoginForm onSuccess={onSuccess} onForgotPassword={jest.fn()} />)
 
     // WHEN bob logs in
     submitBobsCredentials()
@@ -43,7 +43,7 @@ describe('LoginForm', () => {
     // GIVEN the API rejects the credentials
     fetchMock.mockResolvedValueOnce(jsonResponse({ error: 'Invalid credentials' }, 401))
     const onSuccess = jest.fn()
-    render(<LoginForm onSuccess={onSuccess} />)
+    render(<LoginForm onSuccess={onSuccess} onForgotPassword={jest.fn()} />)
 
     // WHEN bob logs in
     submitBobsCredentials()
@@ -52,5 +52,18 @@ describe('LoginForm', () => {
     expect(await screen.findByText('Invalid credentials')).toBeInTheDocument()
     expect(onSuccess).not.toHaveBeenCalled()
     expect(localStorage.getItem('authToken')).toBeNull()
+  })
+
+  test('opens the forgot password form from its link', () => {
+    // GIVEN the login form
+    const onForgotPassword = jest.fn()
+    render(<LoginForm onSuccess={jest.fn()} onForgotPassword={onForgotPassword} />)
+
+    // WHEN the visitor follows the forgot password link
+    fireEvent.click(screen.getByText('Forgot password?'))
+
+    // THEN the page is told to show the forgot password form, without calling the API
+    expect(onForgotPassword).toHaveBeenCalledTimes(1)
+    expect(fetchMock).not.toHaveBeenCalled()
   })
 })

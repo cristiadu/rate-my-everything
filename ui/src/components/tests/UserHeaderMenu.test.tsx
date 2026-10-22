@@ -36,8 +36,9 @@ describe('UserHeaderMenu', () => {
     fireEvent.change(screen.getByPlaceholderText('Password'), { target: { value: 'wrong' } })
     fireEvent.click(screen.getByText('Log In'))
 
-    // THEN the API's message is shown and the visitor stays logged out
+    // THEN the API's message is shown with a link to reset the password, and the visitor stays logged out
     expect(await screen.findByText('Invalid username or password')).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Forgot password?' })).toHaveAttribute('href', '/forgot-password')
     expect(screen.getByText('Welcome, visitor')).toBeInTheDocument()
     expect(localStorage.getItem('authToken')).toBeNull()
   })

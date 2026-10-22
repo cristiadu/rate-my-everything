@@ -3,9 +3,13 @@ import { login } from '@/api/generated/api'
 
 interface LoginFormProps {
   onSuccess: (token: string) => void;
+  /** Opens the form that emails a password reset link. */
+  onForgotPassword: () => void;
+  /** Success message shown above the fields, like after a password reset. */
+  notice?: string;
 }
 
-const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
+const LoginForm: React.FC<LoginFormProps> = ({ onSuccess, onForgotPassword, notice }) => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
@@ -31,6 +35,7 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
   return (
     <div className="box">
       <h2 className="title is-4">Login</h2>
+      {notice && <div className="notification is-success is-light">{notice}</div>}
       {error && <div className="notification is-danger">{error}</div>}
       <form onSubmit={handleSubmit}>
         <div className="field">
@@ -57,6 +62,9 @@ const LoginForm: React.FC<LoginFormProps> = ({ onSuccess }) => {
               required
             />
           </div>
+          <p className="help has-text-right">
+            <a onClick={onForgotPassword}>Forgot password?</a>
+          </p>
         </div>
 
         <div className="field">
