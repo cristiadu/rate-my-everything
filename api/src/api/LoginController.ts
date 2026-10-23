@@ -1,19 +1,27 @@
-import { Body, Controller, Post, Response, Route, SuccessResponse, Tags } from 'tsoa'
+import { Body, Controller, Middlewares, Post, Response, Route, SuccessResponse, Tags } from 'tsoa'
 import UserService from '@/services/UserService'
+import PasswordResetService from '@/services/PasswordResetService'
 import User, { UserTokenResponse } from '@/models/User'
 import type { LoginInput, RegisterInput, UserResponse } from '@/models/User'
+import type { PasswordResetInput, PasswordResetRequest } from '@/models/PasswordReset'
 import APIError, { NewApiError } from '@/models/APIError'
 import { InvalidCredentials } from '@/errors/InvalidCredentials'
+import { InvalidResetToken } from '@/errors/InvalidResetToken'
+import { passwordResetLimiter } from '@/helpers/RateLimitHelper'
 import ErrorCode from '@/errors/ErrorCode'
 import UserRole from '@/models/UserRole'
 import { RequestRejected } from '@/errors/RequestRejected'
 import {
   BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE, INVALID_CREDENTIALS_DESCRIPTION,
-  INVALID_CREDENTIALS_EXAMPLE, TOO_MANY_REQUESTS_DESCRIPTION, TOO_MANY_REQUESTS_EXAMPLE, UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE,
+  INVALID_CREDENTIALS_EXAMPLE, INVALID_RESET_TOKEN_DESCRIPTION, INVALID_RESET_TOKEN_EXAMPLE, TOO_MANY_REQUESTS_DESCRIPTION,
+  TOO_MANY_REQUESTS_EXAMPLE, UNPROCESSABLE_DESCRIPTION, UNPROCESSABLE_EXAMPLE,
 } from '@/api/ApiDocumentation'
 import type { RateLimitHeaders } from '@/api/ApiDocumentation'
 
-/** Signs users in and creates accounts; the only operations that need no bearer token besides the health check. */
+/**
+ * Signs users in, creates accounts and resets forgotten passwords; the only operations that need no bearer token besides
+ * the health check.
+ */
 @Route('login')
 @Tags('Login')
 @Response<APIError>(400, BAD_REQUEST_DESCRIPTION, BAD_REQUEST_EXAMPLE)
@@ -23,6 +31,8 @@ import type { RateLimitHeaders } from '@/api/ApiDocumentation'
 @Response<APIError>(500, INTERNAL_ERROR_DESCRIPTION, INTERNAL_ERROR_EXAMPLE)
 export class LoginController extends Controller {
   private userService = new UserService()
+
+  private passwordResetService = new PasswordResetService()
 
   /**
    * Signs in and returns a bearer token for the other endpoints.
@@ -69,5 +79,47 @@ export class LoginController extends Controller {
     // Never return password - destructure to omit password from response
     this.setStatus(201)
     return { ...user, password: undefined } as UserResponse
+  }
+
+  /**
+   * Emails a link to choose a new password to every account using the address. Always answers 204, whether or not an
+   * account uses it, so the answer does not tell who has an account; the link works once, for one hour.
+   * @summary Emails a password reset link
+   */
+  @Post('password-reset')
+  @Middlewares(passwordResetLimiter)
+  @SuccessResponse(204, 'Reset link sent if an account uses the address')
+  public async requestPasswordReset(@Body() input: PasswordResetRequest): Promise<void> {
+    if (!input.email) {
+      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Email is required'))
+    }
+
+    await this.passwordResetService.requestReset(input.email)
+    this.setStatus(204)
+  }
+
+  /**
+   * Sets a new password with the token from a reset link, which then stops working; 400 when the token is unknown,
+   * already used or expired.
+   * @summary Sets a new password from a reset link
+   */
+  @Post('password-reset/confirm')
+  @SuccessResponse(204, 'Password changed')
+  @Response<APIError>(400, INVALID_RESET_TOKEN_DESCRIPTION, INVALID_RESET_TOKEN_EXAMPLE)
+  public async resetPassword(@Body() input: PasswordResetInput): Promise<void> {
+    const { token, password } = input
+    if (!token || !password) {
+      throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, 'Token and password are required'))
+    }
+
+    try {
+      await this.passwordResetService.resetPassword(token, password)
+    } catch (error) {
+      if (error instanceof InvalidResetToken) {
+        throw new RequestRejected(NewApiError(ErrorCode.VALIDATION_ERROR, 400, error.message))
+      }
+      throw error
+    }
+    this.setStatus(204)
   }
 }

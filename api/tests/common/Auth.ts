@@ -4,7 +4,9 @@ import type { Express } from 'express'
 import fs from 'fs'
 import path from 'path'
 import os from 'os'
+import { vi } from 'vitest'
 import UserRole from '@/models/UserRole'
+import { mailService } from '@/services/MailService'
 
 const TMP_TOKEN_PATH = path.resolve(__dirname, '../../tmp/auth-token.txt')
 
@@ -58,4 +60,17 @@ export const getUserRoleAuthToken = async (app: Express, roles: UserRole[] = [Us
     .send({ username, password })
     .expect(200)
   return loginRes.body.token
+}
+
+/** Asks for a password reset email for the address, from the given client address, and returns the token it would carry. */
+export const requestPasswordResetToken = async (app: Express, email: string, clientAddress: string): Promise<string> => {
+  const sendPasswordReset = vi.spyOn(mailService, 'sendPasswordReset').mockResolvedValue()
+  await request(app)
+    .post('/api/login/password-reset')
+    .set('X-Forwarded-For', clientAddress)
+    .send({ email })
+    .expect(204)
+  const [, , token] = sendPasswordReset.mock.calls[0]
+  sendPasswordReset.mockRestore()
+  return token
 }

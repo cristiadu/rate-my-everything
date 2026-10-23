@@ -39,6 +39,11 @@ This is a monorepo with two main apps:
 | `YOUTUBE_API_KEY` | none | Importing a public YouTube video or every available video in a playlist. Create a key for the YouTube Data API v3 in the Google Cloud console. |
 | `SEED_BOOTSTRAP_DATA` | `false` | When `true`, every start creates the bootstrap admin and the starter categories (Movies, Music, Books, Games, Restaurants) with their attributes. Rows that already exist are kept, so it is safe to leave on. |
 | `BOOTSTRAP_ADMIN_USERNAME`, `BOOTSTRAP_ADMIN_EMAIL`, `BOOTSTRAP_ADMIN_PASSWORD` | none | The bootstrap admin's login. Required when `SEED_BOOTSTRAP_DATA` is `true`; the API refuses to start without them. `api/.env.example` has local development values. |
+| `SMTP_HOST` | none | SMTP server that sends password reset emails. Without it the API sends no email and only logs that a reset was asked for. |
+| `SMTP_PORT` | none | SMTP port; `465` uses TLS from the start and any other port, like `587`, upgrades with STARTTLS. Required with `SMTP_HOST`. |
+| `SMTP_USER`, `SMTP_PASSWORD` | none | SMTP login, for servers that ask for one. |
+| `SMTP_FROM` | none | Sender of the emails, e.g. `Rate My Everything <noreply@ramyev.alwaysdata.net>`. Required with `SMTP_HOST`. |
+| `APP_URL` | none | Public address of the UI, e.g. `https://ramyev.alwaysdata.net`; reset links open its `/reset-password` page. Required with `SMTP_HOST`; the API refuses to start when one of these three is missing. |
 | `PORT` | `3000` | Port the API listens on. |
 | `IP` | every address | Address the API listens on; alwaysdata sets it for its Node.js sites. |
 | `UI_DIST_DIR` | none | Folder of the built UI. When set, the API serves the UI next to `/api` and answers every other path with its `index.html`; locally, webpack serves the UI instead. |
@@ -56,6 +61,8 @@ One-time setup in the alwaysdata panel:
 | Databases > PostgreSQL | A database and user; enable the `pg_trgm` and `unaccent` extensions on it |
 | Web > Sites | A Node.js site on `<account>.alwaysdata.net`, command `node dist/index.js`, working directory `rate-my-everything/api`, idle time `0` |
 | Site environment | `JWT_SECRET` (a long random value; logins fail while it is empty), `PGHOST=postgresql-<account>.alwaysdata.net`, `PGUSER`, `PGPASSWORD`, `PGDATABASE`, `UI_DIST_DIR=../ui`. Optionally `SEED_BOOTSTRAP_DATA=true` together with all three of `BOOTSTRAP_ADMIN_USERNAME`, `BOOTSTRAP_ADMIN_EMAIL` and `BOOTSTRAP_ADMIN_PASSWORD` for the first admin (the API refuses to start if one is missing), and `LASTFM_API_KEY` and `YOUTUBE_API_KEY` |
+| Emails > Addresses | A mailbox to send password reset emails from, e.g. `noreply@<account>.alwaysdata.net` |
+| Site environment, for email | `SMTP_HOST=smtp-<account>.alwaysdata.net`, `SMTP_PORT=587`, `SMTP_FROM="Rate My Everything <noreply@<account>.alwaysdata.net>"` and `APP_URL=https://<account>.alwaysdata.net`; no `SMTP_USER` or `SMTP_PASSWORD`, since alwaysdata's SMTP server needs no login from the sites it hosts |
 | Remote access > SSH | Password login on for the account's SSH user |
 | Profile > Tokens | An API token |
 

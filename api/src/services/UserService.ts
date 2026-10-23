@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken'
 import bcrypt from 'bcrypt'
+import { Raw } from 'typeorm'
 import User, { SessionUser, UserTokenResponse } from '@/models/User'
 import BaseService from '@/services/BaseService'
 import { InvalidCredentials } from '@/errors/InvalidCredentials'
@@ -52,6 +53,11 @@ export default class UserService extends BaseService<User> {
   async getByUsername(username: string): Promise<User | null> {
     const user = await this.repository.findOne({ where: { username } })
     return user || null
+  }
+
+  /** Every account using the email address, ignoring case; several accounts may share one. */
+  async getAllByEmail(email: string): Promise<User[]> {
+    return this.repository.find({ where: { email: Raw((column) => `LOWER(${column}) = LOWER(:email)`, { email }) } })
   }
 
   async login(username: string, password: string): Promise<UserTokenResponse> {

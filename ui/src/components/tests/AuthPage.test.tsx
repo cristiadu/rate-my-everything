@@ -5,14 +5,14 @@ import AuthPage from '@/components/users/AuthPage'
 import { AuthProvider } from '@/components/users/AuthContext'
 import { UserRole } from '@/api/generated/api'
 import type { AuthTab } from '@/components/types'
-import { jsonResponse, mockFetch } from '@/components/tests/common/Api'
+import { emptyResponse, jsonResponse, mockFetch } from '@/components/tests/common/Api'
 import { loginAs, makeTestToken } from '@/components/tests/common/Auth'
 import { inputUnderLabel } from '@/components/tests/common/Forms'
 
-/** Renders the account page on /register, with a home page to land on once logged in. */
-const renderAuthPage = (initialTab?: AuthTab) => render(
+/** Renders the account page on /register (with the query string given), with a home page to land on once logged in. */
+const renderAuthPage = (initialTab?: AuthTab, query = '') => render(
   <AuthProvider>
-    <MemoryRouter initialEntries={['/register']}>
+    <MemoryRouter initialEntries={[`/register${query}`]}>
       <Routes>
         <Route path="/register" element={<AuthPage initialTab={initialTab} />} />
         <Route path="/" element={<p>Home page</p>} />
@@ -88,5 +88,38 @@ describe('AuthPage', () => {
 
     // THEN they land on the home page instead
     expect(screen.getByText('Home page')).toBeInTheDocument()
+  })
+
+  test('opens the forgot password form from the login form, under the Login tab, and goes back on Cancel', () => {
+    // GIVEN the account page on its login tab
+    renderAuthPage()
+
+    // WHEN the visitor follows the forgot password link
+    fireEvent.click(screen.getByText('Forgot password?'))
+
+    // THEN the forgot password form is shown under the Login tab
+    expect(screen.getByRole('heading', { name: 'Forgot password' })).toBeInTheDocument()
+    expect(screen.getByText('Login', { selector: 'a' }).closest('li')).toHaveClass('is-active')
+
+    // WHEN they cancel
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+
+    // THEN the login form is back
+    expect(screen.getByRole('heading', { name: 'Login' })).toBeInTheDocument()
+  })
+
+  test('asks the visitor to log in once the reset link changed their password', async () => {
+    // GIVEN the account page opened from a reset link, and the API accepts its token
+    fetchMock.mockResolvedValueOnce(emptyResponse())
+    renderAuthPage('resetPassword', '?token=reset-token_123')
+
+    // WHEN the visitor saves a new password
+    fireEvent.change(inputUnderLabel('New password'), { target: { value: 'new-secret456' } })
+    fireEvent.change(inputUnderLabel('Confirm new password'), { target: { value: 'new-secret456' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Save password' }))
+
+    // THEN the login form is shown with a note that the password changed
+    expect(await screen.findByText('Your password was changed. Log in with your new password.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Login' })).toBeInTheDocument()
   })
 })

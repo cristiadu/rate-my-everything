@@ -9,6 +9,12 @@ import { login as signIn } from '@/api/generated/api'
 /** Page where a visitor creates their own account. */
 export const SIGN_UP_PATH = '/register'
 
+/** Page where a visitor asks for a link to choose a new password. */
+export const FORGOT_PASSWORD_PATH = '/forgot-password'
+
+/** Page the emailed password reset link opens, with the reset token in its `token` query parameter. */
+export const RESET_PASSWORD_PATH = '/reset-password'
+
 const UserHeaderMenu = () => {
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
@@ -124,6 +130,7 @@ const UserHeaderMenu = () => {
               {error && (
                 <Level.Item>
                   <div className="has-text-danger is-size-7">{error}</div>
+                  <a className="is-size-7 ml-2 has-text-white is-underlined" href={FORGOT_PASSWORD_PATH}>Forgot password?</a>
                 </Level.Item>
               )}
             </Level.Side>
